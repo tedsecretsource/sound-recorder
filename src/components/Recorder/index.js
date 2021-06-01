@@ -1,16 +1,23 @@
 import { useState, useRef } from 'react'
-import Visualizer from '../Visualizer'
+//import Visualizer from '../Visualizer'
+import Recording from '../Recording'
+import './style.css'
 
 const Recorder = () => {
     const [recordingStateText, setRecordingStateText] = useState('Record')
-
+    const [recordings, setRecordings] = useState([])
     const constraints = { audio: true }
     const mediaRecorder = useRef(null)
     let chunks = []
 
-    const onStop = () => {
-        // add a recording to the list
+    const onStop = async (e) => {
+        const blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' });
+        chunks = [];
+        const audioURL = window.URL.createObjectURL(blob);
+        recordings.push({stream: audioURL})
+        setRecordings(recordings)
         console.log('Just finished recording some data')
+        console.log({recordings})
     }
 
     const initMediaRecorder = async () => {
@@ -18,7 +25,6 @@ const Recorder = () => {
         let currstream = null
         
         if( mediaRecorder.current === null ) {
-        
             try {
                 currstream = await navigator.mediaDevices.getUserMedia(constraints);
             } catch(err) {
@@ -42,16 +48,30 @@ const Recorder = () => {
         await initMediaRecorder()
 
         if( mediaRecorder.current ) {
+            console.log({recordingStateText})
             if( 'Record' === recordingStateText ) {
                 mediaRecorder.current.start();
                 setRecordingStateText('Stop')
             } else {
-                mediaRecorder.current.stop();
-                setRecordingStateText('Record')
+                console.log(mediaRecorder.current.state)
+                console.log({recordings})
+                await mediaRecorder.current.stop();
+                console.log(mediaRecorder.current.state)
+                console.log({recordings})
                 mediaRecorder.current = null;
+                setRecordingStateText('Record')
             }
         }
         
+    }
+
+    const renderAudio = () => {
+        let audios = recordings.map((recording, index) => {
+            return (
+                <Recording stream={recording.stream} key={recording.stream.toString()} />
+            )   
+        })
+        return audios
     }
 
     const ui = () => {
@@ -60,7 +80,7 @@ const Recorder = () => {
             return (
                 <>
                 <button onClick={toggleRecording}>{recordingStateText}</button>
-                <audio></audio>
+                {renderAudio()}
                 </>
             )
         } else {
