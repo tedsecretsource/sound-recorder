@@ -10,91 +10,75 @@ const Recorder = () => {
     const mediaRecorder = useRef(null)
     let chunks = []
 
-    const onStop = async (e) => {
+    const onStop = () => {
+
         const blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' });
         chunks = [];
         const audioURL = window.URL.createObjectURL(blob);
         recordings.push({stream: audioURL})
         setRecordings(recordings)
-        console.log('Just finished recording some data')
-        console.log({recordings})
+        setRecordingStateText('Record')
+        
     }
 
-    const initMediaRecorder = async () => {
+    /**
+     * We only want to initialize if one doesn't already exist
+     * 
+     * @param {MediaRecorder} mr 
+     * @returns 
+     */
+    const initMediaRecorder = async (mr) => {
 
-        let currstream = null
+        if( mr === null ) {
+            return navigator.mediaDevices.getUserMedia(constraints)
+        }
+    
+    }
+    
+
+    const toggleRecording = () => {
         
-        if( mediaRecorder.current === null ) {
-            try {
-                currstream = await navigator.mediaDevices.getUserMedia(constraints);
-            } catch(err) {
-                console.log('Whoops! Cannot get a stream')
-                return
-            }
-        
+        initMediaRecorder(mediaRecorder.current)
+        .then((currstream) => {
             mediaRecorder.current = new MediaRecorder(currstream);
             mediaRecorder.current.onstop = onStop
             mediaRecorder.current.ondataavailable = function(e) {
                 chunks.push(e.data);
             }
-        
-        }
-    
-    }
-    
-
-    const toggleRecording = async () => {
-        
-        await initMediaRecorder()
-
-        if( mediaRecorder.current ) {
-            console.log({recordingStateText})
+        })
+        .catch((err) => {
+            console.log('MR already exists')
+        })
+        .then(() => {
             if( 'Record' === recordingStateText ) {
                 mediaRecorder.current.start();
                 setRecordingStateText('Stop')
             } else {
-                console.log(mediaRecorder.current.state)
-                console.log({recordings})
-                await mediaRecorder.current.stop();
-                console.log(mediaRecorder.current.state)
-                console.log({recordings})
-                mediaRecorder.current = null;
-                setRecordingStateText('Record')
+                mediaRecorder.current.stop();
             }
-        }
+        })
+
         
     }
 
+
     const renderAudio = () => {
+
         let audios = recordings.map((recording, index) => {
             return (
                 <Recording stream={recording.stream} key={recording.stream.toString()} />
             )   
         })
+        
         return audios
+
     }
 
-    const ui = () => {
-        if( navigator.mediaDevices.getUserMedia ) {
-            // create the recorder
-            return (
-                <>
-                <button onClick={toggleRecording}>{recordingStateText}</button>
-                {renderAudio()}
-                </>
-            )
-        } else {
-            return (
-                <>
-                    <p className="warning">Sorry. This device doesn't support recording using this application.</p>
-                </>
-            )
-        }
-    }
-    
+
     return (
         <>
-        {ui()}
+            <button onClick={toggleRecording}>{recordingStateText}</button>
+            {renderAudio()}
         </>
     )
 }
