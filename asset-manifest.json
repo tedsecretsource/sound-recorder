@@ -1,24 +1,24 @@
 {
   "files": {
-    "main.css": "/sound-recorder/static/css/main.7235f208.chunk.css",
-    "main.js": "/sound-recorder/static/js/main.dc968122.chunk.js",
-    "main.js.map": "/sound-recorder/static/js/main.dc968122.chunk.js.map",
-    "runtime-main.js": "/sound-recorder/static/js/runtime-main.0ff1d58d.js",
-    "runtime-main.js.map": "/sound-recorder/static/js/runtime-main.0ff1d58d.js.map",
-    "static/js/2.32ac3ebe.chunk.js": "/sound-recorder/static/js/2.32ac3ebe.chunk.js",
-    "static/js/2.32ac3ebe.chunk.js.map": "/sound-recorder/static/js/2.32ac3ebe.chunk.js.map",
-    "static/js/3.d8bce411.chunk.js": "/sound-recorder/static/js/3.d8bce411.chunk.js",
-    "static/js/3.d8bce411.chunk.js.map": "/sound-recorder/static/js/3.d8bce411.chunk.js.map",
+    "main.css": "/sound-recorder/static/css/main.7e752491.chunk.css",
+    "main.js": "/sound-recorder/static/js/main.62659806.chunk.js",
+    "main.js.map": "/sound-recorder/static/js/main.62659806.chunk.js.map",
+    "runtime-main.js": "/sound-recorder/static/js/runtime-main.8fdd67d6.js",
+    "runtime-main.js.map": "/sound-recorder/static/js/runtime-main.8fdd67d6.js.map",
+    "static/js/2.0ac92931.chunk.js": "/sound-recorder/static/js/2.0ac92931.chunk.js",
+    "static/js/2.0ac92931.chunk.js.map": "/sound-recorder/static/js/2.0ac92931.chunk.js.map",
+    "static/js/3.a491641c.chunk.js": "/sound-recorder/static/js/3.a491641c.chunk.js",
+    "static/js/3.a491641c.chunk.js.map": "/sound-recorder/static/js/3.a491641c.chunk.js.map",
     "index.html": "/sound-recorder/index.html",
     "service-worker.js": "/sound-recorder/service-worker.js",
     "service-worker.js.map": "/sound-recorder/service-worker.js.map",
-    "static/css/main.7235f208.chunk.css.map": "/sound-recorder/static/css/main.7235f208.chunk.css.map",
-    "static/js/2.32ac3ebe.chunk.js.LICENSE.txt": "/sound-recorder/static/js/2.32ac3ebe.chunk.js.LICENSE.txt"
+    "static/css/main.7e752491.chunk.css.map": "/sound-recorder/static/css/main.7e752491.chunk.css.map",
+    "static/js/2.0ac92931.chunk.js.LICENSE.txt": "/sound-recorder/static/js/2.0ac92931.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
-    "static/js/runtime-main.0ff1d58d.js",
-    "static/js/2.32ac3ebe.chunk.js",
-    "static/css/main.7235f208.chunk.css",
-    "static/js/main.dc968122.chunk.js"
+    "static/js/runtime-main.8fdd67d6.js",
+    "static/js/2.0ac92931.chunk.js",
+    "static/css/main.7e752491.chunk.css",
+    "static/js/main.62659806.chunk.js"
   ]
 }
