@@ -6,13 +6,18 @@ const Recording = ({ stream }) => {
     const deleteRecording = () => {
 
     }
+    const editName = () => {
+
+    }
 
     return (
         <>
         <article key={stream.toString()}>
             <audio controls="controls" src={stream}></audio>
-            <p>Unnamed recording</p>
-            <button onClick={deleteRecording}>Delete</button>
+            <p><span className="name">Unnamed recording</span>
+            <button onClick={editName} className="editName" title="Click to edit name">✏️</button>
+            </p>
+            <button onClick={deleteRecording} className="delete">Delete</button>
         </article>
         </>
     );

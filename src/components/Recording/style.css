@@ -1,0 +1,30 @@
+article {
+    display: grid;
+    grid-template-columns: 2fr;
+    grid-template-rows: 2fr;
+    row-gap: 0.5rem;
+    width: 100%;
+    margin: 1.25rem 0;
+  }
+  
+  article audio {
+    grid-column: 1 / span 2;
+    height: 2rem;
+    width: 100%;
+  }
+  
+  article button.delete {
+    height: 1.5rem;
+    vertical-align: middle;
+  }
+  
+  article p {
+    margin: 0;
+    margin-left: 1rem;
+  }
+  
+  article button.editName {
+    background-color: transparent;
+    border: transparent;
+    cursor: pointer;
+}

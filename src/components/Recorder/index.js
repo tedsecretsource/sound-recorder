@@ -5,10 +5,13 @@ import './style.css'
 
 const Recorder = () => {
     const [recordingStateText, setRecordingStateText] = useState('Record')
+    const [recordButtonClassesText, setRecordButtonClassesText] = useState('record-play')
     const [recordings, setRecordings] = useState([])
     const constraints = { audio: true }
     const mediaRecorder = useRef(null)
     let chunks = []
+    let recordButtonClasses = [recordButtonClassesText]
+
 
     const onStop = () => {
 
@@ -16,11 +19,24 @@ const Recorder = () => {
         chunks = [];
         const audioURL = window.URL.createObjectURL(blob);
         recordings.push({stream: audioURL})
+        recordButtonClasses.pop()
+        setRecordButtonClassesText(recordButtonClasses.join(' '))
         setRecordings(recordings)
         setRecordingStateText('Record')
-        
+
     }
 
+
+    const onStart = () => {
+
+        recordButtonClasses.push('recording-audio')
+        console.log({recordButtonClasses})
+        setRecordButtonClassesText(recordButtonClasses.join(' '))
+        setRecordingStateText('Stop')
+    
+    }
+
+    
     /**
      * We only want to initialize if one doesn't already exist
      * 
@@ -42,6 +58,7 @@ const Recorder = () => {
         .then((currstream) => {
             mediaRecorder.current = new MediaRecorder(currstream);
             mediaRecorder.current.onstop = onStop
+            mediaRecorder.current.onstart = onStart
             mediaRecorder.current.ondataavailable = function(e) {
                 chunks.push(e.data);
             }
@@ -52,7 +69,6 @@ const Recorder = () => {
         .then(() => {
             if( 'Record' === recordingStateText ) {
                 mediaRecorder.current.start();
-                setRecordingStateText('Stop')
             } else {
                 mediaRecorder.current.stop();
             }
@@ -77,7 +93,7 @@ const Recorder = () => {
 
     return (
         <>
-            <button onClick={toggleRecording}>{recordingStateText}</button>
+            <button onClick={toggleRecording} className={recordButtonClassesText}>{recordingStateText}</button>
             {renderAudio()}
         </>
     )

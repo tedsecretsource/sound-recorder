@@ -9,9 +9,9 @@ function App() {
     <header>
       <h1>Sound Recorder</h1>
     </header>
-    <div className="body">
+    <main>
       <Recorder />
-    </div>
+    </main>
     </>
   );
 }
