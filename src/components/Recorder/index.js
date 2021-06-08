@@ -1,15 +1,15 @@
-import { useState, useRef } from 'react'
+import { useState, useEffect } from 'react'
+import useMediaRecorder from '../../hooks/useMediaRecorder'
 //import Visualizer from '../Visualizer'
 import Recording from '../Recording'
 import './style.css'
 
-const Recorder = () => {
+const Recorder = ({stream}) => {
     const [recordingStateText, setRecordingStateText] = useState('Record')
-    const [recordButtonClassesText, setRecordButtonClassesText] = useState('record-play')
     const [recordings, setRecordings] = useState([])
-    const constraints = { audio: true }
-    const mediaRecorder = useRef(null)
+    const [mediaRecorder, setMediaRecorder] = useState(null)
     let chunks = []
+    const [recordButtonClassesText, setRecordButtonClassesText] = useState('record-play')
     let recordButtonClasses = [recordButtonClassesText]
 
 
@@ -30,53 +30,28 @@ const Recorder = () => {
     const onStart = () => {
 
         recordButtonClasses.push('recording-audio')
-        console.log({recordButtonClasses})
         setRecordButtonClassesText(recordButtonClasses.join(' '))
         setRecordingStateText('Stop')
     
     }
 
-    
-    /**
-     * We only want to initialize if one doesn't already exist
-     * 
-     * @param {MediaRecorder} mr 
-     * @returns 
-     */
-    const initMediaRecorder = async (mr) => {
 
-        if( mr === null ) {
-            return navigator.mediaDevices.getUserMedia(constraints)
-        }
-    
+    const ondataavailable = (e) => {
+        chunks.push(e.data);
     }
-    
 
+    
     const toggleRecording = () => {
-        
-        initMediaRecorder(mediaRecorder.current)
-        .then((currstream) => {
-            mediaRecorder.current = new MediaRecorder(currstream);
-            mediaRecorder.current.onstop = onStop
-            mediaRecorder.current.onstart = onStart
-            mediaRecorder.current.ondataavailable = function(e) {
-                chunks.push(e.data);
-            }
-        })
-        .catch((err) => {
-            console.log('MR already exists')
-        })
-        .then(() => {
-            if( 'Record' === recordingStateText ) {
-                mediaRecorder.current.start();
-            } else {
-                mediaRecorder.current.stop();
-            }
-        })
 
-        
+        if( 'Record' === recordingStateText ) {
+            mediaRecorder.start();
+        } else {
+            mediaRecorder.stop();
+        }
+
     }
 
+    useMediaRecorder(stream, recordButtonClassesText, chunks, onStart, onStop, ondataavailable, setMediaRecorder, mediaRecorder)
 
     const renderAudio = () => {
 
