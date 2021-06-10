@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import useMediaRecorder from '../../hooks/useMediaRecorder'
 //import Visualizer from '../Visualizer'
 import Recording from '../Recording'
@@ -8,9 +8,9 @@ const Recorder = ({stream}) => {
     const [recordingStateText, setRecordingStateText] = useState('Record')
     const [recordings, setRecordings] = useState([])
     const [mediaRecorder, setMediaRecorder] = useState(null)
-    let chunks = []
     const [recordButtonClassesText, setRecordButtonClassesText] = useState('record-play')
     let recordButtonClasses = [recordButtonClassesText]
+    let chunks = []
 
 
     const onStop = () => {

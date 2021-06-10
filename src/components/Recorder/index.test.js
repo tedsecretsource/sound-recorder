@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 import renderer from 'react-test-renderer';
 import '../../mocks/mediaRecorder.js';
 import Recorder from './index'
+import useMediaRecorder from '../../hooks/useMediaRecorder'
+jest.mock('../../hooks/useMediaRecorder')
 
 beforeEach(() => {
     // Clear all instances and calls to constructor and all methods:
@@ -20,8 +22,7 @@ it('renders without crashing', () => {
 })
 
 it('record turns colors when clicked', async () => {
-    // const useRefSpy = jest.spyOn(React, 'useRef').mockReturnValueOnce({current: {MediaRecorder}})
-    // const spy = jest.spyOn(MediaRecorder, 'start')
+    useMediaRecorder.mockReturnValue({state: 'inactive', start: jest.fn(), stop: jest.fn(), ondataavailable: jest.fn()})
     const component = await renderer.create(
         <Recorder />,
       );
