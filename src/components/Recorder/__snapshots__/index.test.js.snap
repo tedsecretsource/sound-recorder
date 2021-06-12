@@ -8,21 +8,3 @@ exports[`record turns colors when clicked 1`] = `
   Record
 </button>
 `;
-
-exports[`record turns colors when clicked 2`] = `
-<button
-  className="record-play"
-  onClick={[Function]}
->
-  Record
-</button>
-`;
-
-exports[`record turns colors when clicked 3`] = `
-<button
-  className="record-play"
-  onClick={[Function]}
->
-  Record
-</button>
-`;

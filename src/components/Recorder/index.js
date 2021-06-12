@@ -7,11 +7,8 @@ import './style.css'
 const Recorder = ({stream}) => {
     const [recordingStateText, setRecordingStateText] = useState('Record')
     const [recordings, setRecordings] = useState([])
-    const [mediaRecorder, setMediaRecorder] = useState(null)
     const [recordButtonClassesText, setRecordButtonClassesText] = useState('record-play')
-    let recordButtonClasses = [recordButtonClassesText]
     let chunks = []
-
 
     const onStop = () => {
 
@@ -19,19 +16,13 @@ const Recorder = ({stream}) => {
         chunks = [];
         const audioURL = window.URL.createObjectURL(blob);
         recordings.push({stream: audioURL})
-        recordButtonClasses.pop()
-        setRecordButtonClassesText(recordButtonClasses.join(' '))
         setRecordings(recordings)
-        setRecordingStateText('Record')
 
     }
 
 
     const onStart = () => {
 
-        recordButtonClasses.push('recording-audio')
-        setRecordButtonClassesText(recordButtonClasses.join(' '))
-        setRecordingStateText('Stop')
     
     }
 
@@ -40,18 +31,22 @@ const Recorder = ({stream}) => {
         chunks.push(e.data);
     }
 
-    
+
     const toggleRecording = () => {
 
         if( 'Record' === recordingStateText ) {
+            setRecordButtonClassesText(recordButtonClassesText + ' recording-audio')
+            setRecordingStateText('Stop')
             mediaRecorder.start();
         } else {
+            setRecordButtonClassesText(recordButtonClassesText.split(' ').reverse().pop().toString())
+            setRecordingStateText('Record')
             mediaRecorder.stop();
         }
 
     }
 
-    useMediaRecorder(stream, recordButtonClassesText, chunks, onStart, onStop, ondataavailable, setMediaRecorder, mediaRecorder)
+    const mediaRecorder = useMediaRecorder(stream, recordButtonClassesText, {onStart: onStart, onStop: onStop, ondataavailable: ondataavailable})
 
     const renderAudio = () => {
 
@@ -78,4 +73,4 @@ Recorder.propTypes = {
     //stream: PropTypes.node
 };
 
-export default Recorder;
+export default Recorder
