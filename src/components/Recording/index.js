@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import './style.css'
 
 
@@ -9,7 +10,7 @@ const Recording = ({ stream, name }) => {
 
     }
 
-    const editName = (e) => {
+    const editName = () => {
         let newName = window.prompt('Enter a new name', recordingName) ?? recordingName // necessary because this returns null if the user doesn't enter anything
         setRecordingName(newName)
     }
@@ -28,7 +29,8 @@ const Recording = ({ stream, name }) => {
 }
 
 Recording.propTypes = {
-
+    stream: PropTypes.string,
+    name: PropTypes.string
 }
 
 export default Recording;

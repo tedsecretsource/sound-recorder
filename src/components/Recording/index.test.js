@@ -1,7 +1,6 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import Recording from './index'
-import { render, screen, logRoles } from '@testing-library/react'
+import { render, screen, logRoles, prettyDOM } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 /**
@@ -13,26 +12,28 @@ import userEvent from '@testing-library/user-event'
 const stream = {
     key: "lsdkjflds",
     stream: "sdkfjsdf08sdf",
-    name: "is this right?"
+    name: "2021-06-18 07:37:46"
 }
 
 it('renders without crashing', () => {
     const div = document.createElement('div');
-    ReactDOM.render(<Recording stream={stream} />, div);
+    render(<Recording stream={stream.stream} name={stream.name} key={stream.key} />, div);
 })
 
 it('recording can be renamed', async () => {
     const newName = 'The new name'
-    render(<Recording stream={stream} />)
+    global.prompt = () => newName // https://stackoverflow.com/questions/41732903/stubbing-window-functions-in-jest
+    render(<Recording stream={stream.stream} name={stream.name} key={stream.key} />)
     const editButton = await screen.findByRole('button', { name: "Click to edit name"})
     const recordingName = await screen.findByRole('presentation')
+    console.log(prettyDOM(recordingName))
     expect(editButton).toBeInTheDocument()
     userEvent.click(editButton)
     // wait for prompt
     // enter new name
     // click OK
-    window.confirm = jest.fn().mockImplementation(() => newName) // https://stackoverflow.com/questions/41732903/stubbing-window-functions-in-jest
     // expect new text in span
-    // expect(recordingName).toHaveTextContent(newName)
+    expect(recordingName).toHaveTextContent(newName)
+    console.log(prettyDOM(recordingName))
 
 })
