@@ -1,10 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`record turns colors when clicked 1`] = `
-<button
-  className="record-play"
-  onClick={[Function]}
->
-  Record
-</button>
+exports[`is a snapshot 1`] = `
+Array [
+  <button
+    className="record-play"
+    onClick={[Function]}
+  >
+    Record
+  </button>,
+  <section />,
+]
 `;
