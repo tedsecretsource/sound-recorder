@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`is a snapshot 1`] = `
+Array [
+  <button
+    className="record-play"
+    onClick={[Function]}
+  >
+    Record
+  </button>,
+  <section />,
+]
+`;
