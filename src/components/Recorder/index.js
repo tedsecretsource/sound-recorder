@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import useMediaRecorder from '../../hooks/useMediaRecorder'
 //import Visualizer from '../Visualizer'
 import Recording from '../Recording'
@@ -13,14 +14,18 @@ const Recorder = ({stream}) => {
 
     const onStop = () => {
 
-        const blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' });
-        chunks = [];
-        const audioURL = window.URL.createObjectURL(blob);
-        recordings.push({stream: audioURL, name: new Date().toISOString().split('.')[0].split('T').join(' ')})
-        setRecordings(recordings)
+        const blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' })
+        chunks = []
+        const audioURL = window.URL.createObjectURL(blob)
+        setRecordings(recordings => {
+            return [...recordings, ...[{
+                stream: audioURL, 
+                name: new Date().toISOString().split('.')[0].split('T').join(' '),
+                id: `id${recordings.length}`
+            }]]
+        })
         setRecordButtonClassesText(defaultRecordClass)
         setRecordingStateText('Record')
-
     }
 
 
@@ -31,7 +36,7 @@ const Recorder = ({stream}) => {
 
 
     const ondataavailable = (e) => {
-        chunks.push(e.data);
+        chunks.push(e.data)
     }
 
 
@@ -48,13 +53,48 @@ const Recorder = ({stream}) => {
 
     }
 
+    const editRecordingName = (id) => {
+        let newRecordings = [...recordings]
+        let targetItem = recordings.filter((item) => {
+            if( item.id === id ) {
+                return item
+            }
+            return false
+        })
+        let index = recordings.indexOf(targetItem[0])
+        let newName = window.prompt('Enter a new name', targetItem[0].name) ?? targetItem[0].name // necessary because this returns null if the user doesn't enter anything
+        targetItem[0].name = newName
+        newRecordings.splice(index, 1, targetItem[0])
+        setRecordings(newRecordings)
+    }
+
+    const deleteRecording = (id) => {
+        let deleteRecording = window.confirm('Are you sure you want to delete this recording?')
+        if (deleteRecording === true) {
+            let newRecordings = recordings.filter((item) => {
+                if (id !== item.id) {
+                    return true
+                }
+                return false
+            })
+            setRecordings([...newRecordings])
+        }
+    }
+
     const mediaRecorder = useMediaRecorder(stream, recordButtonClassesText, {onStart: onStart, onStop: onStop, ondataavailable: ondataavailable})
 
     const renderAudio = () => {
         let audios = recordings.map((recording, index) => {
+            let customKey = `id${index}`
             return (
-                <Recording stream={recording.stream} key={index} name={recording.name} />
-            )   
+                <Recording 
+                    stream={recording.stream} 
+                    key={customKey} 
+                    name={recording.name} 
+                    id={recording.id} 
+                    onDeleteHandler={deleteRecording} 
+                    onEditNameHandler={editRecordingName} />
+            )
         })
         
         return audios
@@ -73,7 +113,7 @@ const Recorder = ({stream}) => {
 }
 
 Recorder.propTypes = {
-    //stream: PropTypes.node
+    stream: PropTypes.object
 };
 
 export default Recorder

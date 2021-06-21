@@ -4,13 +4,20 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import renderer from 'react-test-renderer';
-import { render, screen, logRoles } from '@testing-library/react'
+import { render, screen, logRoles, prettyDOM } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom/extend-expect'
-// import '../../mocks/mediaRecorder.js';
 import Recorder from './index'
+import Recording from '../Recording/index'
 import useMediaRecorder from '../../hooks/useMediaRecorder'
 jest.mock('../../hooks/useMediaRecorder')
+
+const stream = {
+    key: "lsdkjflds",
+    stream: "sdkfjsdf08sdf",
+    name: "2021-06-18 07:37:46"
+}
+
 
 beforeEach(() => {
     // Clear all instances and calls to constructor and all methods:
@@ -59,3 +66,14 @@ describe('Recording audio', () => {
 })
 
 
+it('recording can be renamed', async () => {
+    const newName = 'The new name'
+    global.prompt = () => newName // https://stackoverflow.com/questions/41732903/stubbing-window-functions-in-jest
+
+})
+
+it('Can delete a recording', async () => {
+    global.confirm = () => true
+    render(<Recorder><Recording stream={stream.stream} name={stream.name} key="1" /><Recording stream="blob:http://localhost/lsdjkfls" name="Recording 2" key="2" /></Recorder>)
+
+})
