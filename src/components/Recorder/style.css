@@ -1,8 +1,5 @@
 main button.record-play {
-    width: 10rem;
-    height: 2rem;
     align-self: center;
-    margin-bottom: 2rem;
     background-color: rgb(14, 60, 14);
     color: white;
     font-weight: 700;

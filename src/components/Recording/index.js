@@ -4,12 +4,12 @@ import './style.css'
 
 const Recording = ({ stream, name, onDeleteHandler, onEditNameHandler, id }) => {
 
-    const deleteRecording = (id) => {
-        onDeleteHandler(id)
+    const deleteRecording = (e) => {
+        onDeleteHandler(e)
     }
 
-    const editName = (id) => {
-        onEditNameHandler(id)
+    const editName = (e) => {
+        onEditNameHandler(e)
     }
 
     return (
@@ -17,9 +17,9 @@ const Recording = ({ stream, name, onDeleteHandler, onEditNameHandler, id }) => 
         <article id={id}>
             <audio controls="controls" src={stream} preload="auto" role="application">Sorry, your browser doesn't support recording audio.</audio>
             <p><span className="name" role="presentation">{name}</span>
-            <button onClick={() => editName(id)} className="editName" title="Click to edit name">✏️</button>
+            <button onClick={editName} className="editName" title="Click to edit name">✏️</button>
             </p>
-            <button onClick={() => deleteRecording(id)} className="delete">Delete</button>
+            <button onClick={deleteRecording} className="delete">Delete</button>
         </article>
         </>
     );

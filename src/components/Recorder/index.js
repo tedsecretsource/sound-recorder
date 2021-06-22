@@ -45,7 +45,7 @@ const Recorder = ({stream}) => {
         if( 'Record' === recordingStateText ) {
             setRecordButtonClassesText(defaultRecordClass + ' recording-audio')
             setRecordingStateText('Stop')
-            mediaRecorder.start(1000)
+            mediaRecorder.start()
         } else {
             setRecordingStateText('Record')
             mediaRecorder.stop()
@@ -53,7 +53,8 @@ const Recorder = ({stream}) => {
 
     }
 
-    const editRecordingName = (id) => {
+    const editRecordingName = (e) => {
+        let id = e.target.parentNode.parentNode.attributes.id.value
         let newRecordings = [...recordings]
         let targetItem = recordings.filter((item) => {
             if( item.id === id ) {
@@ -68,7 +69,8 @@ const Recorder = ({stream}) => {
         setRecordings(newRecordings)
     }
 
-    const deleteRecording = (id) => {
+    const deleteRecording = (e) => {
+        let id = e.target.parentNode.attributes.id.value
         let deleteRecording = window.confirm('Are you sure you want to delete this recording?')
         if (deleteRecording === true) {
             let newRecordings = recordings.filter((item) => {
@@ -77,7 +79,10 @@ const Recorder = ({stream}) => {
                 }
                 return false
             })
-            setRecordings([...newRecordings])
+            e.target.parentNode.classList.add('vanish')
+            setTimeout(() => {
+                setRecordings([...newRecordings])
+            }, 1000)
         }
     }
 

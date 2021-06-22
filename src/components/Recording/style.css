@@ -5,26 +5,39 @@ article {
     row-gap: 0.5rem;
     width: 100%;
     margin: 1.25rem 0;
-  }
+}
   
-  article audio {
+article audio {
     grid-column: 1 / span 2;
     height: 2rem;
     width: 100%;
-  }
+}
   
-  article button.delete {
+article button.delete {
     height: 1.5rem;
     vertical-align: middle;
-  }
+}
   
-  article p {
+article p {
     margin: 0;
     margin-left: 1rem;
-  }
+}
   
-  article button.editName {
+article button.editName {
     background-color: transparent;
     border: transparent;
     cursor: pointer;
+}
+
+.vanish {
+  animation: shrink 1s 1;
+}
+
+@keyframes shrink {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
