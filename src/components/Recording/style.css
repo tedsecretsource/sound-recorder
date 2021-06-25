@@ -37,6 +37,18 @@ article button.editName {
   0% {
     opacity: 1;
   }
+  10% {
+    opacity: 0.8;
+  }
+  20% {
+    opacity: 0.6;
+  }
+  30% {
+    opacity: 0.4;
+  }
+  60% {
+    opacity: 0.2;
+  }
   100% {
     opacity: 0;
   }

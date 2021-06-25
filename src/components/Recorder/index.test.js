@@ -169,10 +169,10 @@ describe('With a list of recordings', () => {
     expect(recordings).toHaveLength(recordingsList.length)
     fireEvent.click(recordings[0]);
 
-    const updatedRecordings = screen.queryAllByRole("button", { name: /delete/i })
+    const updatedRecordingsWrapper = screen.queryAllByRole("article")
     expect(mockConfirm).toHaveBeenCalledTimes(1)
     expect(mockConfirm).toHaveBeenCalledWith("Are you sure you want to delete this recording?")
     expect(mockConfirm).toHaveReturned()
-    expect(updatedRecordings).toHaveLength(recordingsList.length - 1)
+    expect(updatedRecordingsWrapper[0]).toHaveClass('vanish')
   })
 })
