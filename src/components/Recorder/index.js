@@ -1,56 +1,22 @@
-import { useState } from 'react'
+import { useMemo } from 'react'
 import PropTypes from 'prop-types'
-import useMediaRecorder from '../../hooks/useMediaRecorder'
-//import Visualizer from '../Visualizer'
 import Recording from '../Recording'
 import './style.css'
+import useMediaRecorder from "../../hooks/useMediaRecorder";
 
 const Recorder = ({stream}) => {
+    const { recorder, recordings, setRecordings, isRecording } = useMediaRecorder(stream);
+
     const defaultRecordClass = 'record-play'
-    const [recordingStateText, setRecordingStateText] = useState('Record')
-    const [recordings, setRecordings] = useState([])
-    const [recordButtonClassesText, setRecordButtonClassesText] = useState(defaultRecordClass)
-    let chunks = []
-
-    const onStop = () => {
-
-        const blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' })
-        chunks = []
-        const audioURL = window.URL.createObjectURL(blob)
-        setRecordings(recordings => {
-            return [...recordings, ...[{
-                stream: audioURL, 
-                name: new Date().toISOString().split('.')[0].split('T').join(' '),
-                id: `id${recordings.length}`
-            }]]
-        })
-        setRecordButtonClassesText(defaultRecordClass)
-        setRecordingStateText('Record')
-    }
-
-
-    const onStart = () => {
-
-    
-    }
-
-
-    const ondataavailable = (e) => {
-        chunks.push(e.data)
-    }
-
+    const recordButtonClassesText = useMemo(() => isRecording ? `${defaultRecordClass} recording-audio` : defaultRecordClass, [isRecording])
+    const recordingStateText = useMemo(() => isRecording ? 'Stop' : 'Record', [isRecording])
 
     const toggleRecording = () => {
-
-        if( 'Record' === recordingStateText ) {
-            setRecordButtonClassesText(defaultRecordClass + ' recording-audio')
-            setRecordingStateText('Stop')
-            mediaRecorder.start(1000)
+        if (!isRecording) {
+            recorder.start(1000)
         } else {
-            setRecordingStateText('Record')
-            mediaRecorder.stop()
+            recorder.stop();
         }
-
     }
 
     const editRecordingName = (id) => {
@@ -81,8 +47,6 @@ const Recorder = ({stream}) => {
         }
     }
 
-    const mediaRecorder = useMediaRecorder(stream, recordButtonClassesText, {onStart: onStart, onStop: onStop, ondataavailable: ondataavailable})
-
     const renderAudio = () => {
         let audios = recordings.map((recording, index) => {
             let customKey = `id${index}`
@@ -100,7 +64,6 @@ const Recorder = ({stream}) => {
         return audios
 
     }
-
 
     return (
         <>

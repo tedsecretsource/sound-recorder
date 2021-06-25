@@ -1,79 +1,178 @@
-/**
- * @jest-environment jsdom
- */
-import React from 'react';
-import ReactDOM from 'react-dom';
-import renderer from 'react-test-renderer';
-import { render, screen, logRoles, prettyDOM } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import '@testing-library/jest-dom/extend-expect'
+import React, {useState} from 'react';
+import {fireEvent, render, screen} from '@testing-library/react'
 import Recorder from './index'
-import Recording from '../Recording/index'
-import useMediaRecorder from '../../hooks/useMediaRecorder'
+import useMediaRecorder from "../../hooks/useMediaRecorder";
+
 jest.mock('../../hooks/useMediaRecorder')
 
-const stream = {
-    key: "lsdkjflds",
-    stream: "sdkfjsdf08sdf",
-    name: "2021-06-18 07:37:46"
+/**
+ * Following the Object mother pattern we have this small fn that generates a valid object
+ * that matches the structure of a recording
+ *
+ * @param {{ idNumber?: number, name?: string }} options
+ * @returns {{ stream: string, name: string, id: string }}
+ */
+function createMockRecording({
+  idNumber = Math.floor(Math.random() * 100),
+  name = new Date().toISOString().split('.')[0].split('T').join(' ')
+}) {
+  return {
+    stream: "audioUrl",
+    name,
+    id: `id${idNumber}`
+  }
 }
 
-
-beforeEach(() => {
-    // Clear all instances and calls to constructor and all methods:
-    // Recorder.mockClear();
-});
+/**
+ * Applying the same pattern above we wrap the previous recording generator
+ * to create a random list of recordings
+ *
+ * @param {number} length
+ * @returns {{ stream: string, name: string, id: string }[]}
+ */
+function createMockRecordingList(length = 10) {
+  const emptyList = new Array(length).fill(null);
+  return emptyList.map(() => createMockRecording({}))
+}
 
 /**
- * We need to mock the getUserMedia function
- * https://github.com/goldingdamien/get-user-media-mock
- * https://jestjs.io/docs/manual-mocks#mocking-methods-which-are-not-implemented-in-jsdom
+ * We create a mocked version of our hook that will interact with the component in the same exact way
+ * and will expose the same API too.
+ *
+ * This mock is typically placed in the same directory of the original hook within a folder called `__mocks__`
+ * keeping the same file name as the original and jest will override the hook functionality automatically.
+ * But in this case we would loose the option to pass it a default list of recordings or would be more difficult to do so.
+ *
+ * @param {{ stream: string, name: string, id: string }[]} defaultRecordings
+ * An optional list of default recordings to that we don't need to interact with the component to create a previous list of recordings
+ * having also control over the data of each one to be able to assert on the list data.
+ *
+ * @returns {{
+ *  recorder: { stop: Function, start: Function },
+ *  isRecording: boolean,
+ *  recordings: any[],
+ *  setRecordings: Function
+ * }}
  */
-it('renders without crashing', () => {
-    useMediaRecorder.mockReturnValue({
-        state: 'inactive', 
-        start: jest.fn(), 
-        stop: jest.fn(), 
-        ondataavailable: jest.fn(),
-        onstop: jest.fn()
-    })
-    const div = document.createElement('div');
-    ReactDOM.render(<Recorder />, div);
+const mockUseMediaRecorder = (defaultRecordings = []) => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [isRecording, setIsRecording] = useState(false)
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [recordings, setRecordings] = useState(defaultRecordings)
+
+  const recorder = {
+    start: () => setIsRecording(true),
+    stop: () => {
+      setRecordings(currentList => [...currentList, createMockRecording({ idNumber: currentList.length })])
+      setIsRecording(false)
+    },
+  };
+
+  return {recorder, recordings, setRecordings, isRecording}
+};
+
+describe('With an empty list of recordings', () => {
+  beforeEach(() => {
+    useMediaRecorder.mockImplementation(() => mockUseMediaRecorder());
+    render(<Recorder stream={{}}/>);
+  });
+
+  it('renders without crashing', () => {
+    const button = screen.getByRole("button", {name: 'Record'});
+    expect(button).toBeInTheDocument();
+    expect(button).toHaveClass('record-play')
+  });
+
+  it('user can start a recording pressing the button', () => {
+    const button = screen.getByRole("button", { name: 'Record' })
+    expect(button).toHaveClass('record-play')
+    fireEvent.click(button)
+    expect(button).toHaveTextContent(/stop/i);
+  });
+
+  it('record button turns red while recording', () => {
+    const button = screen.getByRole("button", { name: /record/i });
+    expect(button).toHaveClass('record-play')
+    fireEvent.click(button)
+    expect(button).toHaveClass('record-play', 'recording-audio')
+  })
+
+  it('adds a new recording to the list when the user clicks stop', () => {
+    const button = screen.getByRole("button", { name: 'Record' })
+    fireEvent.click(button)
+    expect(button).toHaveTextContent(/stop/i)
+    fireEvent.click(button)
+    expect(button).toHaveTextContent(/record/i)
+    const recordings = screen.getAllByTitle(/click to edit name/i)
+    expect(recordings).toHaveLength(1)
+  })
 })
 
-it('is a snapshot', () => {
-    useMediaRecorder.mockReturnValue({state: 'inactive', start: jest.fn(), stop: jest.fn(), ondataavailable: jest.fn()})
-    const component = renderer.create(
-        <Recorder />,
-    );
-    let tree = component.toJSON();
-    expect(tree).toMatchSnapshot();
-})
+describe('With a list of recordings', () => {
+  const recordingsList = createMockRecordingList()
 
-describe('Recording audio', () => {
-    global.URL.createObjectURL = jest.fn();
-    it('record turns colors when clicked', async () => {
-        // has recording-audio been added to the classes?
-        useMediaRecorder.mockReturnValue({state: 'inactive', start: jest.fn(), stop: jest.fn(), ondataavailable: jest.fn()})
-        render(<Recorder />)
-        const recordButton = await screen.findByRole('button')
-        expect(recordButton).toBeInTheDocument()
-        expect(recordButton).toHaveTextContent('Record')
-        userEvent.click(recordButton)
-        await screen.findByText('Stop')
-        expect(recordButton).toHaveClass('recording-audio')
-    })
-})
+  const originalPrompt = global.prompt
+  const originalConfirm = global.confirm
+  const mockPrompt = jest.fn()
+  const mockConfirm = jest.fn()
 
+  beforeAll(() => {
+    global.prompt = mockPrompt
+    global.confirm = mockConfirm
+  })
 
-it('recording can be renamed', async () => {
-    const newName = 'The new name'
-    global.prompt = () => newName // https://stackoverflow.com/questions/41732903/stubbing-window-functions-in-jest
+  beforeEach(() => {
+    useMediaRecorder.mockImplementation(() => mockUseMediaRecorder(recordingsList))
+    mockPrompt.mockReturnValue("new recording name")
+    mockConfirm.mockReturnValue(true)
 
-})
+    render(<Recorder stream={{}} />)
+  })
 
-it('Can delete a recording', async () => {
-    global.confirm = () => true
-    render(<Recorder><Recording stream={stream.stream} name={stream.name} key="1" /><Recording stream="blob:http://localhost/lsdjkfls" name="Recording 2" key="2" /></Recorder>)
+  afterAll(() => {
+    global.prompt = originalPrompt
+    global.confirm = originalConfirm
+  })
 
+  it('renders all of the recordings on screen', () => {
+    const recordings = screen.getAllByRole("button", { name: /click to edit name/i })
+    expect(recordings).toHaveLength(recordingsList.length)
+  })
+
+  it('a new recording can be created', () => {
+    const recordings = screen.getAllByRole("button", { name: /click to edit name/i })
+    expect(recordings).toHaveLength(recordingsList.length)
+
+    const button = screen.getByRole("button", { name: /record/i })
+    fireEvent.click(button)
+    expect(button).toHaveTextContent(/stop/i)
+    fireEvent.click(button)
+    expect(button).toHaveTextContent(/record/i)
+
+    const newRecordings = screen.getAllByTitle(/click to edit name/i)
+    expect(newRecordings).toHaveLength(recordings.length + 1)
+  })
+
+  it('a recording can be renamed', async () => {
+    const recordings = screen.getAllByRole("button", { name: /click to edit name/i })
+    const firstEditButton = recordings[0];
+
+    fireEvent.click(firstEditButton);
+    expect(mockPrompt).toHaveBeenCalledTimes(1)
+
+    const updatedRecording = await screen.findByText(/new recording name/i);
+    expect(updatedRecording).toBeInTheDocument()
+  })
+
+  it('a recording can be deleted', () => {
+    const recordings = screen.getAllByRole("button", { name: /delete/i })
+    expect(recordings).toHaveLength(recordingsList.length)
+    fireEvent.click(recordings[0]);
+
+    const updatedRecordings = screen.queryAllByRole("button", { name: /delete/i })
+    expect(mockConfirm).toHaveBeenCalledTimes(1)
+    expect(mockConfirm).toHaveBeenCalledWith("Are you sure you want to delete this recording?")
+    expect(mockConfirm).toHaveReturned()
+    expect(updatedRecordings).toHaveLength(recordingsList.length - 1)
+  })
 })
