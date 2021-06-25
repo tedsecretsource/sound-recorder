@@ -30,10 +30,10 @@ article button.editName {
 }
 
 .vanish {
-  animation: shrink 1s 1;
+  animation: vanish 1s 1;
 }
 
-@keyframes shrink {
+@keyframes vanish {
   0% {
     opacity: 1;
   }
