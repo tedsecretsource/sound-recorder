@@ -41,7 +41,7 @@ export default function useMediaRecorder(stream) {
       return [...currentRecordings, ...[{
         stream: audioURL,
         name: new Date().toISOString().split('.')[0].split('T').join(' '),
-        id: `id${currentRecordings.length}`
+        id: `id${window.performance.now().toString()}`
       }]]
     })
 
