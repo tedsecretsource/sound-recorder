@@ -1,24 +1,24 @@
 {
   "files": {
-    "main.css": "/sound-recorder/static/css/main.77b409d0.chunk.css",
-    "main.js": "/sound-recorder/static/js/main.a9ef0641.chunk.js",
-    "main.js.map": "/sound-recorder/static/js/main.a9ef0641.chunk.js.map",
+    "main.css": "/sound-recorder/static/css/main.6eaeedb5.chunk.css",
+    "main.js": "/sound-recorder/static/js/main.de0256bb.chunk.js",
+    "main.js.map": "/sound-recorder/static/js/main.de0256bb.chunk.js.map",
     "runtime-main.js": "/sound-recorder/static/js/runtime-main.38a2a917.js",
     "runtime-main.js.map": "/sound-recorder/static/js/runtime-main.38a2a917.js.map",
-    "static/js/2.65b98626.chunk.js": "/sound-recorder/static/js/2.65b98626.chunk.js",
-    "static/js/2.65b98626.chunk.js.map": "/sound-recorder/static/js/2.65b98626.chunk.js.map",
+    "static/js/2.6c50e26a.chunk.js": "/sound-recorder/static/js/2.6c50e26a.chunk.js",
+    "static/js/2.6c50e26a.chunk.js.map": "/sound-recorder/static/js/2.6c50e26a.chunk.js.map",
     "static/js/3.898b392a.chunk.js": "/sound-recorder/static/js/3.898b392a.chunk.js",
     "static/js/3.898b392a.chunk.js.map": "/sound-recorder/static/js/3.898b392a.chunk.js.map",
     "index.html": "/sound-recorder/index.html",
     "service-worker.js": "/sound-recorder/service-worker.js",
     "service-worker.js.map": "/sound-recorder/service-worker.js.map",
-    "static/css/main.77b409d0.chunk.css.map": "/sound-recorder/static/css/main.77b409d0.chunk.css.map",
-    "static/js/2.65b98626.chunk.js.LICENSE.txt": "/sound-recorder/static/js/2.65b98626.chunk.js.LICENSE.txt"
+    "static/css/main.6eaeedb5.chunk.css.map": "/sound-recorder/static/css/main.6eaeedb5.chunk.css.map",
+    "static/js/2.6c50e26a.chunk.js.LICENSE.txt": "/sound-recorder/static/js/2.6c50e26a.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.38a2a917.js",
-    "static/js/2.65b98626.chunk.js",
-    "static/css/main.77b409d0.chunk.css",
-    "static/js/main.a9ef0641.chunk.js"
+    "static/js/2.6c50e26a.chunk.js",
+    "static/css/main.6eaeedb5.chunk.css",
+    "static/js/main.de0256bb.chunk.js"
   ]
 }
