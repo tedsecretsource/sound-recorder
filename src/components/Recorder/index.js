@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import Recording from '../Recording'
+import Visualizer from '../Visualizer'
 import './style.css'
 import useMediaRecorder from "../../hooks/useMediaRecorder";
 
@@ -72,6 +73,7 @@ const Recorder = ({stream}) => {
 
     return (
         <>
+            <Visualizer stream={stream} isRecording={isRecording} />
             <button onClick={toggleRecording} className={recordButtonClassesText}>{recordingStateText}</button>
             <section>
                 {renderAudio()}
