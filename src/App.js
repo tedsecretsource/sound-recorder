@@ -48,7 +48,7 @@ function App() {
 
   const recoderRenderer = () => {
     if( stream === null ) {
-      return (<button className="record-play">…</button>)
+      return (<button className="record-play">Loading…</button>)
     }
     return (
       <Recorder stream={stream} />
