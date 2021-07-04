@@ -73,7 +73,7 @@ const Recorder = ({stream}) => {
 
     return (
         <>
-            <Visualizer stream={stream} isRecording={isRecording} />
+            <Visualizer stream={stream} isRecording={isRecording} barColor={[18,124,85]} />
             <button onClick={toggleRecording} className={recordButtonClassesText}>{recordingStateText}</button>
             <section>
                 {renderAudio()}

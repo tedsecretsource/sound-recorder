@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import styles from './style.css';
 import PropTypes from 'prop-types';
 
-const Visualizer = ({stream, isRecording}) => {
+const Visualizer = ({stream, isRecording, barColor = [0,0,0]}) => {
     const canvasRef = useRef()
     let canvas, audioCtx, canvasCtx
     
@@ -10,71 +10,69 @@ const Visualizer = ({stream, isRecording}) => {
         // https://dmitripavlutin.com/react-useref-guide/
         canvasCtx = canvasRef.current.getContext("2d")
         canvas = canvasRef.current
+        window.onresize = function() {
+            canvas.width = document.querySelector('body').offsetWidth
+        }
+        window.onresize();
         visualize(stream)
     }, [])
 
+    /**
+     * Renders a visual that shows the microphone is receiving input
+     * 
+     * I do not understand this code and have not read all of the documentation.
+     * I find it odd that we have a recursive-ish function inside a function and
+     * that analyser cannot be passed in via a parameter (only seems to work if
+     * defined in the parent function).
+     * 
+     * This code is particularly complex because you have to know all about
+     * audioContext _and_ animation (the canvas element) in order to get it
+     * to work. I know almost nothing about both.
+     * 
+     * @param {*} stream 
+     * @param {*} isRecording 
+     */
     const visualize = (stream, isRecording) => {
         if(!audioCtx) {
-          audioCtx = new AudioContext();
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)()
         }
       
         const source = audioCtx.createMediaStreamSource(stream);
       
         const analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 2048;
+        analyser.fftSize = 256;
         const bufferLength = analyser.frequencyBinCount;
         const dataArray = new Uint8Array(bufferLength);
       
         source.connect(analyser);
-        //analyser.connect(audioCtx.destination);
+        // analyser.connect(audioCtx.destination);
       
-        draw()
-      
-        function draw() {
-          const WIDTH = canvas.width
-          const HEIGHT = canvas.height;
-      
-          requestAnimationFrame(draw);
-      
-          analyser.getByteTimeDomainData(dataArray);
-      
-          canvasCtx.fillStyle = 'rgb(200, 200, 200)';
-          canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
-      
-          canvasCtx.lineWidth = 2;
-          canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
-      
-          canvasCtx.beginPath();
-      
-          let sliceWidth = WIDTH * 1.0 / bufferLength;
-          let x = 0;
-      
-      
-          for(let i = 0; i < bufferLength; i++) {
-      
-            let v = dataArray[i] / 128.0;
-            let y = v * HEIGHT/2;
-      
-            if(i === 0) {
-              canvasCtx.moveTo(x, y);
-            } else {
-              canvasCtx.lineTo(x, y);
-            }
-      
-            x += sliceWidth;
-          }
-      
-          canvasCtx.lineTo(canvas.width, canvas.height/2);
-          canvasCtx.stroke();
-      
-        }
-      }
+        function draw () {
+            const WIDTH = canvas.width
+            const HEIGHT = canvas.height
+    
+            requestAnimationFrame(draw);
+    
+            analyser.getByteTimeDomainData(dataArray);
+    
+            canvasCtx.clearRect(0, 0, WIDTH, HEIGHT)
+    
+            var barWidth = (WIDTH / bufferLength)
+            var barHeight
+            var x = 0
 
-    //   window.onresize = function() {
-    //     canvas.width = mainSection.offsetWidth;
-    //   }
-      
-    //   window.onresize();
+            for(var i = 0; i < bufferLength; i++) {
+                barHeight = dataArray[i]
+                canvasCtx.fillStyle = `rgb(${barColor[0]}, ${barColor[1]}, ${barColor[2]})`
+                canvasCtx.fillRect(x, HEIGHT, barWidth, 0-barHeight/2)
+    
+                x += barWidth + 1
+            }
+        }
+
+        draw(canvas, canvasCtx, analyser, bufferLength, dataArray)
+    }
+
       
     
     return (
