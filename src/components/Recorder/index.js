@@ -49,7 +49,7 @@ const Recorder = ({stream}) => {
             e.target.parentNode.classList.add('vanish')
             setTimeout(() => {
                 setRecordings([...newRecordings])
-            }, 1000)
+            }, 900)
         }
     }
 
@@ -59,7 +59,7 @@ const Recorder = ({stream}) => {
             return (
                 <Recording 
                     stream={recording.stream} 
-                    key={customKey} 
+                    key={recording.id} 
                     name={recording.name} 
                     id={recording.id} 
                     onDeleteHandler={deleteRecording} 
