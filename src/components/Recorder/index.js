@@ -55,7 +55,6 @@ const Recorder = ({stream}) => {
 
     const renderAudio = () => {
         let audios = recordings.map((recording, index) => {
-            let customKey = `id${index}`
             return (
                 <Recording 
                     stream={recording.stream} 
