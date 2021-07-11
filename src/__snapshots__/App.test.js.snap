@@ -11,7 +11,7 @@ Array [
     <button
       className="record-play"
     >
-      …
+      Loading…
     </button>
   </main>,
 ]

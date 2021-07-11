@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import Recording from '../Recording'
+import Visualizer from '../Visualizer'
 import './style.css'
 import useMediaRecorder from "../../hooks/useMediaRecorder";
 
@@ -48,17 +49,16 @@ const Recorder = ({stream}) => {
             e.target.parentNode.classList.add('vanish')
             setTimeout(() => {
                 setRecordings([...newRecordings])
-            }, 1000)
+            }, 900)
         }
     }
 
     const renderAudio = () => {
         let audios = recordings.map((recording, index) => {
-            let customKey = `id${index}`
             return (
                 <Recording 
                     stream={recording.stream} 
-                    key={customKey} 
+                    key={recording.id} 
                     name={recording.name} 
                     id={recording.id} 
                     onDeleteHandler={deleteRecording} 
@@ -72,6 +72,7 @@ const Recorder = ({stream}) => {
 
     return (
         <>
+            <Visualizer stream={stream} isRecording={isRecording} barColor={[18,124,85]} />
             <button onClick={toggleRecording} className={recordButtonClassesText}>{recordingStateText}</button>
             <section>
                 {renderAudio()}
