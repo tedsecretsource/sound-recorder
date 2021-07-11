@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 const Visualizer = ({stream, isRecording, barColor = [0,0,0]}) => {
     const canvasRef = useRef()
     let canvas, audioCtx, canvasCtx
+    let analyser, dataArray, bufferLength, previousTimeStamp
     
     useEffect(() => {
         // https://dmitripavlutin.com/react-useref-guide/
@@ -20,47 +21,59 @@ const Visualizer = ({stream, isRecording, barColor = [0,0,0]}) => {
     /**
      * Renders a visual that shows the microphone is receiving input
      * 
-     * I do not understand this code and have not read all of the documentation.
-     * I find it odd that we have a recursive-ish function inside a function and
-     * that analyser cannot be passed in via a parameter (only seems to work if
-     * defined in the parent function).
-     * 
      * This code is particularly complex because you have to know all about
      * audioContext _and_ animation (the canvas element) in order to get it
      * to work. I know almost nothing about both.
      * 
      * @param {*} stream 
-     * @param {*} isRecording 
      */
-    const visualize = (stream, isRecording) => {
-        if(!audioCtx) {
+    const visualize = (stream) => {
+        if( ! audioCtx ) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)()
         }
       
-        const source = audioCtx.createMediaStreamSource(stream);
+        const source = audioCtx.createMediaStreamSource(stream)
       
-        const analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 256;
-        const bufferLength = analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
+        analyser = audioCtx.createAnalyser()
+        analyser.fftSize = 256
+        bufferLength = analyser.frequencyBinCount
+        dataArray = new Uint8Array(bufferLength)
       
-        source.connect(analyser);
+        source.connect(analyser)
+
+        /**
+         * The following line would be required if we allow the user to, say,
+         * set the gain on the input. The gain is essentially a filter that
+         * is applied before being sent to the speakers.
+         */
         // analyser.connect(audioCtx.destination);
       
-        function draw () {
+        window.requestAnimationFrame(draw)
+    }
+
+    /**
+     * Draws a frame of animation
+     * 
+     * We check the previousTimeStamp because if it is the same as the current
+     * timestamp, we don't want to animate as the frame is of little value in
+     * this context. We only animate the differences.
+     * 
+     * @param {float} timestamp 
+     */
+    const draw = (timestamp) => {
+        if( previousTimeStamp !== timestamp ) {
             const WIDTH = canvas.width
             const HEIGHT = canvas.height
-    
-            requestAnimationFrame(draw);
-    
+        
+            // https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
             analyser.getByteTimeDomainData(dataArray);
-    
-            canvasCtx.clearRect(0, 0, WIDTH, HEIGHT)
     
             var barWidth = (WIDTH / bufferLength)
             var barHeight
             var x = 0
-
+            
+            canvasCtx.clearRect(0, 0, WIDTH, HEIGHT)
+            
             for(var i = 0; i < bufferLength; i++) {
                 barHeight = dataArray[i]
                 canvasCtx.fillStyle = `rgb(${barColor[0]}, ${barColor[1]}, ${barColor[2]})`
@@ -68,9 +81,10 @@ const Visualizer = ({stream, isRecording, barColor = [0,0,0]}) => {
     
                 x += barWidth + 1
             }
+            previousTimeStamp = timestamp
         }
 
-        draw(canvas, canvasCtx, analyser, bufferLength, dataArray)
+        window.requestAnimationFrame(draw)
     }
 
       
