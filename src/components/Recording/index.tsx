@@ -14,7 +14,7 @@ const Recording = ({ stream, name, onDeleteHandler, onEditNameHandler, id }) => 
 
     return (
         <article id={id}>
-            <audio controls="controls" src={stream} preload="auto" role="application">Sorry, your browser doesn't support recording audio.</audio>
+            <audio controls={true} src={stream} preload="auto" role="application">Sorry, your browser doesn't support recording audio.</audio>
             <p>
                 <span className="name" role="presentation">{name}</span>
                 <button onClick={editName} className="editName" title="Click to edit name">✏️</button>
