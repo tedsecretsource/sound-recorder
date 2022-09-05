@@ -4,6 +4,7 @@ import Recorder from './index'
 import useMediaRecorder from "../../hooks/useMediaRecorder";
 
 jest.mock('../../hooks/useMediaRecorder')
+jest.mock('../Visualizer', () => () => 'Visualizer')
 
 /**
  * Following the Object mother pattern we have this small fn that generates a valid object
