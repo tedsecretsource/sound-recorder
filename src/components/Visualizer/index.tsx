@@ -1,23 +1,27 @@
 import { useEffect, useRef } from 'react';
-import styles from './style.css'
+import './style.css'
 import PropTypes from 'prop-types';
 
 const Visualizer = ({stream, barColor = [0,0,0]}) => {
-    const canvasRef = useRef()
-    let canvas, audioCtx, canvasCtx
+    const canvasRef = useRef(null)
+    const requestIdRef = useRef(null);
     let analyser, dataArray, bufferLength, previousTimeStamp
     
     useEffect(() => {
-        // https://dmitripavlutin.com/react-useref-guide/
-        canvasCtx = canvasRef.current.getContext("2d")
-        canvas = canvasRef.current
-        window.onresize = function() {
-            canvas.width = document.querySelector('body').offsetWidth
-        }
-        window.onresize();
         visualize(stream)
-    }, [])
-
+        requestIdRef.current = requestAnimationFrame(tick)
+        return () => {
+            cancelAnimationFrame(requestIdRef.current)
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    
+    const tick = (timestamp: number) => {
+        if (!canvasRef.current) return
+        draw(timestamp, canvasRef.current)
+        requestIdRef.current = requestAnimationFrame(tick);
+    };
+    
     /**
      * Renders a visual that shows the microphone is receiving input
      * 
@@ -28,8 +32,9 @@ const Visualizer = ({stream, barColor = [0,0,0]}) => {
      * @param {*} stream 
      */
     const visualize = (stream) => {
+        let audioCtx
         if( ! audioCtx ) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+            audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
         }
       
         const source = audioCtx.createMediaStreamSource(stream)
@@ -47,8 +52,6 @@ const Visualizer = ({stream, barColor = [0,0,0]}) => {
          * is applied before being sent to the speakers.
          */
         // analyser.connect(audioCtx.destination);
-      
-        window.requestAnimationFrame(draw)
     }
 
     /**
@@ -60,21 +63,22 @@ const Visualizer = ({stream, barColor = [0,0,0]}) => {
      * 
      * @param {float} timestamp 
      */
-    const draw = (timestamp) => {
+    const draw = (timestamp: number, canvas) => {
         if( previousTimeStamp !== timestamp ) {
+            const canvasCtx = canvas.getContext("2d");
             const WIDTH = canvas.width
             const HEIGHT = canvas.height
         
             // https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
             analyser.getByteTimeDomainData(dataArray);
     
-            var barWidth = (WIDTH / bufferLength)
-            var barHeight
-            var x = 0
+            let barWidth = (WIDTH / bufferLength)
+            let barHeight: number
+            let x = 0
             
             canvasCtx.clearRect(0, 0, WIDTH, HEIGHT)
             
-            for(var i = 0; i < bufferLength; i++) {
+            for(let i = 0; i < bufferLength; i++) {
                 barHeight = dataArray[i]
                 canvasCtx.fillStyle = `rgb(${barColor[0]}, ${barColor[1]}, ${barColor[2]})`
                 canvasCtx.fillRect(x, HEIGHT, barWidth, 0-barHeight/2)
@@ -83,8 +87,6 @@ const Visualizer = ({stream, barColor = [0,0,0]}) => {
             }
             previousTimeStamp = timestamp
         }
-
-        window.requestAnimationFrame(draw)
     }
 
       
