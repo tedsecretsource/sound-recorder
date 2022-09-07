@@ -16,7 +16,7 @@ const Visualizer = ({stream, barColor = [0,0,0]}) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     
-    const tick = (timestamp: number) => {
+    const tick = (timestamp) => {
         if (!canvasRef.current) return
         draw(timestamp, canvasRef.current)
         requestIdRef.current = requestAnimationFrame(tick);
