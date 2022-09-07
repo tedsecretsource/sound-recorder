@@ -12,18 +12,12 @@ function App() {
       return
     }
 
-    let didCancel = false
-
     const getUserMedia = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        if (!didCancel) {
-          setStream(stream);
-        }
+        const stream = await navigator.mediaDevices.getUserMedia(constraints)
+          setStream(stream)
       } catch (err) {
-        if (!didCancel) {
-          setError(err);
-        }
+          setError(err)
       }
     }
 
