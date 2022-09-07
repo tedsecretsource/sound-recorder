@@ -27,23 +27,8 @@ function App() {
       }
     }
 
-    const cancel = () => {
-      didCancel = true;
-
-      if (!stream) return;
-
-      if ((stream).getAudioTracks) {
-        (stream).getAudioTracks().map(track => track.stop());
-      }
-
-      if ((stream).stop) {
-        (stream).stop();
-      }
-    }
-
     getUserMedia();
 
-    return cancel;
   }, [constraints, stream, error])
 
   const recoderRenderer = () => {
