@@ -12,20 +12,21 @@ function App() {
       return
     }
 
-    const getUserMedia = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia(constraints)
-          setStream(stream)
-      } catch (err) {
-          setError(err)
-      }
-    }
-
     getUserMedia();
 
-  }, [constraints, stream, error])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stream])
 
-  const recoderRenderer = () => {
+  const getUserMedia = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia(constraints)
+        setStream(stream)
+    } catch (err) {
+        setError(err)
+    }
+  }
+
+const recoderRenderer = () => {
     if( stream === null ) {
       return <button className="record-play">Loading…</button>
     }
