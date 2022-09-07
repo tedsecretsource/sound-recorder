@@ -8,25 +8,23 @@ function App() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    if ( stream ) {
-      return
-    }
-
-    getUserMedia();
-
+    // we call this here because we are setting state and if you set state
+    // on initial render, it will cause a re-render loop
+    getUserMedia()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stream])
+  },[])
 
   const getUserMedia = async () => {
+    if( stream ) return
     try {
       const stream = await navigator.mediaDevices.getUserMedia(constraints)
-        setStream(stream)
+      setStream(stream)
     } catch (err) {
-        setError(err)
+      setError(err)
     }
   }
 
-const recoderRenderer = () => {
+  const recoderRenderer = () => {
     if( stream === null ) {
       return <button className="record-play">Loading…</button>
     }
