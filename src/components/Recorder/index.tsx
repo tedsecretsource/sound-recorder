@@ -1,11 +1,15 @@
 import { useMemo } from 'react'
-import PropTypes from 'prop-types'
 import Recording from '../Recording'
 import Visualizer from '../Visualizer'
 import './style.css'
 import useMediaRecorder from "../../hooks/useMediaRecorder";
 
-const Recorder = ({stream}) => {
+interface RecorderProps {
+    stream: MediaStream
+}
+
+const Recorder = (props: RecorderProps) => {
+    const { stream } = props
     const { recorder, recordings, setRecordings, isRecording } = useMediaRecorder(stream);
 
     const defaultRecordClass = 'record-play'
@@ -57,7 +61,7 @@ const Recorder = ({stream}) => {
         let audios = recordings.map((recording, index) => {
             return (
                 <Recording 
-                    stream={recording.stream} 
+                    streamURL={recording.stream} 
                     key={recording.id} 
                     name={recording.name} 
                     id={recording.id} 
@@ -80,9 +84,5 @@ const Recorder = ({stream}) => {
         </>
     )
 }
-
-Recorder.propTypes = {
-    stream: PropTypes.object
-};
 
 export default Recorder

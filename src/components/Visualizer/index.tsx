@@ -1,11 +1,16 @@
 import { useEffect, useRef } from 'react';
 import './style.css'
-import PropTypes from 'prop-types';
 
-const Visualizer = ({stream, barColor = [0,0,0]}) => {
+interface VisualizerProps {
+    stream: MediaStream, 
+    barColor: Array<number>
+}
+
+const Visualizer = (props: VisualizerProps) => {
+    const {stream, barColor} = props
     const canvasRef = useRef(null)
     const requestIdRef = useRef(null);
-    let analyser, dataArray, bufferLength, previousTimeStamp
+    let analyser: AnalyserNode, dataArray: Uint8Array, bufferLength: number, previousTimeStamp: number
     
     useEffect(() => {
         visualize(stream)
@@ -16,7 +21,7 @@ const Visualizer = ({stream, barColor = [0,0,0]}) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     
-    const tick = (timestamp) => {
+    const tick = (timestamp: number) => {
         if (!canvasRef.current) return
         draw(timestamp, canvasRef.current)
         requestIdRef.current = requestAnimationFrame(tick);
@@ -31,8 +36,8 @@ const Visualizer = ({stream, barColor = [0,0,0]}) => {
      * 
      * @param {*} stream 
      */
-    const visualize = (stream) => {
-        let audioCtx
+    const visualize = (stream: MediaStream) => {
+        let audioCtx: AudioContext
         if( ! audioCtx ) {
             audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
         }
@@ -63,7 +68,7 @@ const Visualizer = ({stream, barColor = [0,0,0]}) => {
      * 
      * @param {float} timestamp 
      */
-    const draw = (timestamp: number, canvas) => {
+    const draw = (timestamp: number, canvas: HTMLCanvasElement) => {
         if( previousTimeStamp !== timestamp ) {
             const canvasCtx = canvas.getContext("2d");
             const WIDTH = canvas.width
@@ -72,7 +77,7 @@ const Visualizer = ({stream, barColor = [0,0,0]}) => {
             // https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
             analyser.getByteTimeDomainData(dataArray);
     
-            let barWidth = (WIDTH / bufferLength)
+            let barWidth: number = (WIDTH / bufferLength)
             let barHeight: number
             let x = 0
             
@@ -98,10 +103,5 @@ const Visualizer = ({stream, barColor = [0,0,0]}) => {
     );
     
 }
-
-Visualizer.propTypes = {
-    stream: PropTypes.object,
-    barColor: PropTypes.array
-};
 
 export default Visualizer
