@@ -1,10 +1,10 @@
 import Recorder from './components/Recorder'
 import './App.css';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 
 function App() {
-  const constraints = useMemo(() => { return {audio: true} }, [])
-  const [stream, setStream] = useState(null)
+  const constraints = {audio: true}
+  const [stream, setStream] = useState<MediaStream | null>(null)
   const [error, setError] = useState(null)
 
   useEffect(() => {
