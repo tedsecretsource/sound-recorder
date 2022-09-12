@@ -1,5 +1,9 @@
 import {useMemo, useState} from "react";
 
+interface useMediaRecorderProps {
+  stream: MediaStream;
+}
+
 /**
  * This media recorder hook keeps all the logic needed to perform an audio recording decoupling it from any component
  * so it can be reused if needed.
@@ -21,10 +25,11 @@ import {useMemo, useState} from "react";
  * }}
  *
  */
-export default function useMediaRecorder(stream) {
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordings, setRecordings] = useState([]);
-  const [chunks, setChunks] = useState([]);
+export default function useMediaRecorder(props: useMediaRecorderProps) {
+  const [isRecording, setIsRecording] = useState<boolean>(false);
+  const [recordings, setRecordings] = useState<any[]>([]);
+  const [chunks, setChunks] = useState<any[]>([]);
+  const { stream } = props;
 
   const recorder = useMemo(() => new MediaRecorder(stream), [stream]);
 

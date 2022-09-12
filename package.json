@@ -13,6 +13,7 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
+    "typescript": "^4.8.2",
     "web-vitals": "^1.0.1",
     "workbox-background-sync": "^5.1.3",
     "workbox-broadcast-update": "^5.1.3",
@@ -54,6 +55,9 @@
     ]
   },
   "devDependencies": {
-    "react-test-renderer": "^17.0.2"
+    "@types/react": "^18.0.17",
+    "canvas": "^2.9.3",
+    "react-test-renderer": "^17.0.2",
+    "ts-jest": "^28.0.8"
   }
 }
