@@ -1,24 +1,25 @@
 {
   "files": {
-    "main.css": "/sound-recorder/static/css/main.eddc3567.chunk.css",
-    "main.js": "/sound-recorder/static/js/main.3f6b49ce.chunk.js",
-    "main.js.map": "/sound-recorder/static/js/main.3f6b49ce.chunk.js.map",
-    "runtime-main.js": "/sound-recorder/static/js/runtime-main.18d3102a.js",
-    "runtime-main.js.map": "/sound-recorder/static/js/runtime-main.18d3102a.js.map",
-    "static/js/2.6c50e26a.chunk.js": "/sound-recorder/static/js/2.6c50e26a.chunk.js",
-    "static/js/2.6c50e26a.chunk.js.map": "/sound-recorder/static/js/2.6c50e26a.chunk.js.map",
-    "static/js/3.2e46b620.chunk.js": "/sound-recorder/static/js/3.2e46b620.chunk.js",
-    "static/js/3.2e46b620.chunk.js.map": "/sound-recorder/static/js/3.2e46b620.chunk.js.map",
+    "main.css": "/sound-recorder/static/css/main.a8e820a2.chunk.css",
+    "main.js": "/sound-recorder/static/js/main.424a7a2d.chunk.js",
+    "main.js.map": "/sound-recorder/static/js/main.424a7a2d.chunk.js.map",
+    "runtime-main.js": "/sound-recorder/static/js/runtime-main.94517e00.js",
+    "runtime-main.js.map": "/sound-recorder/static/js/runtime-main.94517e00.js.map",
+    "static/js/2.8f586401.chunk.js": "/sound-recorder/static/js/2.8f586401.chunk.js",
+    "static/js/2.8f586401.chunk.js.map": "/sound-recorder/static/js/2.8f586401.chunk.js.map",
+    "static/js/3.4a99b19b.chunk.js": "/sound-recorder/static/js/3.4a99b19b.chunk.js",
+    "static/js/3.4a99b19b.chunk.js.map": "/sound-recorder/static/js/3.4a99b19b.chunk.js.map",
     "index.html": "/sound-recorder/index.html",
     "service-worker.js": "/sound-recorder/service-worker.js",
+    "service-worker.js.LICENSE.txt": "/sound-recorder/service-worker.js.LICENSE.txt",
     "service-worker.js.map": "/sound-recorder/service-worker.js.map",
-    "static/css/main.eddc3567.chunk.css.map": "/sound-recorder/static/css/main.eddc3567.chunk.css.map",
-    "static/js/2.6c50e26a.chunk.js.LICENSE.txt": "/sound-recorder/static/js/2.6c50e26a.chunk.js.LICENSE.txt"
+    "static/css/main.a8e820a2.chunk.css.map": "/sound-recorder/static/css/main.a8e820a2.chunk.css.map",
+    "static/js/2.8f586401.chunk.js.LICENSE.txt": "/sound-recorder/static/js/2.8f586401.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
-    "static/js/runtime-main.18d3102a.js",
-    "static/js/2.6c50e26a.chunk.js",
-    "static/css/main.eddc3567.chunk.css",
-    "static/js/main.3f6b49ce.chunk.js"
+    "static/js/runtime-main.94517e00.js",
+    "static/js/2.8f586401.chunk.js",
+    "static/css/main.a8e820a2.chunk.css",
+    "static/js/main.424a7a2d.chunk.js"
   ]
 }
