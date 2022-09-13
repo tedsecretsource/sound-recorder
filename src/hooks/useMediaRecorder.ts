@@ -1,7 +1,7 @@
 import {useMemo, useState} from "react";
 
 interface useMediaRecorderProps {
-  stream: MediaStream;
+  stream: MediaStream
 }
 
 /**
@@ -25,11 +25,11 @@ interface useMediaRecorderProps {
  * }}
  *
  */
-export default function useMediaRecorder(props: useMediaRecorderProps) {
+const useMediaRecorder = (props: useMediaRecorderProps) => {
+  const { stream } = props;
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [recordings, setRecordings] = useState<any[]>([]);
   const [chunks, setChunks] = useState<any[]>([]);
-  const { stream } = props;
 
   const recorder = useMemo(() => new MediaRecorder(stream), [stream]);
 
@@ -69,3 +69,5 @@ export default function useMediaRecorder(props: useMediaRecorderProps) {
     isRecording,
   }
 }
+
+export default useMediaRecorder
