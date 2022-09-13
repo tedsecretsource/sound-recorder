@@ -1,4 +1,4 @@
-import {useMemo, useState} from "react";
+import {useEffect, useState} from "react";
 
 interface useMediaRecorderProps {
   stream: MediaStream
@@ -27,19 +27,45 @@ interface useMediaRecorderProps {
  */
 const useMediaRecorder = (props: useMediaRecorderProps) => {
   const { stream } = props;
+  const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [recordings, setRecordings] = useState<any[]>([]);
-  const [chunks, setChunks] = useState<any[]>([]);
+  let audioMimeType: string = 'audio/webm';
+  let chunks: any[] = []
 
-  const recorder = useMemo(() => new MediaRecorder(stream), [stream]);
+  useEffect(() => {
+    try {
+      initMediaRecorder(stream, 'audio/webm')
+    } catch (error) {
+      console.log('This browser does not support mime type: audio/webm');
+    }
+    
+    try {
+      initMediaRecorder(stream, 'audio/mp4')
+    } catch (error) {
+      console.log('This browser does not support mime type: audio/mp4');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  const initMediaRecorder = (stream: MediaStream, mt: string) => {
+    audioMimeType = mt
+    const mr = new MediaRecorder(stream, { mimeType: mt });
+    mr.onstart = handleStart
+    mr.onstop = handleStop
+    mr.ondataavailable = handleDataAvailable
+    setRecorder(mr)
+  }
+  
   const handleStart = () => {
+    console.log('started recording')
     setIsRecording(true);
   }
 
   const handleStop = () => {
-    const blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' })
+    const blob = new Blob(chunks, { 'type' : audioMimeType })
     const audioURL = window.URL.createObjectURL(blob)
+    console.log('stopped recording')
 
     // push the new recording to the recordings list
     setRecordings(currentRecordings => {
@@ -50,17 +76,13 @@ const useMediaRecorder = (props: useMediaRecorderProps) => {
       }]]
     })
 
-    setChunks([])
+    chunks = []
     setIsRecording(false);
   }
 
   const handleDataAvailable = (e) => {
-    setChunks(currentChunks => [...currentChunks, e.data]);
+    chunks.push(e.data)
   }
-
-  recorder.onstop = handleStop;
-  recorder.onstart = handleStart;
-  recorder.ondataavailable = handleDataAvailable;
 
   return {
     recorder,

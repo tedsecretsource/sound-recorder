@@ -15,13 +15,13 @@ function App() {
   },[])
 
   const getUserMedia = async () => {
-    if( stream ) return
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia(constraints)
-      setStream(stream)
-    } catch (err) {
-      setError(err)
-    }
+    navigator.mediaDevices.getUserMedia({video: false, audio: true})
+      .then((stream) => {
+        setStream(stream)
+      })
+      .catch((error) => {
+        console.log(error)
+      })
   }
 
   const recoderRenderer = () => {
