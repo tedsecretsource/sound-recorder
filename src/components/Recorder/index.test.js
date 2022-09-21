@@ -20,7 +20,7 @@ function createMockRecording({
   return {
     stream: "audioUrl",
     name,
-    id: `id${idNumber}`
+    id: `id${window.performance.now().toString()}`
   }
 }
 
