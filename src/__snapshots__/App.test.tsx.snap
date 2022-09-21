@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`renders Sound Recorder title 1`] = `
+exports[`With an empty list of recordings renders Sound Recorder title 1`] = `
 Array [
   <header>
     <h1>
@@ -11,7 +11,7 @@ Array [
     <button
       className="record-play"
     >
-      Loading…
+      Error: unknown!
     </button>
   </main>,
 ]
