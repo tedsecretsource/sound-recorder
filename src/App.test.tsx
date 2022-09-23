@@ -20,11 +20,12 @@ describe('With an empty list of recordings', () => {
     expect(tree).toMatchSnapshot();
   });
 
-  test('has link to license', async () => {
+  test('has link to license, terms, and copyright', async () => {
     const component = await renderer.create(
       <App />,
     );
-    expect(component).toContainHTML('href="license"');
+    expect(component).toContainHTML('href="./terms_of_use"');
+    expect(component).toContainHTML('href="https://github.com/tedsecretsource/sound-recorder/blob/main/LICENSE.md"');
     expect(component).toContain('© Copyright Secret Source Technology 2022');
   });
 })
