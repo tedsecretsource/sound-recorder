@@ -1,4 +1,5 @@
 import Recorder from './components/Recorder'
+import Footer from './components/Footer'
 import './App.css';
 import useGetUserMedia from "./hooks/useGetUserMedia";
 
@@ -25,6 +26,7 @@ function App() {
     <main>
       {recoderRenderer()}
     </main>
+    <Footer />
     </>
   );
 }

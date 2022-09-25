@@ -1,4 +1,5 @@
 import renderer from 'react-test-renderer';
+import {render, screen} from '@testing-library/react';
 import App from './App';
 
 jest.mock('./hooks/useGetUserMedia')
@@ -20,12 +21,12 @@ describe('With an empty list of recordings', () => {
     expect(tree).toMatchSnapshot();
   });
 
-  test('has link to license, terms, and copyright', async () => {
-    const component = await renderer.create(
-      <App />,
-    );
-    expect(component).toContainHTML('href="./terms_of_use"');
-    expect(component).toContainHTML('href="https://github.com/tedsecretsource/sound-recorder/blob/main/LICENSE.md"');
-    expect(component).toContain('© Copyright Secret Source Technology 2022');
+  test('has link to license, terms, and copyright notice', async () => {
+    render(<App />)
+    expect(screen.getByText('Terms of Use')).toBeInTheDocument()
+    expect(screen.getByText('Terms of Use')).toHaveAttribute('href', './terms_of_use')
+    expect(screen.getByText('License')).toBeInTheDocument()
+    expect(screen.getByText('License')).toHaveAttribute('href', 'https://github.com/tedsecretsource/sound-recorder/blob/main/LICENSE.md')
+    expect(screen.getByText('© Copyright Secret Source Technology 2022')).toBeInTheDocument()
   });
 })
