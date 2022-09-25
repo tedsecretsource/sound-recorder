@@ -9,11 +9,13 @@ import {
   RouterProvider,
   Route,
 } from "react-router-dom";
+import ErrorPage from './404';
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    errorElement: <ErrorPage />,
   },
 ]);
 
