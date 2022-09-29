@@ -2,15 +2,26 @@ import renderer from 'react-test-renderer';
 import {render, screen} from '@testing-library/react';
 import App from './App';
 
-jest.mock('./hooks/useGetUserMedia')
+
+const setupMockedMediaDevices = () => {
+  const mockMediaDevices = {
+    getUserMedia: jest.fn().mockResolvedValueOnce('fake data' as any),
+  }
+
+  Object.defineProperty(window.navigator, 'mediaDevices', {
+    writable: true,
+    value: mockMediaDevices,
+  })
+
+  window.MediaStream = jest.fn().mockImplementation(() => ({
+    addTrack: jest.fn()
+  }))
+}
+
 
 describe('With an empty list of recordings', () => {
-  // from https://stackoverflow.com/questions/61742491/referenceerror-mediastream-is-not-defined-with-jest-and-vue-typescript
-  beforeAll(() => {
-    window.MediaStream = jest.fn().mockImplementation(() => ({
-      addTrack: jest.fn()
-      // Add any method you want to mock
-    }))
+  beforeEach(() => {
+    setupMockedMediaDevices()
   })
 
   test('renders Sound Recorder title', async () => {
