@@ -31,19 +31,20 @@ const useMediaRecorder = (props: useMediaRecorderProps) => {
   const [recordings, setRecordings] = useState<any[]>([]);
   let audioMimeType: string = 'audio/webm';
   let chunks: any[] = []
-  let stream = null
+  const [stream, setStream] = useState<MediaStream | null>(null)
 
   useEffect(() => {
     navigator.mediaDevices.getUserMedia({ video: false, audio: true })
-    .then((stream) => {
+    .then((theStream) => {
+      setStream(theStream)
       try {
-        initMediaRecorder(stream, 'audio/webm')
+        initMediaRecorder(theStream, 'audio/webm')
       } catch (error) {
         console.log('This browser does not support mime type: audio/webm');
       }
       
       try {
-        initMediaRecorder(stream, 'audio/mp4')
+        initMediaRecorder(theStream, 'audio/mp4')
       } catch (error) {
         console.log('This browser does not support mime type: audio/mp4');
       }
