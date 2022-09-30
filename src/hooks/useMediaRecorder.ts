@@ -31,6 +31,7 @@ const useMediaRecorder = (props: useMediaRecorderProps) => {
   const [recordings, setRecordings] = useState<any[]>([]);
   let audioMimeType: string = 'audio/webm';
   let chunks: any[] = []
+  let stream = null
 
   useEffect(() => {
     navigator.mediaDevices.getUserMedia({ video: false, audio: true })
