@@ -76,7 +76,6 @@ Here are the exact steps I'll follow:
 
 #### Copy useGetUserMedia into useEffect of useMediaRecorder
 
-- Add the existing try/catch blocks in useEffect of useMediaRecorder to the `then` clause of navigator.mediaDevices.getUserMedia
 - Copy the contents of useGetUserMedia into useEffect of useMediaRecorder. Move the existing try/catch blocks to `then` clause of navigator.mediaDevices.getUserMedia.
 - Modify the `catch` clause of navigator.mediaDevices.getUserMedia to `console.log(error)`. Modifying `catch` should not turn the tests red because it's accounted for as a valid response (the user denied permissions). At first glance you might think there is a possibility that not refactoring for the `catch` clause could lead to an error, but it won't because the rendering logic in App will still be available and is what determines how the app responds visually, so, we're safe in making this change here now.
 
