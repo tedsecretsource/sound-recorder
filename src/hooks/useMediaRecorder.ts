@@ -25,7 +25,7 @@ interface useMediaRecorderProps {
  * }}
  *
  */
-const useMediaRecorder = (props: useMediaRecorderProps) => {
+const useMediaRecorder = (props?: useMediaRecorderProps) => {
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [recordings, setRecordings] = useState<any[]>([]);
