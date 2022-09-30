@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 
 interface useMediaRecorderProps {
-  stream: MediaStream
+  stream?: MediaStream
 }
 
 /**
