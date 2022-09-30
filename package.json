@@ -3,15 +3,17 @@
   "name": "sound-recorder",
   "version": "0.1.0",
   "private": true,
+  "license": "GPL 3.0",
   "dependencies": {
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
-    "@testing-library/user-event": "^13.1.9",
+    "@testing-library/user-event": "^14.4.3",
     "dexie": "^3.0.3",
     "gh-pages": "^3.2.0",
     "prop-types": "^15.7.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-router-dom": "6",
     "react-scripts": "4.0.3",
     "typescript": "^4.8.2",
     "web-vitals": "^1.0.1",
@@ -55,6 +57,7 @@
     ]
   },
   "devDependencies": {
+    "@types/jest": "^29.0.3",
     "@types/react": "^18.0.17",
     "canvas": "^2.9.3",
     "react-test-renderer": "^17.0.2",

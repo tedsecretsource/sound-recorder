@@ -1,36 +1,21 @@
 import Recorder from './components/Recorder'
+import Footer from './components/Footer'
 import './App.css';
-import { useEffect, useState } from 'react';
+import useGetUserMedia from "./hooks/useGetUserMedia";
 
 function App() {
-  const constraints = {audio: true}
-  const [stream, setStream] = useState<MediaStream | null>(null)
-  const [error, setError] = useState(null)
-
-  useEffect(() => {
-    // we call this here because we are setting state and if you set state
-    // on initial render, it will cause a re-render loop
-    getUserMedia()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[])
-
-  const getUserMedia = async () => {
-    navigator.mediaDevices.getUserMedia({video: false, audio: true})
-      .then((stream) => {
-        setStream(stream)
-      })
-      .catch((error) => {
-        console.log(error)
-      })
-  }
+  let theStream = useGetUserMedia()
 
   const recoderRenderer = () => {
-    if( stream === null ) {
-      return <button className="record-play">Loading…</button>
+    if( theStream === null ) {
+      return <button className="record-play" title="Please either allow or decline the use of your microphone">Loading…</button>
+    } else if ( theStream instanceof MediaStream ) {
+      return <Recorder stream={theStream} />
+    } else if ( theStream instanceof DOMException ) {
+      return <button className="record-play">Error: {theStream.message}</button>
+    } else {
+      return <button className="record-play">Error: unknown!</button>
     }
-    return (
-      <Recorder stream={stream} />
-    )
   }
   
   return (
@@ -41,6 +26,7 @@ function App() {
     <main>
       {recoderRenderer()}
     </main>
+    <Footer />
     </>
   );
 }
