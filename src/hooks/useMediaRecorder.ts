@@ -34,17 +34,23 @@ const useMediaRecorder = (props: useMediaRecorderProps) => {
   let chunks: any[] = []
 
   useEffect(() => {
-    try {
-      initMediaRecorder(stream, 'audio/webm')
-    } catch (error) {
-      console.log('This browser does not support mime type: audio/webm');
-    }
-    
-    try {
-      initMediaRecorder(stream, 'audio/mp4')
-    } catch (error) {
-      console.log('This browser does not support mime type: audio/mp4');
-    }
+    navigator.mediaDevices.getUserMedia({ video: false, audio: true })
+    .then((stream) => {
+      try {
+        initMediaRecorder(stream, 'audio/webm')
+      } catch (error) {
+        console.log('This browser does not support mime type: audio/webm');
+      }
+      
+      try {
+        initMediaRecorder(stream, 'audio/mp4')
+      } catch (error) {
+        console.log('This browser does not support mime type: audio/mp4');
+      }
+    })
+    .catch((error) => {
+        console.log('You need to allow access to your microphone to use this app')
+    })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
