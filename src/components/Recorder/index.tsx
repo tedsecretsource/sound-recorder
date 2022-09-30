@@ -79,11 +79,11 @@ const Recorder = () => {
         </>
     }
 
-    const recoderRenderer = () => {
+    const recorderRenderer = () => {
         if( stream === null ) {
           return <button className="record-play" title="Please either allow or decline the use of your microphone">Loading…</button>
         } else if ( stream instanceof MediaStream ) {
-          return {recorderUI}
+          return recorderUI()
         } else if ( stream instanceof DOMException ) {
           return <button className="record-play">Error: {stream.message}</button>
         } else {
