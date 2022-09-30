@@ -77,15 +77,18 @@ Here are the exact steps I'll follow:
 #### Copy useGetUserMedia into useEffect of useMediaRecorder
 
 - Add the existing try/catch blocks in useEffect of useMediaRecorder to the `then` clause of navigator.mediaDevices.getUserMedia
-- For now, knowing it _may_ result in a bug, `console.log(error)` in the `catch` clause. Do note, `catch` should not turn the tests red because it's accounted for as a valid response (the user declines permissions).
-- At first glance you might think there is a possibility that not refactoring for the `catch` clause could lead to an error, but it won't because the rendering logic in App will still be available and is what determines how the app responds visually, so, we're safe in making this change here now.
+- Copy the contents of useGetUserMedia into useEffect of useMediaRecorder. Move the existing try/catch blocks to `then` clause of navigator.mediaDevices.getUserMedia.
+- Modify the `catch` clause of navigator.mediaDevices.getUserMedia to `console.log(error)`. Modifying `catch` should not turn the tests red because it's accounted for as a valid response (the user denied permissions). At first glance you might think there is a possibility that not refactoring for the `catch` clause could lead to an error, but it won't because the rendering logic in App will still be available and is what determines how the app responds visually, so, we're safe in making this change here now.
 
 #### Add `stream` to the return value of useMediaRecorder
 
+We're doing this so that `stream` is available to Visualizer (since we'll be removing the `stream` parameter from Recorder)
+
 - in useMediaRecorder, mark `useMediaRecorderProps` as optional in the interface
 - in useMediaRecorder, delete the `stream` constant destructure definition thingy
+    - TypeScript will complain about this, but the tests will still pass
 - in useMediaRecorder, add a let for the new `stream` variable
-- in useMediaRecorder, set `stream` to `theStream` in the `then` clause of navigator.mediaDevices.getUserMedia
+- in useMediaRecorder, set `stream` to the value of the stream returned in the `then` clause of navigator.mediaDevices.getUserMedia
 - in useMediaRecorder, add `stream` to the return of useMediaRecorder
 
 At this point we should have decoupled Recorder from the dependency on the `stream` parameter
@@ -96,9 +99,9 @@ At this point we should have decoupled Recorder from the dependency on the `stre
 - in Recorder, remove `stream` from `const { recorder, recordings, setRecordings, isRecording } = useMediaRecorder({stream})`
 - in Recorder, add `stream` to the destructure of `const { recorder, recordings, setRecordings, isRecording } = useMediaRecorder()` so it reads `const { recorder, recordings, setRecordings, isRecording, stream } = useMediaRecorder()`
 
-At this point stream is not only truly optional but is delivered from useMediaRecorder
+At this point stream is not only truly optional but is returned from useMediaRecorder
 
-- in Recorder, remove the type from `props` in the function signature and add a question mark to make it optional
+- in Recorder, remove the type from `props` in the function signature and add a question mark to `props` to make it optional
 - in Recorder, delete the interface definition
 - in App, remove the `stream` attribute from the <Recorder /> component
 - in Recorder, delete `props?` from the function signature
@@ -107,7 +110,7 @@ And now, finally, Recorder has no dependencies on anything. However, App is stil
 
 #### Move Record Button logic into Recorder (and out of App)
 
-The aim of this mini-refactor is to make App's sole responsibility be layout related, answer the question: what component should display in <Outlet />
+The aim of this mini-refactor is to make App's sole responsibility be layout related; answer the question: what component should display in <Outlet />
 
 The basic approach will be to recreate the logic in App inside Recorder and once we feel it's set up properly (and disengaged in App), remove that logic from App.
 
@@ -115,7 +118,7 @@ The basic approach will be to recreate the logic in App inside Recorder and once
 - in Recorder, copy current `return` value into recorderUI
 - in App, copy recorderRenderer
 - in Recorder, paste recorderRenderer
-- in Recorder, update the `stream instanceof MediaStream` to point to recorderUI
+- in Recorder, update the `stream instanceof MediaStream` to return recorderUI
 - in Recorder, change every instance of `theStream` to `stream`
 - in Recorder, change `return` to reference `{recorderRenderer}`
 - in App, change `return` to be simply `<Recorder />`
@@ -126,6 +129,7 @@ At this point, the system is using the new code. App is now strictly for layout,
 
 - in App, delete `let theStream = useGetUserMedia()`
 - in App, delete the `recorderRenderer` function
+- delete the `useGetUserMedia` hook
 
 Also, as DOMException is no longer a possibility, we can delete the test for that type from `recorderRenderer`. Likewise, in the default `else`, we can display a more realistic message, like, "You need to allow use of your microphone to use this tool" rather than displaying a button.
 
@@ -137,4 +141,4 @@ And with that, the whole application should be in a much, much better place for 
 
 - initializing the stream object in the App component and then _passing_ it to the Recorder component as a type of IoC or DI
 - setting the stream object to DOMException rather than setting a separate error state or variable to try and minimize the number of variables!
-- 
+- using custom hooks to facilitate testing rather than doing proper, native mocking, e.g.: useGetUserMedia
