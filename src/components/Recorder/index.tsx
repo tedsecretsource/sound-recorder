@@ -5,7 +5,7 @@ import './style.css'
 import useMediaRecorder from "../../hooks/useMediaRecorder";
 
 interface RecorderProps {
-    stream: MediaStream
+    stream?: MediaStream
 }
 
 const Recorder = (props: RecorderProps) => {
