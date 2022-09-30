@@ -69,6 +69,10 @@ const Recorder = () => {
 
     }
 
+    const recorderUI = () => {
+
+    }
+
     return (
         <>
             <Visualizer stream={stream} barColor={[18,124,85]} />
