@@ -8,7 +8,7 @@ interface RecorderProps {
     stream?: MediaStream
 }
 
-const Recorder = (props: RecorderProps = {}) => {
+const Recorder = (props = {}) => {
     const { recorder, recordings, setRecordings, isRecording, stream } = useMediaRecorder();
 
     const defaultRecordClass = 'record-play'
