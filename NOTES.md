@@ -119,7 +119,12 @@ The basic approach will be to recreate the logic in App inside Recorder and once
 - in Recorder, paste recorderRenderer
 - in Recorder, update the `stream instanceof MediaStream` to return recorderUI
 - in Recorder, change every instance of `theStream` to `stream`
-- in Recorder, change `return` to reference `{recorderRenderer}`
+
+The next step is turning some of the tests red. This is happening because stream is not null but it is also not a MediaStream according to the tests and the wrong button is rendering.
+
+I tried adding the missing `stream` object to `mockUseMediaRecorder` but it doesn't seem to make a difference.
+
+- in Recorder, change `return` to reference `recorderRenderer()`
 - in App, change `return` to be simply `<Recorder />`
 
 #### Miscelaneous cleanup
@@ -131,6 +136,8 @@ At this point, the system is using the new code. App is now strictly for layout,
 - delete the `useGetUserMedia` hook
 
 Also, as DOMException is no longer a possibility, we can delete the test for that type from `recorderRenderer`. Likewise, in the default `else`, we can display a more realistic message, like, "You need to allow use of your microphone to use this tool" rather than displaying a button.
+
+In useMediaRecorder, we can also remove the optional stream and props parames and interface definition.
 
 And one last thing… The documentation in useMediaRecorder needs to be updated. `stream` is no longer required. `stream` is included in the return value.
 

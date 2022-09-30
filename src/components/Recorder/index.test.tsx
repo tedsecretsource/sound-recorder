@@ -60,6 +60,8 @@ const mockUseMediaRecorder = (defaultRecordings = []) => {
   const [isRecording, setIsRecording] = useState(false)
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [recordings, setRecordings] = useState(defaultRecordings)
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [stream, setStream] = useState<MediaStream | null>(null)
 
   const recorder = {
     start: () => setIsRecording(true),
@@ -69,13 +71,16 @@ const mockUseMediaRecorder = (defaultRecordings = []) => {
     },
   };
 
-  return {recorder, recordings, setRecordings, isRecording}
+  return {recorder, recordings, setRecordings, isRecording, stream}
 };
 
 describe('With an empty list of recordings', () => {
   beforeEach(() => {
+    window.MediaStream = jest.fn().mockImplementation(() => ({
+      addTrack: jest.fn()
+    }))
     useMediaRecorder.mockImplementation(() => mockUseMediaRecorder());
-    render(<Recorder stream={{}}/>);
+    render(<Recorder />);
   });
 
   it('renders without crashing', () => {
@@ -127,7 +132,7 @@ describe('With a list of recordings', () => {
     mockPrompt.mockReturnValue("new recording name")
     mockConfirm.mockReturnValue(true)
 
-    render(<Recorder stream={{}} />)
+    render(<Recorder />)
   })
 
   afterAll(() => {
