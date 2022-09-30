@@ -4,10 +4,6 @@ import Visualizer from '../Visualizer'
 import './style.css'
 import useMediaRecorder from "../../hooks/useMediaRecorder";
 
-interface RecorderProps {
-    stream?: MediaStream
-}
-
 const Recorder = (props = {}) => {
     const { recorder, recordings, setRecordings, isRecording, stream } = useMediaRecorder();
 
