@@ -83,7 +83,7 @@ const Recorder = () => {
         if( theStream === null ) {
           return <button className="record-play" title="Please either allow or decline the use of your microphone">Loading…</button>
         } else if ( theStream instanceof MediaStream ) {
-          return <Recorder />
+          return {recorderUI}
         } else if ( theStream instanceof DOMException ) {
           return <button className="record-play">Error: {theStream.message}</button>
         } else {
