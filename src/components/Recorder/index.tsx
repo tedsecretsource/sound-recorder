@@ -9,8 +9,7 @@ interface RecorderProps {
 }
 
 const Recorder = (props: RecorderProps = {}) => {
-    let { stream } = props
-    const { recorder, recordings, setRecordings, isRecording } = useMediaRecorder({stream});
+    const { recorder, recordings, setRecordings, isRecording, stream } = useMediaRecorder();
 
     const defaultRecordClass = 'record-play'
     const recordButtonClassesText = useMemo(() => isRecording ? `${defaultRecordClass} recording-audio` : defaultRecordClass, [isRecording])
