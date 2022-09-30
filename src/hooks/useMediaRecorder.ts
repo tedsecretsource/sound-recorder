@@ -96,6 +96,7 @@ const useMediaRecorder = (props: useMediaRecorderProps) => {
     recordings,
     setRecordings,
     isRecording,
+    stream
   }
 }
 
