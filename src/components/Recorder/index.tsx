@@ -6,7 +6,6 @@ import useMediaRecorder from "../../hooks/useMediaRecorder";
 
 const Recorder = () => {
     const { recorder, recordings, setRecordings, isRecording, stream } = useMediaRecorder();
-
     const defaultRecordClass = 'record-play'
     const recordButtonClassesText = useMemo(() => isRecording ? `${defaultRecordClass} recording-audio` : defaultRecordClass, [isRecording])
     const recordingStateText = useMemo(() => isRecording ? 'Stop' : 'Record', [isRecording])
@@ -70,13 +69,15 @@ const Recorder = () => {
     }
 
     const recorderUI = () => {
-        <>
-            <Visualizer stream={stream} barColor={[18,124,85]} />
-            <button onClick={toggleRecording} className={recordButtonClassesText}>{recordingStateText}</button>
-            <section>
-                {renderAudio()}
-            </section>
-        </>
+        return (
+            <>
+                <Visualizer stream={stream} barColor={[18,124,85]} />
+                <button onClick={toggleRecording} className={recordButtonClassesText}>{recordingStateText}</button>
+                <section>
+                    {renderAudio()}
+                </section>
+            </>
+        )
     }
 
     const recorderRenderer = () => {
