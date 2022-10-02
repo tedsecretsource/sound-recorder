@@ -85,21 +85,13 @@ const Recorder = () => {
           return <button className="record-play" title="Please either allow or decline the use of your microphone">Loading…</button>
         } else if ( stream instanceof MediaStream ) {
           return recorderUI()
-        } else if ( stream instanceof DOMException ) {
-          return <button className="record-play">Error: {stream.message}</button>
         } else {
           return <button className="record-play">Error: unknown!</button>
         }
       }
       
-    return (
-        <>
-            <Visualizer stream={stream} barColor={[18,124,85]} />
-            <button onClick={toggleRecording} className={recordButtonClassesText}>{recordingStateText}</button>
-            <section>
-                {renderAudio()}
-            </section>
-        </>
+      return (
+        recorderRenderer()
     )
 }
 
