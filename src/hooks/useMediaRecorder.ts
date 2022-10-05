@@ -36,14 +36,17 @@ const useMediaRecorder = (props?: useMediaRecorderProps) => {
   useEffect(() => {
     navigator.mediaDevices.getUserMedia({ video: false, audio: true })
     .then((theStream) => {
+      console.log('=======>', 'I am inside the resolved promise in the real hook', '<=======')
       setStream(theStream)
       try {
+        console.log('=======>', 'I am inside the webm try block in the real hook', '<=======')
         initMediaRecorder(theStream, 'audio/webm')
       } catch (error) {
         console.log('This browser does not support mime type: audio/webm');
       }
       
       try {
+        console.log('=======>', 'I am inside the mp4 try block in the real hook', '<=======')
         initMediaRecorder(theStream, 'audio/mp4')
       } catch (error) {
         console.log('This browser does not support mime type: audio/mp4');
@@ -57,6 +60,8 @@ const useMediaRecorder = (props?: useMediaRecorderProps) => {
 
   const initMediaRecorder = (stream: MediaStream, mt: string) => {
     audioMimeType = mt
+    console.log('=======>', 'I am inside the initMediaRecorder function in the real hook', '<=======')
+    console.log('=======>', 'The value of stream is', stream, '<=======')
     const mr = new MediaRecorder(stream, { mimeType: mt });
     mr.onstart = handleStart
     mr.onstop = handleStop
@@ -91,13 +96,18 @@ const useMediaRecorder = (props?: useMediaRecorderProps) => {
     chunks.push(e.data)
   }
 
-  return {
-    recorder,
-    recordings,
-    setRecordings,
-    isRecording,
-    stream
+  const returnVars = () => {
+    console.log('=======>', 'I am inside the returnVars function in the real hook and the value of stream is', stream, '<=======')
+    return {
+      recorder,
+      recordings,
+      setRecordings,
+      isRecording,
+      stream
+    }
   }
+
+  return returnVars()
 }
 
 export default useMediaRecorder

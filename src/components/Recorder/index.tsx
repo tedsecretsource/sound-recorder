@@ -81,11 +81,15 @@ const Recorder = () => {
     }
 
     const recorderRenderer = () => {
+        console.log('======', 'typeof stream', typeof stream, '======')
         if( stream === null ) {
-          return <button className="record-play" title="Please either allow or decline the use of your microphone">Loading…</button>
+            console.log('=======', 'type of stream is null', '=======')
+            return <button className="record-play" title="Please either allow or decline the use of your microphone">Loading…</button>
         } else if ( stream instanceof MediaStream ) {
-          return recorderUI()
+            console.log('=======', 'type of stream is MediaStream', '=======')
+            return recorderUI()
         } else {
+            console.log('=======', 'type of stream is unknown',  '=======')
           return <button className="record-play">Error: unknown!</button>
         }
       }
