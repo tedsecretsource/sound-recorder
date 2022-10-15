@@ -1,7 +1,9 @@
 import React, {useState} from 'react';
 import {fireEvent, render, screen} from '@testing-library/react'
 import Recorder from './index'
-import useMediaRecorder from "../../hooks/useMediaRecorder";
+import useMediaRecorder from "../../hooks/useMediaRecorder"
+import useInitMediaRecorder from "../../hooks/useInitMediaRecorder"
+import useConfigureMediaRecorder from "../../hooks/useConfigureMediaRecroder"
 
 jest.mock('../../hooks/useMediaRecorder')
 jest.mock('../Visualizer', () => () => 'Visualizer')
