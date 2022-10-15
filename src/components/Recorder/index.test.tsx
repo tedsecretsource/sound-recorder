@@ -1,11 +1,8 @@
+import setupMockedMediaDevices from '../../__nativeBrowserObjectMocks__/nativeBrowserObjects'
 import React, {useState} from 'react';
 import {fireEvent, render, screen} from '@testing-library/react'
 import Recorder from './index'
-import useMediaRecorder from "../../hooks/useMediaRecorder"
-import useInitMediaRecorder from "../../hooks/useInitMediaRecorder"
-import useConfigureMediaRecorder from "../../hooks/useConfigureMediaRecroder"
 
-jest.mock('../../hooks/useMediaRecorder')
 jest.mock('../Visualizer', () => () => 'Visualizer')
 jest.mock('../../hooks/useInitMediaRecorder', () => {
   return ({
@@ -93,10 +90,7 @@ const mockUseMediaRecorder = (defaultRecordings = []) => {
 
 describe('With an empty list of recordings', () => {
   beforeEach(() => {
-    window.MediaStream = jest.fn().mockImplementation(() => ({
-      addTrack: jest.fn()
-    }))
-    useMediaRecorder.mockImplementation(() => mockUseMediaRecorder());
+    setupMockedMediaDevices()
     render(<Recorder />);
   });
 
@@ -145,7 +139,7 @@ describe('With a list of recordings', () => {
   })
 
   beforeEach(() => {
-    useMediaRecorder.mockImplementation(() => mockUseMediaRecorder(recordingsList))
+    setupMockedMediaDevices()
     mockPrompt.mockReturnValue("new recording name")
     mockConfirm.mockReturnValue(true)
 

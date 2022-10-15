@@ -1,18 +1,40 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`With an empty list of recordings renders Sound Recorder title 1`] = `
-Array [
+<DocumentFragment>
   <header>
     <h1>
       Sound Recorder
     </h1>
-  </header>,
+  </header>
   <main>
     <button
-      className="record-play"
+      class="record-play"
+      title="Please either allow or decline the use of your microphone"
     >
-      Error: unknown!
+      Loading…
     </button>
-  </main>,
-]
+  </main>
+  <footer>
+    <p>
+      © Copyright Secret Source Technology 2022
+    </p>
+    <p>
+      <a
+        href="./terms_of_use"
+      >
+        Terms of Use
+      </a>
+    </p>
+    <p>
+      <a
+        href="https://github.com/tedsecretsource/sound-recorder/blob/main/LICENSE.md"
+        rel="noreferrer"
+        target="_blank"
+      >
+        License
+      </a>
+    </p>
+  </footer>
+</DocumentFragment>
 `;

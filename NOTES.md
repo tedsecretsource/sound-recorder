@@ -120,12 +120,55 @@ The basic approach will be to recreate the logic in App inside Recorder and once
 - in Recorder, update the `stream instanceof MediaStream` to return recorderUI
 - in Recorder, change every instance of `theStream` to `stream`
 
-The next step is turning some of the tests red. This is happening because stream is not null but it is also not a MediaStream according to the tests and the wrong button is rendering.
+### A Wrench in the Works
 
-I tried adding the missing `stream` object to `mockUseMediaRecorder` but it doesn't seem to make a difference.
+The next step (see below under What About the Last Steps?) is turning some of the tests red. This is happening because stream is not null but it is also not a MediaStream according to the tests and thus the wrong button is rendering.
 
-- in Recorder, change `return` to reference `recorderRenderer()`
-- in App, change `return` to be simply `<Recorder />`
+I tried adding the missing `stream` object to `mockUseMediaRecorder` but it doesn't seem to make a difference (because it is window.MediaStream, not a proper MediaStream object). In commit e69002d, I fix this issue, but I'd already written the plan that follows and since the plan still seems reasonable, we proceed.
+
+I need to refactor `useMediaRecorder` (the new custom hook should be called useInitMediaRecorder) to _only_ include native browser object calls (`getUserMedia`, `new MediaRecorder`) and return a `MediaRecorder` object, which can then be passed into a new `useConfigureMediaRecorder` custom hook.
+
+By mocking these objects, I can mock `useInitMediaRecorder` but leave `useConfigureMediaRecroder` as is, use it natively (which handles the start, stop, pause, etc. events). My goal here is to only mock the things that have _no_ equivalent inside tests in order to increase test coverage.
+
+#### An Aside on Clean Code
+
+In my opinion, this refactor shows the limitations of jest as a testing framework and the potentially negative impact it can have on code layout. Refactoring code to account for test framework limitations feels a lot like an anti-pattern. To be clear, if I combine calls to `getUserMedia` and `new MediaRecorder()` plus all of the configuration of the MediaRecorder object into a single hook, I then have to mock the entire hook, including all the event handlers, and I then lose the ability to unit test the event handlers, among other things.
+
+If Jest supported `getUserMedia` et al natively, I could simply unit test the `recorder` returned by the existing custom hook and not be concerned with where or how it is initialized.
+
+### Steps to Refactor useMediaRecorder
+
+Note that during these changes we'll make one tiny shortcut: instead of passing the `MediaStream` object around, we'll use the one associated with the `MediaRecorder` object as it is essentially the same thing (might even be _exactly_ the same thing). This will keep our function calls cleaner (fewer parameters).
+
+And because we're doing TDD, let's start this refactor by setting up the tests. **NB**: as this refactor includes modifying existing tests and potentially adding new ones, it will be normal for some of the tests to be red until we update the production code in the next set of steps, as is actually the case right now (one of the tests is red because the test itself, the mock specifically, has issues).
+
+Starting with `src/components/Recorder/index.test.tsx`
+
+- create two stub files with empty exports for the two new hooks in `src/hooks`
+- add an import statement for the new useInitMediaRecorder hook at the top of the test
+- create a `mockMediaRecorder` function that returns an object that understands start, stop, pause, etc. events and has a MediaStream property just like a real MediaRecorder object
+    - to be clear, I didn't exactly do that. I used a different syntax (used an anonymous function)
+- mock `useInitMediaRecorder` and set the mock implementation to `mockMediaRecorder`
+- update all the existing tests removing the old mockUseMediaRecorder
+- add an import to the native browser mocks at the top of the test file
+
+At this point all the tests in Recorder should be equally red but that's OK because we're doing TDD…
+
+- add code to the new custom hook useInitMediaRecorder (no params, returns an initialized MediaRecorder but without setting onstart, onstop, etc.)
+- create the new custom hook useConfigureMediaRecorder (requires one MediaRecorder object, returns existing useMediaRecorder objects) - this is a copy of the existing custom hook minus the MR initialization bits
+- change useMediaRecorder so it calls the combination of custom hooks and continues to return the same objects (so the API doesn't change but the _implementation_ does)
+- in Recorder, add imports for the new hooks
+- in Recorder, init the new MR object using the new custom hook `let mr = useInitMediaRecorder()`
+- in Recorder, change `useMediaRecorder()` to `useConfigureMediaRecorder(mr)`
+
+At this point, it's possible that all tests are green but because I'm no expert at mocking, it's also probable that no tests are green (or only some are). If there is a way to verify the mocked MediaRecorder object is functioning properly, do that. If tests are still red, then go back to the actual code and see what's not working or not coded properly and make the tests green one by one.
+
+#### What About the Last Steps?
+
+Fact is, we already did these last two steps before refactoring the tests and the native browser stuff. That's what turned one of the tests red and was our cue to revist the tests in general. Thus, these last two steps are no longer needed, yay!
+
+X in Recorder, change `return` to reference `recorderRenderer()`
+X in App, change `return` to be simply `<Recorder />`
 
 #### Miscelaneous cleanup
 
@@ -134,6 +177,7 @@ At this point, the system is using the new code. App is now strictly for layout,
 - in App, delete `let theStream = useGetUserMedia()`
 - in App, delete the `recorderRenderer` function
 - delete the `useGetUserMedia` hook
+- in `src/components/Recorder/index.test.tsx` remove unused functions and imports
 
 Also, as DOMException is no longer a possibility, we can delete the test for that type from `recorderRenderer`. Likewise, in the default `else`, we can display a more realistic message, like, "You need to allow use of your microphone to use this tool" rather than displaying a button.
 
