@@ -5,7 +5,7 @@ const setupMockedMediaDevices = () => {
         return new Promise((resolve, reject) => {
           process.nextTick(() => {
           // reject(new Error('Error: getUserMedia failed!')),
-          resolve(window.MediaStream)
+          resolve(MediaStream)
           }
           )
         })
@@ -17,7 +17,7 @@ const setupMockedMediaDevices = () => {
       value: mockMediaDevices,
     })
   
-    Object.defineProperty(window, 'MediaStream', {
+    Object.defineProperty(global, 'MediaStream', {
       writable: true,
       value: jest.fn().mockImplementation(() => {
         console.log('========', 'I am inside of MediaStream', '========')
@@ -58,7 +58,7 @@ const setupMockedMediaDevices = () => {
         onerror: jest.fn(),
         state: 'inactive',
         mimeType: 'audio/webm',
-        stream: window.MediaStream
+        stream: MediaStream
       })})
       .mockName('MediaRecorder')
     })
