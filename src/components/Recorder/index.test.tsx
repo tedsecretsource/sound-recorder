@@ -7,6 +7,21 @@ import useConfigureMediaRecorder from "../../hooks/useConfigureMediaRecroder"
 
 jest.mock('../../hooks/useMediaRecorder')
 jest.mock('../Visualizer', () => () => 'Visualizer')
+jest.mock('../../hooks/useInitMediaRecorder', () => {
+  return ({
+    ondataavailable: jest.fn(),
+    audioBitrateMode: "variable",
+    audioBitsPerSecond: 0,
+    onstop: jest.fn(),
+    onstart: jest.fn(),
+    onerror: jest.fn(),
+    onpause: jest.fn(),
+    onresume: jest.fn(),
+    state: 'recording',
+    mimeType: 'audio/webm',
+    stream: MediaStream
+  })
+})
 
 /**
  * Following the Object mother pattern we have this small fn that generates a valid object
