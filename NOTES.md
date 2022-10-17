@@ -142,26 +142,42 @@ Note that during these changes we'll make one tiny shortcut: instead of passing 
 
 And because we're doing TDD, let's start this refactor by setting up the tests. **NB**: as this refactor includes modifying existing tests and potentially adding new ones, it will be normal for some of the tests to be red until we update the production code in the next set of steps, as is actually the case right now (one of the tests is red because the test itself, the mock specifically, has issues).
 
-Starting with `src/components/Recorder/index.test.tsx`
+#### The Refactor Plan
 
-- create two stub files with empty exports for the two new hooks in `src/hooks`
-- add an import statement for the new useInitMediaRecorder hook at the top of the test
-- create a `mockMediaRecorder` function that returns an object that understands start, stop, pause, etc. events and has a MediaStream property just like a real MediaRecorder object
-    - to be clear, I didn't exactly do that. I used a different syntax (used an anonymous function)
-- mock `useInitMediaRecorder` and set the mock implementation to `mockMediaRecorder`
-- update all the existing tests removing the old mockUseMediaRecorder
-- add an import to the native browser mocks at the top of the test file
+Rather than create custom hooks, I'm going to create a "provider" component that will be responsible for initializing the MediaRecorder object and then passing it down to the Recorder component. This will allow us to keep the RecorderProvider component as a pure function and serve as a sort of interface that can be easily mocked. Also, for now, I'm going to update `useMediaRecorder` to call `useConfigureMediaRecorder` (basically, a temporary passthru while I finishe the refactor).
 
-At this point all the tests in Recorder should be equally red but that's OK because we're doing TDD…
+#### Update tests to use RecorderProvider
 
-- add code to the new custom hook useInitMediaRecorder (no params, returns an initialized MediaRecorder but without setting onstart, onstop, etc.)
-- create the new custom hook useConfigureMediaRecorder (requires one MediaRecorder object, returns existing useMediaRecorder objects) - this is a copy of the existing custom hook minus the MR initialization bits
-- change useMediaRecorder so it calls the combination of custom hooks and continues to return the same objects (so the API doesn't change but the _implementation_ does)
-- in Recorder, add imports for the new hooks
-- in Recorder, init the new MR object using the new custom hook `let mr = useInitMediaRecorder()`
-- in Recorder, change `useMediaRecorder()` to `useConfigureMediaRecorder(mr)`
+- in Recorder/index.test.tsx, mock `RecorderProvider`
+- in Recorder/index.test.tsx, set the mockImplementation to the mock `MediaRecorder` object
+- in Recorder/index.test.tsx, update `render` in the tests to include the `mr` parameter and set it to the mock `MediaRecorder` object
+- in Recorder/index.test.tsx, remove the code that mocks `useMediaRecorder`
+- in Recorder/index.test.tsx, remove the native object overrides (because we are now mocking `RecorderProvider`)
 
-At this point, it's possible that all tests are green but because I'm no expert at mocking, it's also probable that no tests are green (or only some are). If there is a way to verify the mocked MediaRecorder object is functioning properly, do that. If tests are still red, then go back to the actual code and see what's not working or not coded properly and make the tests green one by one.
+#### Update Recorder to use RecorderProvider
+
+- Create a new component called `RecorderProvider`
+- in `RecorderProvider`, add a useEffect that calls `navigator.mediaDevices.getUserMedia` and then calls `new MediaRecorder` with the stream returned from `getUserMedia`, and then sets the `mr` state variable to the result of `new MediaRecorder`
+- in `RecorderProvider`, add a `return` statement that calls the `Recorder` component and passes `mr` as a prop
+- in Recorder, add an optional `mr` prop to the interface
+- in Recorder, add an optional `mr` to the function signature
+- in Recorder, add `mr` to the destructure of `props`
+- in Recorder, add `mr` to the `useMediaRecorder` call as a parameter
+- in useMediaRecorder, add `mr` as an optional parameter to the function signature
+- in useMediaRecorder, add `mr` to the destructure of `props`
+- in useMediaRecorder, add `mr` to the `useConfigureMediaRecorder` call as a parameter
+- in useMediaRecorder, return the configured `mr` object from `useConfigureMediaRecorder`
+- in App, replace the `Recorder` component with `RecorderProvider`
+
+If tests are green at this point, we can do some clean-up. If they are not, we need to keep going until they are (although I'm not sure why they wouldn't be). Assuming they are green, here's the clean-up:
+
+- in Recorder, call `useConfigureMediaRecorder` directly from `Recorder` instead of `useMediaRecorder`
+- in Recorder, remove `useMediaRecorder` from the imports
+- delete hooks/useMediaRecorder.ts
+- delete hooks/useGetUserMedia.ts
+- delete hooks/useInitMediaRecorder.ts
+- delete hooks/useMediaRecorder copy.ts
+- clean up the tests, removing unused imports and functions
 
 #### What About the Last Steps?
 

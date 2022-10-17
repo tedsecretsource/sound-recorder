@@ -16,7 +16,7 @@ jest.mock('../../hooks/useInitMediaRecorder', () => {
     onresume: jest.fn(),
     state: 'recording',
     mimeType: 'audio/webm',
-    stream: MediaStream
+    stream: global.MediaStream
   })
 })
 
