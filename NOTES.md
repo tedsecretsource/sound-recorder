@@ -148,11 +148,9 @@ Rather than create custom hooks, I'm going to create a "provider" component that
 
 #### Update tests to use RecorderProvider
 
-- in Recorder/index.test.tsx, mock `RecorderProvider`
-- in Recorder/index.test.tsx, set the mockImplementation to the mock `MediaRecorder` object
-- in Recorder/index.test.tsx, update `render` in the tests to include the `mr` parameter and set it to the mock `MediaRecorder` object
+- in `src/__nativeBrowserObjectMocks__/nativeBrowserObjectMocks.ts`, uncomment the `MediaRecorder` mock
+- in Recorder/index.test.tsx, update `render` in the tests to include the `mr` parameter and set it to the mock `MediaRecorder` object (not entirely sure how to do this…)
 - in Recorder/index.test.tsx, remove the code that mocks `useMediaRecorder`
-- in Recorder/index.test.tsx, remove the native object overrides (because we are now mocking `RecorderProvider`)
 
 #### Update Recorder to use RecorderProvider
 

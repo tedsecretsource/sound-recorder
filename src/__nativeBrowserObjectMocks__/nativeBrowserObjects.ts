@@ -37,16 +37,18 @@ const setupMockedMediaDevices = () => {
     //   value: jest.fn().mockImplementation(() => {
     //     console.log('========', 'I am inside of MediaRecorder', '========')
     //     return ({
-    //     start: jest.fn(),
-    //     stop: jest.fn(),
-    //     ondataavailable: jest.fn(),
-    //     onstop: jest.fn(),
-    //     onstart: jest.fn(),
-    //     onerror: jest.fn(),
-    //     state: 'inactive',
-    //     mimeType: 'audio/webm',
-    //     stream: MediaStream
-    //   })})
+          // ondataavailable: jest.fn(),
+          // audioBitrateMode: "variable",
+          // audioBitsPerSecond: 0,
+          // onstop: jest.fn(),
+          // onstart: jest.fn(),
+          // onerror: jest.fn(),
+          // onpause: jest.fn(),
+          // onresume: jest.fn(),
+          // state: 'recording',
+          // mimeType: 'audio/webm',
+          // stream: global.MediaStream
+      //   })})
     //   .mockName('MediaRecorder')
     // })
   }
