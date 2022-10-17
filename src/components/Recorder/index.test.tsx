@@ -4,21 +4,6 @@ import {fireEvent, render, screen} from '@testing-library/react'
 import Recorder from './index'
 
 jest.mock('../Visualizer', () => () => 'Visualizer')
-jest.mock('../../hooks/useInitMediaRecorder', () => {
-  return ({
-    ondataavailable: jest.fn(),
-    audioBitrateMode: "variable",
-    audioBitsPerSecond: 0,
-    onstop: jest.fn(),
-    onstart: jest.fn(),
-    onerror: jest.fn(),
-    onpause: jest.fn(),
-    onresume: jest.fn(),
-    state: 'recording',
-    mimeType: 'audio/webm',
-    stream: global.MediaStream
-  })
-})
 
 /**
  * Following the Object mother pattern we have this small fn that generates a valid object
@@ -50,48 +35,10 @@ function createMockRecordingList(length = 10) {
   return emptyList.map(() => createMockRecording({}))
 }
 
-/**
- * We create a mocked version of our hook that will interact with the component in the same exact way
- * and will expose the same API too.
- *
- * This mock is typically placed in the same directory of the original hook within a folder called `__mocks__`
- * keeping the same file name as the original and jest will override the hook functionality automatically.
- * But in this case we would loose the option to pass it a default list of recordings or would be more difficult to do so.
- *
- * @param {{ stream: string, name: string, id: string }[]} defaultRecordings
- * An optional list of default recordings to that we don't need to interact with the component to create a previous list of recordings
- * having also control over the data of each one to be able to assert on the list data.
- *
- * @returns {{
- *  recorder: { stop: Function, start: Function },
- *  isRecording: boolean,
- *  recordings: any[],
- *  setRecordings: Function
- * }}
- */
-const mockUseMediaRecorder = (defaultRecordings = []) => {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [isRecording, setIsRecording] = useState(false)
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [recordings, setRecordings] = useState(defaultRecordings)
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [stream, setStream] = useState<MediaStream | null>(null)
-
-  const recorder = {
-    start: () => setIsRecording(true),
-    stop: () => {
-      setRecordings(currentList => [...currentList, createMockRecording({ idNumber: currentList.length })])
-      setIsRecording(false)
-    },
-  };
-
-  return {recorder, recordings, setRecordings, isRecording, stream}
-};
-
 describe('With an empty list of recordings', () => {
   beforeEach(() => {
     setupMockedMediaDevices()
-    render(<Recorder />);
+    render(<Recorder mediaRecorder={MediaRecorder} />);
   });
 
   it('renders without crashing', () => {
@@ -143,7 +90,7 @@ describe('With a list of recordings', () => {
     mockPrompt.mockReturnValue("new recording name")
     mockConfirm.mockReturnValue(true)
 
-    render(<Recorder />)
+    render(<Recorder mediaRecorder={MediaRecorder} />);
   })
 
   afterAll(() => {

@@ -4,7 +4,7 @@ import Visualizer from '../Visualizer'
 import './style.css'
 import useMediaRecorder from "../../hooks/useMediaRecorder";
 
-const Recorder = () => {
+const Recorder = ({mediaRecorder: MediaRecorder}) => {
     const { recorder, recordings, setRecordings, isRecording, stream } = useMediaRecorder();
     const defaultRecordClass = 'record-play'
     const recordButtonClassesText = useMemo(() => isRecording ? `${defaultRecordClass} recording-audio` : defaultRecordClass, [isRecording])
