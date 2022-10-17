@@ -32,25 +32,25 @@ const setupMockedMediaDevices = () => {
       .mockName('MediaStream')
     })
 
-    // Object.defineProperty(global, 'MediaRecorder', {
-    //   writable: true,
-    //   value: jest.fn().mockImplementation(() => {
-    //     console.log('========', 'I am inside of MediaRecorder', '========')
-    //     return ({
-          // ondataavailable: jest.fn(),
-          // audioBitrateMode: "variable",
-          // audioBitsPerSecond: 0,
-          // onstop: jest.fn(),
-          // onstart: jest.fn(),
-          // onerror: jest.fn(),
-          // onpause: jest.fn(),
-          // onresume: jest.fn(),
-          // state: 'recording',
-          // mimeType: 'audio/webm',
-          // stream: global.MediaStream
-      //   })})
-    //   .mockName('MediaRecorder')
-    // })
+    Object.defineProperty(global, 'MediaRecorder', {
+      writable: true,
+      value: jest.fn().mockImplementation(() => {
+        console.log('========', 'I am inside of MediaRecorder', '========')
+        return ({
+          ondataavailable: jest.fn(),
+          audioBitrateMode: "variable",
+          audioBitsPerSecond: 0,
+          onstop: jest.fn(),
+          onstart: jest.fn(),
+          onerror: jest.fn(),
+          onpause: jest.fn(),
+          onresume: jest.fn(),
+          state: 'recording',
+          mimeType: 'audio/webm',
+          stream: global.MediaStream
+        })})
+      .mockName('MediaRecorder')
+    })
   }
   
   export default setupMockedMediaDevices
