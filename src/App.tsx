@@ -1,4 +1,4 @@
-import Recorder from './components/Recorder'
+import RecorderProvider from './components/RecorderProvider'
 import Footer from './components/Footer'
 import './App.css';
 // import useGetUserMedia from "./hooks/useGetUserMedia";
@@ -25,7 +25,7 @@ function App() {
     </header>
     <main>
       {/* {recoderRenderer()} */}
-      <Recorder />
+      <RecorderProvider />
     </main>
     <Footer />
     </>

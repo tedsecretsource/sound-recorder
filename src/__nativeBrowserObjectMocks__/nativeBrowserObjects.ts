@@ -1,3 +1,5 @@
+import { any } from "prop-types"
+
 const setupMockedMediaDevices = () => {
     const mockMediaDevices = {
       getUserMedia: jest.fn().mockImplementation(() => {
@@ -15,11 +17,10 @@ const setupMockedMediaDevices = () => {
       writable: true,
       value: mockMediaDevices,
     })
-  
+
     Object.defineProperty(global, 'MediaStream', {
       writable: true,
       value: jest.fn().mockImplementation(() => {
-        console.log('========', 'I am inside of MediaStream', '========')
         return ({
           active: true,
           id: `id${window.performance.now().toString()}`,
@@ -35,21 +36,42 @@ const setupMockedMediaDevices = () => {
     Object.defineProperty(global, 'MediaRecorder', {
       writable: true,
       value: jest.fn().mockImplementation(() => {
-        console.log('========', 'I am inside of MediaRecorder', '========')
-        return ({
+        console.log('========', 'I am inside of the mocked MediaRecorder', '========')
+        return {
           ondataavailable: jest.fn(),
           audioBitrateMode: "variable",
           audioBitsPerSecond: 0,
-          onstop: jest.fn(),
-          onstart: jest.fn(),
           onerror: jest.fn(),
           onpause: jest.fn(),
           onresume: jest.fn(),
-          state: 'recording',
           mimeType: 'audio/webm',
-          stream: global.MediaStream
-        })})
+          stream: global.MediaStream,
+          state: "inactive",
+          start: () => {
+            console.log('========', 'I am inside of the mocked MediaRecorder.start() method', '========')
+          },
+          stop: jest.fn((state) => {
+            console.log('========', 'I am inside of the mocked MediaRecorder.stop() method', '========')
+          }),
+          pause: jest.fn(),
+          resume: jest.fn(),
+          requestData: jest.fn(),
+          addEventListener: jest.fn(),
+          removeEventListener: jest.fn(),
+          dispatchEvent: jest.fn(),
+        }
+      })
       .mockName('MediaRecorder')
+    })
+
+    Object.defineProperty(global.MediaRecorder.prototype, 'state', {
+      writable: true,
+      value: 'inactive'
+    })
+
+    Object.defineProperty(global.MediaRecorder, 'isTypeSupported', {
+      writable: true,
+      value: () => true
     })
   }
   

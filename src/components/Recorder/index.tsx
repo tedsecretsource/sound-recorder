@@ -1,26 +1,30 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import useConfigureMediaRecorder from '../../hooks/useConfigureMediaRecroder'
 import Recording from '../Recording'
 import Visualizer from '../Visualizer'
 import './style.css'
-import useMediaRecorder from "../../hooks/useMediaRecorder";
 
 interface recorderProps {
     mediaRecorder?: MediaRecorder
-  }
+}
   
 const Recorder = (props?: recorderProps) => {
-    const { mediaRecorder } = props || {}
-    const { recorder, recordings, setRecordings, isRecording, stream } = useMediaRecorder(mediaRecorder);
+    const { mediaRecorder } = props
+    const { recorder, recordings, setRecordings, isRecording, stream } = useConfigureMediaRecorder({mediaRecorder})
+    const [recorderState, setRecorderState] = useState(recorder.state)
     const defaultRecordClass = 'record-play'
-    const recordButtonClassesText = useMemo(() => isRecording ? `${defaultRecordClass} recording-audio` : defaultRecordClass, [isRecording])
-    const recordingStateText = useMemo(() => isRecording ? 'Stop' : 'Record', [isRecording])
+    const recordButtonClassesText = useMemo(() => recorder.state === 'recording' ? `${defaultRecordClass} recording-audio` : defaultRecordClass, [recorder.state])
+    const recordingStateText = useMemo(() => recorder.state === 'recording' ? 'Stop' : 'Record', [recorder.state])
 
     const toggleRecording = () => {
-        if (!isRecording) {
+        console.log('toggling recording')
+        console.log(recorder.state)
+        if (recorder.state === 'inactive') {
             recorder.start(1000)
         } else {
             recorder.stop();
         }
+        setRecorderState(recorder.state)
     }
 
     const editRecordingName = (e) => {
@@ -74,10 +78,11 @@ const Recorder = (props?: recorderProps) => {
     }
 
     const recorderUI = () => {
+        console.log('recorder state: ', recorder.state)
         return (
             <>
                 <Visualizer stream={stream} barColor={[18,124,85]} />
-                <button onClick={toggleRecording} className={recordButtonClassesText}>{recordingStateText}</button>
+                <button onClick={toggleRecording} className={recordButtonClassesText}>{recorder.state === 'recording' ? 'Stop' : 'Record'}</button>
                 <section>
                     {renderAudio()}
                 </section>
@@ -86,16 +91,10 @@ const Recorder = (props?: recorderProps) => {
     }
 
     const recorderRenderer = () => {
-        console.log('======', 'typeof stream', typeof stream, '======')
-        if( stream === null ) {
-            console.log('=======', 'type of stream is null', '=======')
+        if( recorder && recorder.stream === null ) {
             return <button className="record-play" title="Please either allow or decline the use of your microphone">Loading…</button>
-        } else if ( stream instanceof MediaStream ) {
-            console.log('=======', 'type of stream is MediaStream', '=======')
-            return recorderUI()
         } else {
-            console.log('=======', 'type of stream is unknown',  '=======')
-          return <button className="record-play">Error: unknown!</button>
+            return recorderUI()
         }
       }
       

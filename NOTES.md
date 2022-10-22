@@ -165,7 +165,56 @@ Rather than create custom hooks, I'm going to create a "provider" component that
 - in useMediaRecorder, add `mr` to the destructure of `props`
 - in useMediaRecorder, add `mr` to the `useConfigureMediaRecorder` call as a parameter
 - in useMediaRecorder, return the configured `mr` object from `useConfigureMediaRecorder`
-- in App, replace the `Recorder` component with `RecorderProvider`
+
+And again, here we are, at the last step, and the tests are red, and I'm unable to proceed. Reviewing [Manu's code](https://github.com/tedsecretsource/sound-recorder/blob/f4101462cd75f4cb8246f763ba29d78ad0720d1f/src/components/Recorder/index.test.js#L65), I realize that setting the value of isRecording is a duplication of effort because that state is stored directly in the MediaRecorder object. So, I'm going to remove that state from Recorder and instead use the `state` property of the MediaRecorder object.
+
+The aim is to remove unnecessary dependencies so that testing is easier. In this case, the `isRecording` state variable is unnecessary because the MediaRecorder object already has a `state` property that can be used to determine if the recorder is recording or not. Additionally, Visualizer receives a stream object. Instead, I'm going to send it the MediaRecorder object and use the stream property directly.
+
+- in Recorder, change every instance of `isRecording` to `mr.state === 'recording'` (or maybe put it in a function)
+- in Recorder, remove `isRecording` from the destructure of `useConfigureMediaRecorder`
+- in Recorder, change every instance of `stream` to `mr.stream` or similar
+
+I stopped following my script here because things just weren't working. Specifically, although I seemed to be able to override `mr.state` in the tests, it didn't seem to be having any effect on the rendered component. See below…
+
+~~~~~~~~~~~~~~~ didn't do ~~~~~~~~~~~~~~~
+- in Recorder, remove `stream` from the destructure of `useConfigureMediaRecorder`
+- in Visualizer, add an optional parameter for the `MediaRecorder` object
+- in Visualizer, make the `stream` parameter optional
+- in Recorder, add `MediaRecorder` to the attributes of the `Visualizer` component
+- in Visualizer, change every instance of `stream` to `mr.stream` or similar, including in the interface definition
+- in Recorder, remove `stream` from the attributes of the `Visualizer` component
+- in Visualizer, remove `stream` from the interface definition and the function signature
+- in useConfigureMediaRecorder, remove `stream` and `isRecording` from the return statement
+- in useConfigureMediaRecorder, remove `stream` and `isRecording` from the state
+~~~~~~~~~~~~~~~ didn't do ~~~~~~~~~~~~~~~
+
+I didn't do any of the above, really. Instead, I fiddled around to try and understand why the event handlers assigned to the `MediaRecorder` object weren't being called. I even tried manually wiring up the event handlers but that didn't seem to work either.
+
+~~- in App, replace the `Recorder` component with `RecorderProvider`~~
+
+#### isRecording (or similar) is actually required
+
+I need to set a state variable to get the Record / Stop button to render correctly, but that's not the current roadblock…
+
+### Roadblock: Event Handlers Aren't Being Called
+
+Now that I'm mocking the `MediaRecorder` object and I'm able to manually set the `state` property, I'm able to get the tests to pass. However, the event handlers assigned to the `MediaRecorder` object aren't being called. I've tried manually wiring up the event handlers but that didn't seem to work either, probably because the event dispatching is more complex to set up tha I realize. In the end, though, this too is an imperfect approach. If I want to test event handlers, I need to keep them separate from the native object placeholders and think in terms of unit tests.
+
+Also, one of the requirements of hooks is that their contents don't change between renders. As I'm only interested in testing the event handler code (the code I'm adding, not the native behavior), I'm going to use a custom hook to define, and export, the event handlers. This way I can test them separately to make sure I have solid test coverage.
+
+#### Rewrite tests to use new event handlers
+
+In theory this won't require any changes to the tests, but there are some tests that are failing because they are invalid. I'll fix those tests and then add new tests for the event handlers.
+
+Once I've done that, I'll proceed with the refactor below and then add tests for the new event handlers.
+
+#### Create a custom hook to define the event handlers
+
+- create a new custom hook called `useMediaRecorderEventHandlers`
+- copy the event handler code from `useConfigureMediaRecorder` to `useMediaRecorderEventHandlers`
+- in `useMediaRecorderEventHandlers`, make `mr` an optional parameter
+- in `useMediaRecorderEventHandlers`, refactor so we're creating new functions for each event rather than assigning them to the `mr` object
+- in `useMediaRecorderEventHandlers`, return the event handlers in addition to the existing return values, except `recorder`, `isRecording`, and `stream` (no longer necessary)
 
 If tests are green at this point, we can do some clean-up. If they are not, we need to keep going until they are (although I'm not sure why they wouldn't be). Assuming they are green, here's the clean-up:
 

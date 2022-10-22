@@ -1,19 +1,13 @@
-import { useState, useEffect } from 'react'
-import useInitMediaRecorder from '../hooks/useInitMediaRecorder'
 import useConfigureMediaRecorder from '../hooks/useConfigureMediaRecroder'
 
 interface useMediaRecorderProps {
-  stream?: MediaStream
+  mediaRecorder?: MediaRecorder
 }
 
-const useMediaRecorder = async (props?: useMediaRecorderProps) => {
-  const [mr, setMr] = useState<MediaRecorder | null>(null)
-  const [configuredMr, setConfiguredMr] = useState(null)
+const useMediaRecorder = (props?: useMediaRecorderProps) => {
+  const { mediaRecorder } = props
 
-  setMr(await useInitMediaRecorder())
-  setConfiguredMr(useConfigureMediaRecorder(mr))
-  
-  return configuredMr
+  return useConfigureMediaRecorder({mediaRecorder})
 }
 
 export default useMediaRecorder
