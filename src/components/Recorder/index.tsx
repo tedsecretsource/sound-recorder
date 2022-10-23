@@ -12,7 +12,7 @@ const Recorder = (props?: recorderProps) => {
     const [recorderState, setRecorderState] = useState('inactive')
     const [recordings, setRecordings] = useState<any[]>([]);
     const defaultRecordClass = 'record-play'
-    const recordButtonClassesText = useMemo(() => mediaRecorder.state === 'recording' ? `${defaultRecordClass} recording-audio` : defaultRecordClass, [mediaRecorder.state])
+    let recordButtonClassesText = defaultRecordClass
     let chunks: any[] = useMemo(() => [], [])
 
     useEffect(() => {
@@ -109,6 +109,7 @@ const Recorder = (props?: recorderProps) => {
     }
 
     const recorderUI = () => {
+        recordButtonClassesText = mediaRecorder.state === 'recording' ? `${defaultRecordClass} recording-audio` : defaultRecordClass
         return (
             <>
                 <Visualizer stream={mediaRecorder.stream} barColor={[18,124,85]} />
@@ -121,7 +122,7 @@ const Recorder = (props?: recorderProps) => {
     }
 
     const recorderRenderer = () => {
-        if( mediaRecorder && mediaRecorder.stream === null ) {
+        if( mediaRecorder === null ) {
             return <button className="record-play" title="Please either allow or decline the use of your microphone">Loading…</button>
         } else {
             return recorderUI()
