@@ -119,8 +119,100 @@ The basic approach will be to recreate the logic in App inside Recorder and once
 - in Recorder, paste recorderRenderer
 - in Recorder, update the `stream instanceof MediaStream` to return recorderUI
 - in Recorder, change every instance of `theStream` to `stream`
-- in Recorder, change `return` to reference `{recorderRenderer}`
-- in App, change `return` to be simply `<Recorder />`
+
+### A Wrench in the Works
+
+The next step (see below under What About the Last Steps?) is turning some of the tests red. This is happening because stream is not null but it is also not a MediaStream according to the tests and thus the wrong button is rendering.
+
+I tried adding the missing `stream` object to `mockUseMediaRecorder` but it doesn't seem to make a difference (because it is window.MediaStream, not a proper MediaStream object). In commit e69002d, I fix this issue, but I'd already written the plan that follows and since the plan still seems reasonable, we proceed.
+
+I need to refactor `useMediaRecorder` (the new custom hook should be called useInitMediaRecorder) to _only_ include native browser object calls (`getUserMedia`, `new MediaRecorder`) and return a `MediaRecorder` object, which can then be passed into a new `useConfigureMediaRecorder` custom hook.
+
+By mocking these objects, I can mock `useInitMediaRecorder` but leave `useConfigureMediaRecroder` as is, use it natively (which handles the start, stop, pause, etc. events). My goal here is to only mock the things that have _no_ equivalent inside tests in order to increase test coverage.
+
+#### An Aside on Clean Code
+
+In my opinion, this refactor shows the limitations of jest as a testing framework and the potentially negative impact it can have on code layout. Refactoring code to account for test framework limitations feels a lot like an anti-pattern. To be clear, if I combine calls to `getUserMedia` and `new MediaRecorder()` plus all of the configuration of the MediaRecorder object into a single hook, I then have to mock the entire hook, including all the event handlers, and I then lose the ability to unit test the event handlers, among other things.
+
+If Jest supported `getUserMedia` et al natively, I could simply unit test the `recorder` returned by the existing custom hook and not be concerned with where or how it is initialized.
+
+### Steps to Refactor useMediaRecorder
+
+Note that during these changes we'll make one tiny shortcut: instead of passing the `MediaStream` object around, we'll use the one associated with the `MediaRecorder` object as it is essentially the same thing (might even be _exactly_ the same thing). This will keep our function calls cleaner (fewer parameters).
+
+And because we're doing TDD, let's start this refactor by setting up the tests. **NB**: as this refactor includes modifying existing tests and potentially adding new ones, it will be normal for some of the tests to be red until we update the production code in the next set of steps, as is actually the case right now (one of the tests is red because the test itself, the mock specifically, has issues).
+
+#### The Refactor Plan
+
+Rather than create custom hooks, I'm going to create a "provider" component that will be responsible for initializing the MediaRecorder object and then passing it down to the Recorder component. This will allow us to keep the RecorderProvider component as a pure function and serve as a sort of interface that can be easily mocked. Also, for now, I'm going to update `useMediaRecorder` to call `useConfigureMediaRecorder` (basically, a temporary passthru while I finishe the refactor).
+
+#### Update tests to use RecorderProvider
+
+- in `src/__nativeBrowserObjectMocks__/nativeBrowserObjectMocks.ts`, uncomment the `MediaRecorder` mock
+- in `src/components/Recorder/index.test.tsx`, update `render( <Recorder />)` in the tests to include the `mr` parameter and set it to the mock `MediaRecorder` object (not entirely sure how to do this…)
+- in `src/components/Recorder/index.test.tsx`, remove the code that mocks `useMediaRecorder`
+
+#### Update Recorder to use RecorderProvider
+
+- Create a new component called `RecorderProvider`
+- in `RecorderProvider`, add a useEffect that calls `navigator.mediaDevices.getUserMedia` and then calls `new MediaRecorder` with the stream returned from `getUserMedia`, and then sets the `mr` state variable to the result of `new MediaRecorder`
+- in `RecorderProvider`, add a `return` statement that calls the `Recorder` component and passes `mr` as a prop
+- in Recorder, add an optional `mr` prop to the interface
+- in Recorder, add an optional `mr` to the function signature
+- in Recorder, add `mr` to the destructure of `props`
+- in Recorder, add `mr` to the `useMediaRecorder` call as a parameter
+- in useMediaRecorder, add `mr` as an optional parameter to the function signature
+- in useMediaRecorder, add `mr` to the destructure of `props`
+- in useMediaRecorder, add `mr` to the `useConfigureMediaRecorder` call as a parameter
+- in useMediaRecorder, return the configured `mr` object from `useConfigureMediaRecorder`
+
+And again, here we are, at the last step, and the tests are red, and I'm unable to proceed. Reviewing [Manu's code](https://github.com/tedsecretsource/sound-recorder/blob/f4101462cd75f4cb8246f763ba29d78ad0720d1f/src/components/Recorder/index.test.js#L65), I realize that setting the value of isRecording is a duplication of effort because that state is stored directly in the MediaRecorder object. So, I'm going to remove that state from Recorder and instead use the `state` property of the MediaRecorder object.
+
+The aim is to remove unnecessary dependencies so that testing is easier. In this case, the `isRecording` state variable is unnecessary because the MediaRecorder object already has a `state` property that can be used to determine if the recorder is recording or not. Additionally, Visualizer receives a stream object. Instead, I'm going to send it the MediaRecorder object and use the stream property directly.
+
+- in Recorder, change every instance of `isRecording` to `mr.state === 'recording'` (or maybe put it in a function)
+- in Recorder, remove `isRecording` from the destructure of `useConfigureMediaRecorder`
+- in Recorder, change every instance of `stream` to `mr.stream` or similar
+
+I stopped following my script here because things just weren't working. Specifically, although I seemed to be able to override `mr.state` in the tests, it didn't seem to be having any effect on the rendered component. See below…
+
+~~~~~~~~~~~~~~~ didn't do ~~~~~~~~~~~~~~~
+- in Recorder, remove `stream` from the destructure of `useConfigureMediaRecorder`
+- in Visualizer, add an optional parameter for the `MediaRecorder` object
+- in Visualizer, make the `stream` parameter optional
+- in Recorder, add `MediaRecorder` to the attributes of the `Visualizer` component
+- in Visualizer, change every instance of `stream` to `mr.stream` or similar, including in the interface definition
+- in Recorder, remove `stream` from the attributes of the `Visualizer` component
+- in Visualizer, remove `stream` from the interface definition and the function signature
+- in useConfigureMediaRecorder, remove `stream` and `isRecording` from the return statement
+- in useConfigureMediaRecorder, remove `stream` and `isRecording` from the state
+~~~~~~~~~~~~~~~ didn't do ~~~~~~~~~~~~~~~
+
+I didn't do any of the above, really. Instead, I fiddled around to try and understand why the event handlers assigned to the `MediaRecorder` object weren't being called. I even tried manually wiring up the event handlers but that didn't seem to work either.
+
+~~- in App, replace the `Recorder` component with `RecorderProvider`~~
+
+#### isRecording (or similar) is actually required
+
+I need to set a state variable to get the Record / Stop button to render correctly, but that's not the current roadblock…
+
+### Roadblock: Event Handlers Aren't Being Called
+
+Now that I'm mocking the `MediaRecorder` object and I'm able to manually set the `state` property, I'm able to get the tests to pass. However, the event handlers assigned to the `MediaRecorder` object aren't being called. I've tried manually wiring up the event handlers but that didn't seem to work either, probably because the event dispatching is more complex to set up tha I realize. In the end, though, this too is an imperfect approach. If I want to test event handlers, I need to keep them separate from the native object placeholders and think in terms of unit tests.
+
+Also, one of the requirements of hooks is that their contents don't change between renders. As I'm only interested in testing the event handler code (the code I'm adding, not the native behavior), I'm going to use a custom hook to define, and export, the event handlers. This way I can test them separately to make sure I have solid test coverage.
+
+#### Rewrite tests to use new event handlers
+
+In theory this won't require any changes to the tests, but there are some tests that are failing because they are invalid. I'll fix those tests and then add new tests for the event handlers.
+
+Once I've done that, I'll proceed with the refactor below and then add tests for the new event handlers.
+
+#### Testing MediaRecorder Event Handlers
+
+What I'm struggling with is testing the code that executes in native MediaRecorder event handlers. If instead of using the native event handlers (`onstart`, `onstep`, etc.) and instead add that code to the `toggleRecording` function, tests should just pass.
+
+In the end, the solution was to remove the event handlers from the custom hook and, basically, don't use them!
 
 #### Miscelaneous cleanup
 
@@ -129,8 +221,11 @@ At this point, the system is using the new code. App is now strictly for layout,
 - in App, delete `let theStream = useGetUserMedia()`
 - in App, delete the `recorderRenderer` function
 - delete the `useGetUserMedia` hook
+- in `src/components/Recorder/index.test.tsx` remove unused functions and imports
 
 Also, as DOMException is no longer a possibility, we can delete the test for that type from `recorderRenderer`. Likewise, in the default `else`, we can display a more realistic message, like, "You need to allow use of your microphone to use this tool" rather than displaying a button.
+
+In useMediaRecorder, we can also remove the optional stream and props parames and interface definition.
 
 And one last thing… The documentation in useMediaRecorder needs to be updated. `stream` is no longer required. `stream` is included in the return value.
 
