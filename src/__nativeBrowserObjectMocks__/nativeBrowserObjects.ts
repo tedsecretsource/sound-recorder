@@ -3,7 +3,6 @@ import { any } from "prop-types"
 const setupMockedMediaDevices = () => {
     const mockMediaDevices = {
       getUserMedia: jest.fn().mockImplementation(() => {
-        console.log('========', 'I am inside mockMediaDevices', '========')
         return new Promise((resolve, reject) => {
           process.nextTick(() => {
             // reject(new Error('Error: getUserMedia failed!')),
@@ -36,7 +35,6 @@ const setupMockedMediaDevices = () => {
     Object.defineProperty(global, 'MediaRecorder', {
       writable: true,
       value: jest.fn().mockImplementation(() => {
-        console.log('========', 'I am inside of the mocked MediaRecorder', '========')
         return {
           ondataavailable: jest.fn(),
           audioBitrateMode: "variable",
@@ -48,10 +46,8 @@ const setupMockedMediaDevices = () => {
           stream: global.MediaStream,
           state: "inactive",
           start: () => {
-            console.log('========', 'I am inside of the mocked MediaRecorder.start() method', '========')
           },
           stop: jest.fn((state) => {
-            console.log('========', 'I am inside of the mocked MediaRecorder.stop() method', '========')
           }),
           pause: jest.fn(),
           resume: jest.fn(),
@@ -72,6 +68,13 @@ const setupMockedMediaDevices = () => {
     Object.defineProperty(global.MediaRecorder, 'isTypeSupported', {
       writable: true,
       value: () => true
+    })
+
+    Object.defineProperty(global.URL, 'createObjectURL', {
+      writable: true,
+      value: jest.fn().mockImplementation(() => {
+        return 'blob:https://localhost:3000/12345678-1234-1234-1234-123456789012'
+      })
     })
   }
   

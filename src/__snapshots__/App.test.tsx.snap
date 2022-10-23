@@ -8,12 +8,7 @@ exports[`With an empty list of recordings renders Sound Recorder title 1`] = `
     </h1>
   </header>
   <main>
-    <button
-      class="record-play"
-      title="Please either allow or decline the use of your microphone"
-    >
-      Loading…
-    </button>
+    RecorderProvider
   </main>
   <footer>
     <p>

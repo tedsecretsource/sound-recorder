@@ -1,11 +1,10 @@
-import setupMockedMediaDevices from './__nativeBrowserObjectMocks__/nativeBrowserObjects'
 import {act, render, screen} from '@testing-library/react'
 import App from './App'
 
+jest.mock('./components/RecorderProvider', () => () => 'RecorderProvider')
 
 describe('With an empty list of recordings', () => {
   beforeEach(() => {
-    setupMockedMediaDevices()
   })
 
   test('renders Sound Recorder title', async () => {

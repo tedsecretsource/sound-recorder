@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import useConfigureMediaRecorder from '../../hooks/useConfigureMediaRecroder'
 import Recording from '../Recording'
 import Visualizer from '../Visualizer'
 import './style.css'
@@ -10,21 +9,53 @@ interface recorderProps {
   
 const Recorder = (props?: recorderProps) => {
     const { mediaRecorder } = props
-    const { recorder, recordings, setRecordings, isRecording, stream } = useConfigureMediaRecorder({mediaRecorder})
-    const [recorderState, setRecorderState] = useState(recorder.state)
+    const [recorderState, setRecorderState] = useState('inactive')
+    const [recordings, setRecordings] = useState<any[]>([]);
     const defaultRecordClass = 'record-play'
-    const recordButtonClassesText = useMemo(() => recorder.state === 'recording' ? `${defaultRecordClass} recording-audio` : defaultRecordClass, [recorder.state])
-    const recordingStateText = useMemo(() => recorder.state === 'recording' ? 'Stop' : 'Record', [recorder.state])
+    const recordButtonClassesText = useMemo(() => mediaRecorder.state === 'recording' ? `${defaultRecordClass} recording-audio` : defaultRecordClass, [mediaRecorder.state])
+    let chunks: any[] = useMemo(() => [], [])
+
+    useEffect(() => {
+        if( mediaRecorder ) {
+
+            mediaRecorder.onstart = () => {
+                console.log('started recording')
+            }
+        
+            mediaRecorder.onstop = () => {
+                console.log('stopped recording')
+            }
+        
+            mediaRecorder.ondataavailable = (e) => {
+                chunks.push(e.data)
+            }
+        }
+    }, [mediaRecorder, chunks])
+
+    const updateRecordingsList = () => {
+        const blob = new Blob(chunks, { 'type' : mediaRecorder.mimeType })
+        const audioURL = window.URL.createObjectURL(blob)
+    
+        // push the new recording to the recordings list
+        setRecordings(currentRecordings => {
+            return [...currentRecordings, ...[{
+                stream: audioURL,
+                name: new Date().toISOString().split('.')[0].split('T').join(' '),
+                id: `id${window.performance.now().toString()}`
+            }]]
+        })
+    
+        chunks = []
+    }
 
     const toggleRecording = () => {
-        console.log('toggling recording')
-        console.log(recorder.state)
-        if (recorder.state === 'inactive') {
-            recorder.start(1000)
+        if (mediaRecorder.state === 'inactive') {
+            mediaRecorder.start(1000)
         } else {
-            recorder.stop();
+            mediaRecorder.stop()
+            updateRecordingsList()
         }
-        setRecorderState(recorder.state)
+        setRecorderState(mediaRecorder.state)
     }
 
     const editRecordingName = (e) => {
@@ -78,11 +109,10 @@ const Recorder = (props?: recorderProps) => {
     }
 
     const recorderUI = () => {
-        console.log('recorder state: ', recorder.state)
         return (
             <>
-                <Visualizer stream={stream} barColor={[18,124,85]} />
-                <button onClick={toggleRecording} className={recordButtonClassesText}>{recorder.state === 'recording' ? 'Stop' : 'Record'}</button>
+                <Visualizer stream={mediaRecorder.stream} barColor={[18,124,85]} />
+                <button onClick={toggleRecording} className={recordButtonClassesText}>{mediaRecorder.state === 'recording' ? 'Stop' : 'Record'}</button>
                 <section>
                     {renderAudio()}
                 </section>
@@ -91,7 +121,7 @@ const Recorder = (props?: recorderProps) => {
     }
 
     const recorderRenderer = () => {
-        if( recorder && recorder.stream === null ) {
+        if( mediaRecorder && mediaRecorder.stream === null ) {
             return <button className="record-play" title="Please either allow or decline the use of your microphone">Loading…</button>
         } else {
             return recorderUI()

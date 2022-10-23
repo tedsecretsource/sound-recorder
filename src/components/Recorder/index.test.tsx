@@ -4,68 +4,18 @@ import userEvent from '@testing-library/user-event'
 import Recorder from './index'
 
 jest.mock('../Visualizer', () => () => 'Visualizer')
-// jest.mock('./index', () => {
-//   const originaRecorder = jest.requireActual('./index')
-//   return {
-//     __esModule: true,
-//     ...originaRecorder,
-//     renderAudio: jest.fn().mockImplementation(() => {
-//       return <div>Recorder</div>
-//     }),
-//   }
-// })
-
-/**
- * Following the Object mother pattern we have this small fn that generates a valid object
- * that matches the structure of a recording
- *
- * @param {{ idNumber?: number, name?: string }} options
- * @returns {{ stream: string, name: string, id: string }}
- */
-function createMockRecording({
-  idNumber = Math.floor(Math.random() * 100),
-  name = new Date().toISOString().split('.')[0].split('T').join(' ')
-}) {
-  return {
-    stream: "audioUrl",
-    name,
-    id: `id${window.performance.now().toString()}`
-  }
-}
-
-/**
- * Applying the same pattern above we wrap the previous recording generator
- * to create a random list of recordings
- *
- * @param {number} length
- * @returns {{ stream: string, name: string, id: string }[]}
- */
-function createMockRecordingList(length = 10) {
-  const emptyList = new Array(length).fill(null);
-  return emptyList.map(() => createMockRecording({}))
-}
-
 const user = userEvent.setup()
-
 
 setupMockedMediaDevices()
 var mr = new global.MediaRecorder(new MediaStream(), { mimeType: 'audio/mp4' })
 
 describe('With an empty list of recordings', () => {
   beforeEach( () => {
-    // jest.spyOn(mr, 'start').mockImplementation(() => {mr.state = 'recording'})
-    // jest.spyOn(mr, 'stop').mockImplementation(() => {
-    //   mr.state = 'inactive'
-    // })
-    const startEvent = new Event('start')
-    const stopEvent = new Event('stop')
-    const originalStart = mr.start
-    const originalStop = mr.stop
-    mr.addEventListener('start', mr.onstart)
     jest.spyOn(mr, 'start').mockImplementation(() => {
-      // mr.state = 'recording'
-      mr.dispatchEvent(startEvent)
-      // originalStart()
+      mr.state = 'recording'
+    })
+    jest.spyOn(mr, 'stop').mockImplementation(() => {
+      mr.state = 'inactive'
     })
     act(() => {
       render(<Recorder mediaRecorder={mr} />);
@@ -106,8 +56,6 @@ describe('With an empty list of recordings', () => {
 })
 
 describe('With a list of recordings', () => {
-  const recordingsList = createMockRecordingList()
-
   const originalPrompt = global.prompt
   const originalConfirm = global.confirm
   const mockPrompt = jest.fn()
@@ -119,11 +67,15 @@ describe('With a list of recordings', () => {
   })
 
   beforeEach( async () => {
-    setupMockedMediaDevices()
     mockPrompt.mockReturnValue("new recording name")
     mockConfirm.mockReturnValue(true)
 
-    let mr = new MediaRecorder(new MediaStream(), { mimeType: 'audio/mp4' })
+    jest.spyOn(mr, 'start').mockImplementation(() => {
+      mr.state = 'recording'
+    })
+    jest.spyOn(mr, 'stop').mockImplementation(() => {
+      mr.state = 'inactive'
+    })
     act(() => {
       render(<Recorder mediaRecorder={mr} />);
     })
@@ -134,19 +86,33 @@ describe('With a list of recordings', () => {
     global.confirm = originalConfirm
   })
 
-  it('renders all of the recordings on screen', () => {
+  it('renders all of the recordings on screen', async () => {
+    const recButton = screen.getByRole("button", { name: 'Record' })
+    await user.click(recButton)
+    await user.click(recButton)
+    await user.click(recButton)
+    await user.click(recButton)
+    await user.click(recButton)
+    await user.click(recButton)
     const recordings = screen.getAllByRole("button", { name: /click to edit name/i })
-    expect(recordings).toHaveLength(recordingsList.length)
+    expect(recordings).toHaveLength(3)
   })
 
-  it('a new recording can be created', () => {
+  it('a new recording can be created', async () => {
+    const recButton = screen.getByRole("button", { name: 'Record' })
+    await user.click(recButton)
+    await user.click(recButton)
+    await user.click(recButton)
+    await user.click(recButton)
+    await user.click(recButton)
+    await user.click(recButton)
     const recordings = screen.getAllByRole("button", { name: /click to edit name/i })
-    expect(recordings).toHaveLength(recordingsList.length)
+    expect(recordings).toHaveLength(3)
 
     const button = screen.getByRole("button", { name: /record/i })
-    user.click(button)
+    await user.click(button)
     expect(button).toHaveTextContent(/stop/i)
-    user.click(button)
+    await user.click(button)
     expect(button).toHaveTextContent(/record/i)
 
     const newRecordings = screen.getAllByTitle(/click to edit name/i)
@@ -154,20 +120,26 @@ describe('With a list of recordings', () => {
   })
 
   it('a recording can be renamed', async () => {
+    const recButton = screen.getByRole("button", { name: 'Record' })
+    await user.click(recButton)
+    await user.click(recButton)
     const recordings = screen.getAllByRole("button", { name: /click to edit name/i })
     const firstEditButton = recordings[0];
 
-    user.click(firstEditButton);
+    await user.click(firstEditButton);
     expect(mockPrompt).toHaveBeenCalledTimes(1)
 
     const updatedRecording = await screen.findByText(/new recording name/i);
     expect(updatedRecording).toBeInTheDocument()
   })
 
-  it('a recording can be deleted', () => {
+  it('a recording can be deleted', async () => {
+    const recButton = screen.getByRole("button", { name: 'Record' })
+    await user.click(recButton)
+    await user.click(recButton)
     const recordings = screen.getAllByRole("button", { name: /delete/i })
-    expect(recordings).toHaveLength(recordingsList.length)
-    user.click(recordings[0]);
+    expect(recordings).toHaveLength(1)
+    await user.click(recordings[0]);
 
     const updatedRecordingsWrapper = screen.queryAllByRole("article")
     expect(mockConfirm).toHaveBeenCalledTimes(1)

@@ -208,30 +208,11 @@ In theory this won't require any changes to the tests, but there are some tests 
 
 Once I've done that, I'll proceed with the refactor below and then add tests for the new event handlers.
 
-#### Create a custom hook to define the event handlers
+#### Testing MediaRecorder Event Handlers
 
-- create a new custom hook called `useMediaRecorderEventHandlers`
-- copy the event handler code from `useConfigureMediaRecorder` to `useMediaRecorderEventHandlers`
-- in `useMediaRecorderEventHandlers`, make `mr` an optional parameter
-- in `useMediaRecorderEventHandlers`, refactor so we're creating new functions for each event rather than assigning them to the `mr` object
-- in `useMediaRecorderEventHandlers`, return the event handlers in addition to the existing return values, except `recorder`, `isRecording`, and `stream` (no longer necessary)
+What I'm struggling with is testing the code that executes in native MediaRecorder event handlers. If instead of using the native event handlers (`onstart`, `onstep`, etc.) and instead add that code to the `toggleRecording` function, tests should just pass.
 
-If tests are green at this point, we can do some clean-up. If they are not, we need to keep going until they are (although I'm not sure why they wouldn't be). Assuming they are green, here's the clean-up:
-
-- in Recorder, call `useConfigureMediaRecorder` directly from `Recorder` instead of `useMediaRecorder`
-- in Recorder, remove `useMediaRecorder` from the imports
-- delete hooks/useMediaRecorder.ts
-- delete hooks/useGetUserMedia.ts
-- delete hooks/useInitMediaRecorder.ts
-- delete hooks/useMediaRecorder copy.ts
-- clean up the tests, removing unused imports and functions
-
-#### What About the Last Steps?
-
-Fact is, we already did these last two steps before refactoring the tests and the native browser stuff. That's what turned one of the tests red and was our cue to revist the tests in general. Thus, these last two steps are no longer needed, yay!
-
-X in Recorder, change `return` to reference `recorderRenderer()`
-X in App, change `return` to be simply `<Recorder />`
+In the end, the solution was to remove the event handlers from the custom hook and, basically, don't use them!
 
 #### Miscelaneous cleanup
 
