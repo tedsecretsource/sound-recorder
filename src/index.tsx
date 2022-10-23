@@ -17,6 +17,11 @@ const router = createBrowserRouter([
     element: <App />,
     errorElement: <ErrorPage />,
   },
+  {
+    path: "/sound-recorder/",
+    element: <App />,
+    errorElement: <ErrorPage />,
+  },
 ]);
 
 ReactDOM.render(
