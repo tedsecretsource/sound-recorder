@@ -114,7 +114,7 @@ const Recorder = (props?: recorderProps) => {
             <>
                 <Visualizer stream={mediaRecorder.stream} barColor={[18,124,85]} />
                 <button onClick={toggleRecording} className={recordButtonClassesText}>{mediaRecorder.state === 'recording' ? 'Stop' : 'Record'}</button>
-                <section>
+                <section className="recordings-list">
                     {renderAudio()}
                 </section>
             </>
