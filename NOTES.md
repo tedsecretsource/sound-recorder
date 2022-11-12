@@ -236,3 +236,8 @@ And with that, the whole application should be in a much, much better place for 
 - initializing the stream object in the App component and then _passing_ it to the Recorder component as a type of IoC or DI
 - setting the stream object to DOMException rather than setting a separate error state or variable to try and minimize the number of variables!
 - using custom hooks to facilitate testing rather than doing proper, native mocking, e.g.: useGetUserMedia
+
+
+# Implementing React Router
+
+- The main react router documentation is the first result in google but followed quickly by the remix-run docs, which makes you wonder which docs are the correct ones.

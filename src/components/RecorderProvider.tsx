@@ -8,13 +8,13 @@ const RecoderProvider = () => {
         navigator.mediaDevices.getUserMedia({ video: false, audio: true })
         .then((theStream) => {
             try {
-                setMr(new MediaRecorder(theStream, { mimeType: 'audio/webm' }))
+                setMr(new MediaRecorder(theStream, { mimeType: 'audio/webm', audioBitsPerSecond: 320000 }))
             } catch (error) {
                 console.log('This browser does not support mime type: audio/webm')
             }
             
             try {
-                setMr(new MediaRecorder(theStream, { mimeType: 'audio/mp4' }))
+                setMr(new MediaRecorder(theStream, { mimeType: 'audio/mp4', audioBitsPerSecond: 320000 }))
             } catch (error) {
                 console.log('This browser does not support mime type: audio/mp4')
             }

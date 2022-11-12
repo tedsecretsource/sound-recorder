@@ -11,3 +11,6 @@ main button.record-play.recording-audio {
     color: white;
 }
   
+.recordings-list {
+    width: 100%;
+}
