@@ -4,21 +4,23 @@ exports[`With an empty list of recordings renders Sound Recorder title 1`] = `
 <DocumentFragment>
   <header>
     <h1>
-      Sound Recorder
+      <a
+        href="#/"
+      >
+        Sound Recorder
+      </a>
     </h1>
   </header>
-  <main>
-    RecorderProvider
-  </main>
+  <main />
   <footer>
     <p>
       © Copyright Secret Source Technology 2022
     </p>
     <p>
       <a
-        href="./terms_of_use"
+        href="#/terms-and-conditions"
       >
-        Terms of Use
+        Terms & Conditions
       </a>
     </p>
     <p>

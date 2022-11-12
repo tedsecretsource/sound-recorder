@@ -1,11 +1,11 @@
 import {render, screen} from '@testing-library/react';
+import { HashRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import Footer from './index';
 
 test('has link to license, terms, and copyright notice', async () => {
-    render(<Footer />)
-    expect(screen.getByText('Terms of Use')).toBeInTheDocument()
-    expect(screen.getByText('Terms of Use')).toHaveAttribute('href', './terms_of_use')
+    render(<HashRouter><Footer /></HashRouter>)
+    expect(screen.getByText('Terms & Conditions')).toBeInTheDocument()
     expect(screen.getByText('License')).toBeInTheDocument()
     expect(screen.getByText('License')).toHaveAttribute('href', 'https://github.com/tedsecretsource/sound-recorder/blob/main/LICENSE.md')
     expect(screen.getByText('License')).toHaveAttribute('target', '_blank')

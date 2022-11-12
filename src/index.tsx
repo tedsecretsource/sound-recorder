@@ -2,25 +2,32 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
+import RecorderProvider from './components/RecorderProvider';
+import TermsOfUse from './components/TermsOfUse';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
 import {
-  createBrowserRouter,
+  createHashRouter,
   RouterProvider,
   Route,
 } from "react-router-dom";
 import ErrorPage from './404';
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     path: "/",
     element: <App />,
     errorElement: <ErrorPage />,
-  },
-  {
-    path: "/sound-recorder/",
-    element: <App />,
-    errorElement: <ErrorPage />,
+    children: [
+      {
+        path: "terms-and-conditions",
+        element: <TermsOfUse />,
+      },
+      {
+        path: "/sound-recorder/",
+        element: <RecorderProvider />,
+      },
+    ]
   },
 ]);
 
