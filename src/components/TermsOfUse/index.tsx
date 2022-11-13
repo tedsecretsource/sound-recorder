@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 const TermsOfUse = () => {
-  const [terms, setTerms] = useState('');
+  const [terms, setTerms] = useState<string>('');
 
   useEffect(() => {
     let termsURL = `${process.env.PUBLIC_URL}/terms_of_use.html`;
@@ -15,8 +15,6 @@ const TermsOfUse = () => {
   }, [terms]);
 
   return (
-    // <div
-    //   dangerouslySetInnerHTML={{__html: terms}}></div>
     <div>
       <h1 id="termsofusesoundrecorder">Terms of Use Sound Recorder</h1>
 <p>Last revised on 11-11-2022</p>
