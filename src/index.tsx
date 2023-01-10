@@ -8,8 +8,7 @@ import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
 import {
   createHashRouter,
-  RouterProvider,
-  Route,
+  RouterProvider
 } from "react-router-dom";
 import ErrorPage from './404';
 

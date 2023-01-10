@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Recording from '../Recording'
 import Visualizer from '../Visualizer'
 import './style.css'
@@ -9,6 +9,7 @@ interface recorderProps {
   
 const Recorder = (props?: recorderProps) => {
     const { mediaRecorder } = props
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [recorderState, setRecorderState] = useState('inactive')
     const [recordings, setRecordings] = useState<any[]>([]);
     const defaultRecordClass = 'record-play'
