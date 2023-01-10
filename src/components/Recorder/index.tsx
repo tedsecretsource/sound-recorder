@@ -102,7 +102,8 @@ const Recorder = (props?: recorderProps) => {
                     name={recording.name} 
                     id={recording.id} 
                     onDeleteHandler={deleteRecording} 
-                    onEditNameHandler={editRecordingName} />
+                    onEditNameHandler={editRecordingName}
+                    mimeType={mediaRecorder.mimeType} />
             )
         })
         
