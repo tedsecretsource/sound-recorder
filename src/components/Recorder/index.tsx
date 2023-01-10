@@ -13,7 +13,8 @@ const Recorder = (props?: recorderProps) => {
     const [recordings, setRecordings] = useState<any[]>([]);
     const defaultRecordClass = 'record-play'
     let recordButtonClassesText = defaultRecordClass
-    let chunks: any[] = useMemo(() => [], [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let chunks: any[] = []
 
     useEffect(() => {
         if( mediaRecorder ) {
