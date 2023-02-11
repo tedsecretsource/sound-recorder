@@ -13,11 +13,11 @@ const Recording = (props: RecordingProps) => {
 
     const { streamURL, name, onDeleteHandler, onEditNameHandler, id, mimeType } = props
 
-    const deleteRecording = (e) => {
+    const deleteRecording = (e: any) => {
         onDeleteHandler(e)
     }
 
-    const editName = (e) => {
+    const editName = (e: any) => {
         onEditNameHandler(e)
     }
 
