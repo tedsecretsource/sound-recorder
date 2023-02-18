@@ -1,15 +1,13 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import setupMockedMediaDevices from '../../__nativeBrowserObjectMocks__/nativeBrowserObjects'
+import { render } from '@testing-library/react'
 import Visualizer from './index'
 
-/**
- * We need to mock the getUserMedia function
- * https://github.com/goldingdamien/get-user-media-mock
- * https://jestjs.io/docs/manual-mocks#mocking-methods-which-are-not-implemented-in-jsdom
- */
+setupMockedMediaDevices()
+var mr = new global.MediaRecorder(new MediaStream(), { mimeType: 'audio/mp4' })
+
+
 
 it('renders without crashing', () => {
-    const div = document.createElement('div');
-    ReactDOM.render(<Visualizer />, div);
+    render(<Visualizer stream={mr.stream} barColor={[18,124,85]} />);
 })
 

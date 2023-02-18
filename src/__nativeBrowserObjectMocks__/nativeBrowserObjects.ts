@@ -20,17 +20,56 @@ const setupMockedMediaDevices = () => {
     Object.defineProperty(global, 'MediaStream', {
       writable: true,
       value: jest.fn().mockImplementation(() => {
-        return ({
+        return {
           active: true,
           id: `id${window.performance.now().toString()}`,
           onactive: jest.fn(),
           onaddtrack: jest.fn(),
           oninactive: jest.fn(),
           onremovetrack: jest.fn(),
-        })
+          addEventListener: jest.fn(),
+          removeEventListener: jest.fn(),
+          dispatchEvent: jest.fn(),
+        }
       })
       .mockName('MediaStream')
     })
+
+    Object.defineProperty(global.MediaStream.prototype, 'active', {
+      writable: true,
+      value: true
+    })
+
+    Object.defineProperty(global.MediaStream.prototype, 'id', {
+      writable: true,
+      value: `id${window.performance.now().toString()}`
+    })
+
+    class AudioContextMock {
+      createMediaStreamSource = jest.fn().mockReturnValue({
+        connect: jest.fn(),
+        disconnect: jest.fn(),
+        onended: jest.fn(),
+        onmute: jest.fn(),
+        onunmute: jest.fn(),
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+        dispatchEvent: jest.fn(),
+      });
+      createAnalyser = jest.fn().mockReturnValue({
+        fftSize: 2048,
+        frequencyBinCount: 1024,
+        getFloatFrequencyData: jest.fn(),
+        getByteFrequencyData: jest.fn(),
+        getFloatTimeDomainData: jest.fn(),
+        getByteTimeDomainData: jest.fn(),
+      });
+      resume = jest.fn();
+      suspend = jest.fn();
+    }
+    
+    (global as any).AudioContext = AudioContextMock;
+    
 
     Object.defineProperty(global, 'MediaRecorder', {
       writable: true,
@@ -69,6 +108,7 @@ const setupMockedMediaDevices = () => {
       writable: true,
       value: () => true
     })
+
 
     Object.defineProperty(global.URL, 'createObjectURL', {
       writable: true,

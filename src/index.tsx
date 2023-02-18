@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App';
 import RecorderProvider from './components/RecorderProvider';
@@ -30,12 +30,13 @@ const router = createHashRouter([
   },
 ]);
 
-ReactDOM.render(
+const container = document.getElementById('root');
+const root = createRoot(container!)
+root.render(
   <React.StrictMode>
     <RouterProvider router={router} />
   </React.StrictMode>,
-  document.getElementById('root')
-);
+)
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

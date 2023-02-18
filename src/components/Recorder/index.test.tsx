@@ -33,10 +33,10 @@ var mr = new global.MediaRecorder(new MediaStream(), { mimeType: 'audio/mp4' })
 describe('With an empty list of recordings', () => {
   beforeEach( async () => {
     jest.spyOn(mr, 'start').mockImplementation(() => {
-      mr.state = 'recording'
+      (mr.state as any) = 'recording'
     })
     jest.spyOn(mr, 'stop').mockImplementation(() => {
-      mr.state = 'inactive'
+      (mr.state as any) = 'inactive'
     })
 
     await act(async () => {
@@ -104,10 +104,10 @@ describe('With a list of recordings', () => {
     mockConfirm.mockReturnValue(true)
 
     jest.spyOn(mr, 'start').mockImplementation(() => {
-      mr.state = 'recording'
+      (mr.state as any) = 'recording'
     })
     jest.spyOn(mr, 'stop').mockImplementation(() => {
-      mr.state = 'inactive'
+      (mr.state as any) = 'inactive'
     })
 
     await act(async () => {
