@@ -3,6 +3,27 @@ import {act, render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Recorder from './index'
 
+jest.mock('../../hooks/useIndexedDB', () => () => {
+  const originalModule = jest.requireActual('../../hooks/useIndexedDB');
+
+  return {
+    __esModule: true,
+    ...originalModule,
+    connectionIsOpen: true,
+    getRecordingFromDB: jest.fn(() => Promise.resolve({
+      id: 1,
+      name: 'test',
+      data: new Blob(['test'], { type: 'audio/mp4' }),
+      length: 0,
+      audioURL: 'test'
+    })),
+    getAllRecordingsFromDB: jest.fn(() => Promise.resolve([])),
+    addRecording: jest.fn(() => Promise.resolve(Math.floor(Math.random() * 100000))),
+    putRecording: jest.fn(() => Promise.resolve(true)),
+    deleteRecordingFromDB: jest.fn(() => Promise.resolve(true)),
+  }
+})
+
 jest.mock('../Visualizer', () => () => 'Visualizer')
 const user = userEvent.setup()
 
@@ -10,24 +31,30 @@ setupMockedMediaDevices()
 var mr = new global.MediaRecorder(new MediaStream(), { mimeType: 'audio/mp4' })
 
 describe('With an empty list of recordings', () => {
-  beforeEach( () => {
+  beforeEach( async () => {
     jest.spyOn(mr, 'start').mockImplementation(() => {
       mr.state = 'recording'
     })
     jest.spyOn(mr, 'stop').mockImplementation(() => {
       mr.state = 'inactive'
     })
-    act(() => {
-      render(<Recorder mediaRecorder={mr} />);
+
+    await act(async () => {
+      await render(<Recorder mediaRecorder={mr} />);
     })
   });
+
+  afterEach(() => {
+    jest.resetAllMocks()
+    // delete saved recordings from indexedDB
+  })
   
   it('renders without crashing', () => {
     const button = screen.getByRole("button", {name: 'Record'});
     expect(button).toBeInTheDocument();
     expect(button).toHaveClass('record-play')
   });
-  
+
   it('user can start a recording pressing the button', async () => {
     const button = screen.getByRole("button", { name: 'Record' })
     expect(button).toHaveClass('record-play')
@@ -82,9 +109,15 @@ describe('With a list of recordings', () => {
     jest.spyOn(mr, 'stop').mockImplementation(() => {
       mr.state = 'inactive'
     })
-    act(() => {
-      render(<Recorder mediaRecorder={mr} />);
+
+    await act(async () => {
+      await render(<Recorder mediaRecorder={mr} />);
     })
+  })
+
+  afterEach(() => {
+    jest.resetAllMocks()
+    // delete saved recordings from indexedDB
   })
 
   afterAll(() => {
@@ -125,6 +158,7 @@ describe('With a list of recordings', () => {
     expect(newRecordings).toHaveLength(recordings.length + 1)
   })
 
+  // this does not currently test the renaming in the database
   it('a recording can be renamed', async () => {
     const recButton = screen.getByRole("button", { name: 'Record' })
     await user.click(recButton)

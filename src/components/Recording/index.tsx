@@ -5,7 +5,7 @@ interface RecordingProps {
     name: string,
     onDeleteHandler: (e) => void,
     onEditNameHandler: (e) => void,
-    id: string,
+    id: number,
     mimeType: string
 }
 
@@ -13,16 +13,16 @@ const Recording = (props: RecordingProps) => {
 
     const { streamURL, name, onDeleteHandler, onEditNameHandler, id, mimeType } = props
 
-    const deleteRecording = (e) => {
+    const deleteRecording = (e: any) => {
         onDeleteHandler(e)
     }
 
-    const editName = (e) => {
+    const editName = (e: any) => {
         onEditNameHandler(e)
     }
 
     return (
-        <article id={id}>
+        <article id={id?.toString()}>
             <audio controls={true} preload="metadata" role="application">
                 <source src={streamURL} type={mimeType} />
             </audio>

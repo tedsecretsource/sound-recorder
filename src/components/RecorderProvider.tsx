@@ -22,6 +22,7 @@ const RecoderProvider = () => {
         .catch((error) => {
             console.log('You need to allow access to your microphone to use this app')
         })
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
