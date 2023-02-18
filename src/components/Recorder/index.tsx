@@ -122,8 +122,12 @@ const Recorder = (props?: recorderProps) => {
             return false
         })
         let index = recordings.indexOf(targetItem[0])
-        console.log(index)
         let newName = window.prompt('Enter a new name', targetItem[0].name) ?? targetItem[0].name // necessary because this returns null if the user doesn't enter anything
+        newName = newName.replace(/^\s+|\s+$/g, "")
+        if( newName === '' || newName === null || newName === undefined || newName.length > 500) {
+            newName = targetItem[0].name
+            console.info('The name must not be blank and less than 500 characters.')
+        }
         targetItem[0].name = newName
         newRecordings.splice(index, 1, targetItem[0])
         // commit new name to database
