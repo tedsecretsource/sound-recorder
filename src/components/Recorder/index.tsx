@@ -1,17 +1,23 @@
 import { useEffect, useState } from 'react'
-import { IDBPDatabase } from 'idb/with-async-ittr';
-import { SoundRecorderDB } from '../../SoundRecorderTypes';
+import useIndexedDB from '../../hooks/useIndexedDB'
 import Recording from '../Recording'
 import Visualizer from '../Visualizer'
 import './style.css'
 
 interface recorderProps {
     mediaRecorder?: MediaRecorder
-    db?: IDBPDatabase<SoundRecorderDB>
 }
   
 const Recorder = (props?: recorderProps) => {
-    const { mediaRecorder, db } = props
+    const { mediaRecorder } = props
+    const {
+        connectionIsOpen,
+        getRecordingFromDB, 
+        getAllRecordingsFromDB, 
+        addRecording, 
+        putRecording,
+        deleteRecordingFromDB
+    } = useIndexedDB()
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [recorderState, setRecorderState] = useState('inactive')
     const [recordings, setRecordings] = useState<any[]>([])
@@ -25,11 +31,11 @@ const Recorder = (props?: recorderProps) => {
         if( mediaRecorder ) {
 
             mediaRecorder.onstart = () => {
-                console.log('started recording')
+                console.info('started recording')
             }
         
             mediaRecorder.onstop = () => {
-                console.log('stopped recording')
+                console.info('stopped recording')
             }
         
             mediaRecorder.ondataavailable = (e) => {
@@ -39,42 +45,59 @@ const Recorder = (props?: recorderProps) => {
     }, [mediaRecorder, chunks])
 
     useEffect(() => {
-        if( db ) {
-            db.getAll('recordings').then((savedRecordings) => {
-                // create a URL for each recording so we can play it
-                savedRecordings.forEach((recording) => {
-                    if( null !== recording.data ) {
-                        recording.audioURL = window.URL.createObjectURL(recording.data)
-                    }
-                })
+        if( connectionIsOpen ) {
+            getAllRecordingsFromDB()
+                .then((savedRecordings) => {
+                    // create a URL for each recording so we can play it
+                    savedRecordings.forEach((recording) => {
+                        if( null !== recording.data ) {
+                            recording.audioURL = window.URL.createObjectURL(recording.data)
+                        }
+                    })
 
-                setRecordings(savedRecordings)
-            })
-        }
-    }, [db])
+                    setRecordings(savedRecordings)
+                })
+                .catch((error) => {
+                    console.error(error)
+                })
+            }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [connectionIsOpen])
 
     const updateRecordingsList = () => {
         const blob = new Blob(chunks, { 'type' : mediaRecorder.mimeType })
         const audioURL = window.URL.createObjectURL(blob)
+        // console.error('currentRecording', currentRecording)
     
+        const newRecordingObj = {
+            data: blob,
+            audioURL: audioURL,
+            name: new Date().toISOString().split('.')[0].split('T').join(' '),
+            id: currentRecording,
+            length: 0
+        }
+        
         // push the new recording to the recordings list
-        setRecordings(currentRecordings => {
-            const newRecording = {
-                data: blob,
-                audioURL: audioURL,
-                name: new Date().toISOString().split('.')[0].split('T').join(' '),
-                id: currentRecording,
-                length: 0
-            }
-            db.put('recordings', newRecording)
-            return [...currentRecordings, ...[newRecording]]
+        setRecordings(recordings => {
+            return [...recordings, ...[newRecordingObj]]
         })
-    
+        
+        if( connectionIsOpen ) {
+            putRecording(newRecordingObj)
+                .then(() => {
+                    console.info('saved recording')
+                })
+                .catch((error) => {
+                    console.error(error)
+                })
+        }
         chunks = []
     }
 
     const initRecording = async () => {
-        setCurrentRecording(await db.add('recordings', { name: 'New Recording', length: 0, audioURL: '', data: null }))
+        if( connectionIsOpen ) {
+            setCurrentRecording(await addRecording({ name: 'New Recording', length: 0, audioURL: '', data: null }))
+        }
     }
 
     const toggleRecording = () => {
@@ -99,17 +122,24 @@ const Recorder = (props?: recorderProps) => {
             return false
         })
         let index = recordings.indexOf(targetItem[0])
+        console.log(index)
         let newName = window.prompt('Enter a new name', targetItem[0].name) ?? targetItem[0].name // necessary because this returns null if the user doesn't enter anything
         targetItem[0].name = newName
         newRecordings.splice(index, 1, targetItem[0])
+        // commit new name to database
+        if( connectionIsOpen ) {
+            putRecording(targetItem[0])
+                .then(() => {
+                    console.info('saved recording')
+                })
+                .catch((error) => {
+                    console.error(error)
+                })
+        }
         setRecordings(newRecordings)
     }
 
-    const deleteRecordingFromDB = async (id: number) => {
-        await db.delete("recordings", id)
-    }
-
-    const deleteRecording = (e) => {
+    const deleteRecording = async (e) => {
         let id = e.target.parentNode.attributes.id.value
         let deleteRecording = window.confirm('Are you sure you want to delete this recording?')
         if (deleteRecording === true) {
@@ -120,7 +150,7 @@ const Recorder = (props?: recorderProps) => {
                 return false
             })
             e.target.parentNode.classList.add('vanish')
-            deleteRecordingFromDB(parseInt(id))
+            await deleteRecordingFromDB(parseInt(id))
             setTimeout(() => {
                 setRecordings([...newRecordings])
             }, 900)

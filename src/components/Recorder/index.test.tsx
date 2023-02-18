@@ -1,23 +1,26 @@
 import setupMockedMediaDevices from '../../__nativeBrowserObjectMocks__/nativeBrowserObjects'
-import { openDB } from 'idb/with-async-ittr';
-import { SoundRecorderDB } from '../../SoundRecorderTypes';
-import "fake-indexeddb/auto"
 import {act, render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Recorder from './index'
 
-jest.mock('idb/with-async-ittr', () => {
-  const originalModule = jest.requireActual('idb/with-async-ittr');
-  
+jest.mock('../../hooks/useIndexedDB', () => () => {
+  const originalModule = jest.requireActual('../../hooks/useIndexedDB');
+
   return {
+    __esModule: true,
     ...originalModule,
-    openDB: (...args: any[]) => {
-      const db = originalModule.openDB(...args)
-      db.put = (storeName: string, value: any, key?: any) => {
-        return Promise.resolve()
-      }
-      return db
-    }
+    connectionIsOpen: true,
+    getRecordingFromDB: jest.fn(() => Promise.resolve({
+      id: 1,
+      name: 'test',
+      data: new Blob(['test'], { type: 'audio/mp4' }),
+      length: 0,
+      audioURL: 'test'
+    })),
+    getAllRecordingsFromDB: jest.fn(() => Promise.resolve([])),
+    addRecording: jest.fn(() => Promise.resolve(Math.floor(Math.random() * 100000))),
+    putRecording: jest.fn(() => Promise.resolve(true)),
+    deleteRecordingFromDB: jest.fn(() => Promise.resolve(true)),
   }
 })
 
@@ -35,27 +38,15 @@ describe('With an empty list of recordings', () => {
     jest.spyOn(mr, 'stop').mockImplementation(() => {
       mr.state = 'inactive'
     })
-    const db = await openDB<SoundRecorderDB>('test-db', 1, {
-      upgrade(db) {
-        db.createObjectStore('recordings', { keyPath: 'id', autoIncrement: true });
-      }
-    })
+
     await act(async () => {
-      await render(<Recorder mediaRecorder={mr} db={db} />);
+      await render(<Recorder mediaRecorder={mr} />);
     })
   });
 
   afterEach(() => {
     jest.resetAllMocks()
     // delete saved recordings from indexedDB
-    const db = openDB<SoundRecorderDB>('test-db', 1, {
-      upgrade(db) {
-        db.createObjectStore('recordings', { keyPath: 'id', autoIncrement: true });
-      }
-    })
-    db.then((db) => {
-      db.clear('recordings')
-    })
   })
   
   it('renders without crashing', () => {
@@ -118,27 +109,15 @@ describe('With a list of recordings', () => {
     jest.spyOn(mr, 'stop').mockImplementation(() => {
       mr.state = 'inactive'
     })
-    const db = await openDB<SoundRecorderDB>('test-db', 1, {
-      upgrade(db) {
-        db.createObjectStore('recordings', { keyPath: 'id', autoIncrement: true });
-      }
-    })
+
     await act(async () => {
-      await render(<Recorder mediaRecorder={mr} db={db} />);
+      await render(<Recorder mediaRecorder={mr} />);
     })
   })
 
   afterEach(() => {
     jest.resetAllMocks()
     // delete saved recordings from indexedDB
-    const db = openDB<SoundRecorderDB>('test-db', 1, {
-      upgrade(db) {
-        db.createObjectStore('recordings', { keyPath: 'id', autoIncrement: true });
-      }
-    })
-    db.then((db) => {
-      db.clear('recordings')
-    })
   })
 
   afterAll(() => {
@@ -179,6 +158,7 @@ describe('With a list of recordings', () => {
     expect(newRecordings).toHaveLength(recordings.length + 1)
   })
 
+  // this does not currently test the renaming in the database
   it('a recording can be renamed', async () => {
     const recButton = screen.getByRole("button", { name: 'Record' })
     await user.click(recButton)
