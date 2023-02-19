@@ -1,14 +1,14 @@
 {
   "files": {
-    "main.css": "/static/css/main.2fab9262.css",
-    "main.js": "/static/js/main.b4923656.js",
-    "service-worker.js": "/service-worker.js",
-    "index.html": "/index.html",
-    "main.2fab9262.css.map": "/static/css/main.2fab9262.css.map",
-    "main.b4923656.js.map": "/static/js/main.b4923656.js.map"
+    "main.css": "/sound-recorder/static/css/main.2fab9262.css",
+    "main.js": "/sound-recorder/static/js/main.7e6d52f0.js",
+    "service-worker.js": "/sound-recorder/service-worker.js",
+    "index.html": "/sound-recorder/index.html",
+    "main.2fab9262.css.map": "/sound-recorder/static/css/main.2fab9262.css.map",
+    "main.7e6d52f0.js.map": "/sound-recorder/static/js/main.7e6d52f0.js.map"
   },
   "entrypoints": [
     "static/css/main.2fab9262.css",
-    "static/js/main.b4923656.js"
+    "static/js/main.7e6d52f0.js"
   ]
 }
