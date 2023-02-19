@@ -1,25 +1,14 @@
 {
   "files": {
-    "main.css": "/sound-recorder/static/css/main.4676d2c2.chunk.css",
-    "main.js": "/sound-recorder/static/js/main.754319ac.chunk.js",
-    "main.js.map": "/sound-recorder/static/js/main.754319ac.chunk.js.map",
-    "runtime-main.js": "/sound-recorder/static/js/runtime-main.d5523d9d.js",
-    "runtime-main.js.map": "/sound-recorder/static/js/runtime-main.d5523d9d.js.map",
-    "static/js/2.17c737d3.chunk.js": "/sound-recorder/static/js/2.17c737d3.chunk.js",
-    "static/js/2.17c737d3.chunk.js.map": "/sound-recorder/static/js/2.17c737d3.chunk.js.map",
-    "static/js/3.4a33d877.chunk.js": "/sound-recorder/static/js/3.4a33d877.chunk.js",
-    "static/js/3.4a33d877.chunk.js.map": "/sound-recorder/static/js/3.4a33d877.chunk.js.map",
-    "index.html": "/sound-recorder/index.html",
-    "service-worker.js": "/sound-recorder/service-worker.js",
-    "service-worker.js.LICENSE.txt": "/sound-recorder/service-worker.js.LICENSE.txt",
-    "service-worker.js.map": "/sound-recorder/service-worker.js.map",
-    "static/css/main.4676d2c2.chunk.css.map": "/sound-recorder/static/css/main.4676d2c2.chunk.css.map",
-    "static/js/2.17c737d3.chunk.js.LICENSE.txt": "/sound-recorder/static/js/2.17c737d3.chunk.js.LICENSE.txt"
+    "main.css": "/static/css/main.2fab9262.css",
+    "main.js": "/static/js/main.b4923656.js",
+    "service-worker.js": "/service-worker.js",
+    "index.html": "/index.html",
+    "main.2fab9262.css.map": "/static/css/main.2fab9262.css.map",
+    "main.b4923656.js.map": "/static/js/main.b4923656.js.map"
   },
   "entrypoints": [
-    "static/js/runtime-main.d5523d9d.js",
-    "static/js/2.17c737d3.chunk.js",
-    "static/css/main.4676d2c2.chunk.css",
-    "static/js/main.754319ac.chunk.js"
+    "static/css/main.2fab9262.css",
+    "static/js/main.b4923656.js"
   ]
 }
