@@ -1,37 +1,3 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`With an empty list of recordings renders Sound Recorder title 1`] = `
-<DocumentFragment>
-  <header>
-    <h1>
-      <a
-        href="#/"
-      >
-        Sound Recorder
-      </a>
-    </h1>
-  </header>
-  <main />
-  <footer>
-    <p>
-      © Copyright Secret Source Technology 2022
-    </p>
-    <p>
-      <a
-        href="#/terms-and-conditions"
-      >
-        Terms & Conditions
-      </a>
-    </p>
-    <p>
-      <a
-        href="https://github.com/tedsecretsource/sound-recorder/blob/main/LICENSE.md"
-        rel="noreferrer"
-        target="_blank"
-      >
-        License
-      </a>
-    </p>
-  </footer>
-</DocumentFragment>
-`;
+exports[`With an empty list of recordings renders Sound Recorder title 1`] = `<DocumentFragment />`;
