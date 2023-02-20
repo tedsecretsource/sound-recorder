@@ -4,7 +4,10 @@ body {
   height: 100vh;
   margin: 0;
   background-color: rgb(27, 30, 38);
-  color: rgb(0,162,144)
+  color: rgb(0,162,144);
+  max-width: 450px;
+  margin-right: auto;
+  margin-left: auto;
 }
 
 a {
