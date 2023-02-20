@@ -1,6 +1,7 @@
 footer {
-    display: flex;
-    width: 100%;
-    flex-direction: row;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 2fr;
+    padding: 20px;
+    background-color: black;
 }
