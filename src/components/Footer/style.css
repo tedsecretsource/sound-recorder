@@ -2,6 +2,10 @@ footer {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 2fr;
-    padding: 20px;
-    background-color: black;
+    padding: 20px 10px 10px 10px;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+footer p {
+    margin: 6px 0;
 }
