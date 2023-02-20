@@ -3,6 +3,7 @@ import { Link, Outlet, useLocation } from "react-router-dom"
 import RecorderProvider from './components/RecorderProvider'
 import Footer from './components/Footer'
 import './App.css';
+import Logo from './components/Logo'
 
 function App() {
 
@@ -21,7 +22,12 @@ function App() {
   return (
     <>
     <header>
-      <h1><Link to="/">Sound Recorder</Link></h1>
+      <h1 style={{marginTop: "0"}}>
+        <Link to="/" className='logo'>
+          <Logo />
+          <div>Sound Recorder</div>
+        </Link>
+      </h1>
     </header>
     <main>
       {outlet}

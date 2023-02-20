@@ -1,14 +1,20 @@
 main button.record-play {
     align-self: center;
-    background-color: rgb(14, 60, 14);
-    color: white;
+    background-color: rgb(88,86,86);
     font-weight: 700;
+    min-width: 150px;
+    min-height: 150px;
+    border-radius: 50%;
+    margin: 20px;
+    color: rgb(0,162,144);
+    font-size: 1.5rem;
 }
 
 main button.record-play.recording-audio {
     background-color: tomato;
     border-color: rgb(206, 74, 51);
     color: white;
+    border-radius: 0;
 }
   
 .recordings-list {

@@ -1,9 +1,80 @@
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  margin: 0;
+  background-color: rgb(27, 30, 38);
+  color: rgb(0,162,144);
+  max-width: 450px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+a {
+  color: rgb(0,162,144);
+}
+
+a:visited {
+  color: rgb(0,206,186);
+}
+
+a.logo {
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+a.logo div {
+  font-size: 1rem;
+}
+
+img.logo-file {
+  height: 100px;
+  width: 100px;
+  margin: 10px;
+}
+
 div#root {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  background-color: black;
+}
+
+main {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+footer {
+  position: sticky;
+  bottom: 0;
+}
+
+
+/* https://stackoverflow.com/questions/1575141/how-to-make-a-div-100-height-of-the-browser-window */
+/* div#root {
   margin: 0.5rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
+  min-height: 100vh;
+  place-content: space-between;
 }
 
 main {
@@ -17,4 +88,4 @@ header {
   display: flex;
   width: 100%;
   justify-content: center;
-}
+} */
