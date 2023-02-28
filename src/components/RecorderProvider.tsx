@@ -10,13 +10,13 @@ const RecoderProvider = () => {
             try {
                 setMr(new MediaRecorder(theStream, { mimeType: 'audio/webm;codecs="opus"', audioBitsPerSecond: 1441000 }))
             } catch (error) {
-                console.log('This browser does not support mime type: audio/webm')
+                console.log('Using mimetype audio/mp4. This browser does not support mime type: audio/webm')
             }
             
             try {
                 setMr(new MediaRecorder(theStream, { mimeType: 'audio/mp4', audioBitsPerSecond: 1441000 }))
             } catch (error) {
-                console.log('This browser does not support mime type: audio/mp4')
+                console.log('Using mimetype audio/webm. This browser does not support mime type: audio/mp4')
             }
         })
         .catch((error) => {
