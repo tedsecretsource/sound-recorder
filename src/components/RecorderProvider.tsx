@@ -7,17 +7,22 @@ const RecoderProvider = () => {
     useEffect(() => {
         navigator.mediaDevices.getUserMedia({ video: false, audio: true })
         .then((theStream) => {
+            
+            // everything except Safari
             try {
                 setMr(new MediaRecorder(theStream, { mimeType: 'audio/webm;codecs="opus"', audioBitsPerSecond: 1441000 }))
+                console.log('Using mimetype audio/webm.')
             } catch (error) {
-                console.log('Using mimetype audio/mp4. This browser does not support mime type: audio/webm')
+                console.log('Unable to initialize audio using mimetype audio/webm.')
             }
-            
+            // Safari
             try {
                 setMr(new MediaRecorder(theStream, { mimeType: 'audio/mp4', audioBitsPerSecond: 1441000 }))
+                console.log('Using mimetype audio/mp4.')
             } catch (error) {
-                console.log('Using mimetype audio/webm. This browser does not support mime type: audio/mp4')
+                console.log('Unable to initialize audio using mimetype audio/mp4.')
             }
+
         })
         .catch((error) => {
             console.log('You need to allow access to your microphone to use this app')
