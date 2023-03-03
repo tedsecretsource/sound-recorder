@@ -2,7 +2,6 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App';
-import RecorderProvider from './components/RecorderProvider';
 import TermsOfUse from './components/TermsOfUse';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import {
@@ -10,6 +9,10 @@ import {
   RouterProvider
 } from "react-router-dom";
 import ErrorPage from './404';
+import RecordingsList from './components/RecordingsList/RecordingsList';
+import Settings from './components/Settings/settings';
+import User from './components/User/user';
+import Recorder from './components/Recorder';
 
 const router = createHashRouter([
   {
@@ -22,8 +25,20 @@ const router = createHashRouter([
         element: <TermsOfUse />,
       },
       {
+        path: "recordings",
+        element: <RecordingsList />,
+      },
+      {
+        path: "settings",
+        element: <Settings />,
+      },
+      {
+        path: "user",
+        element: <User />,
+      },
+      {
         path: "/sound-recorder/",
-        element: <RecorderProvider />,
+        element: <Recorder />,
       },
     ]
   },
