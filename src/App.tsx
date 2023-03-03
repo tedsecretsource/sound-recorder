@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link, Outlet, useLocation } from "react-router-dom"
-import RecorderProvider from './components/RecorderProvider'
 import Footer from './components/Footer'
 import './App.css';
 import Logo from './components/Logo'
+import Recorder from './components/Recorder';
 
 function App() {
 
@@ -13,7 +13,7 @@ function App() {
 
   useEffect(() => {
     if( location.pathname === '/' ) {
-      setOutlet(<RecorderProvider />)
+      setOutlet(<Recorder />)
     } else {
       setOutlet(<Outlet />)
     }
