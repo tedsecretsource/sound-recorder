@@ -23,7 +23,7 @@
   "start_url": ".",
   "scope": ".",
   "id": "com.secretsource.soundrecorder",
-  "display": "fullscreen",
+  "display": "standalone",
   "theme_color": "#2BACA1",
   "background_color": "#0E1011",
   "description": "Sound Recorder is a free, simple and easy to use audio recording app. It is a perfect app for recording meetings, personal notes, classes, songs, and much more."

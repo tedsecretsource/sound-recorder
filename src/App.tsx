@@ -22,10 +22,10 @@ function App() {
   return (
     <>
     <header>
-      <h1 style={{marginTop: "0"}}>
+      <h1 style={{marginTop: "0", marginBottom: "0"}}>
         <Link to="/" className='logo'>
           <Logo />
-          <div>Sound Recorder</div>
+          Sound Recorder
         </Link>
       </h1>
     </header>
