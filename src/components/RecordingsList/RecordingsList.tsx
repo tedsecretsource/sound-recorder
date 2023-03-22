@@ -95,7 +95,7 @@ const RecordingsList = () => {
                 </>
             )
         } else {
-            return recordings.map((recording, index) => {
+            return recordings.slice(0).reverse().map((recording, index) => {
                 return (
                     <Recording 
                     streamURL={recording.audioURL} 
