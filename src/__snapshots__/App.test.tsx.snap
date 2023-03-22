@@ -4,7 +4,7 @@ exports[`With an empty list of recordings renders Sound Recorder title 1`] = `
 <DocumentFragment>
   <header>
     <h1
-      style="margin-top: 0px;"
+      style="margin-top: 0px; margin-bottom: 0px;"
     >
       <a
         class="logo"
@@ -15,9 +15,7 @@ exports[`With an empty list of recordings renders Sound Recorder title 1`] = `
           class="logo-file"
           src="/logo512.webp"
         />
-        <div>
-          Sound Recorder
-        </div>
+        Sound Recorder
       </a>
     </h1>
   </header>

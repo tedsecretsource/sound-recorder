@@ -45,9 +45,6 @@ setupMockedMediaDevices()
 
 // jest.mock('./components/Recorder', () => () => 'Recorder')
 describe('With an empty list of recordings', () => {
-  beforeEach(() => {
-  })
-
   test('renders Sound Recorder title', async () => {
     let tree
     const view = render(<HashRouter><App /></HashRouter>)
