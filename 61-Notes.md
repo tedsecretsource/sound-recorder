@@ -10,6 +10,8 @@
         - delete useEffect (not needed)
         - delete other unused variables and imports
 3. Write the missing tests (see https://github.com/tedsecretsource/sound-recorder/issues/61)
+    - Again, we need to mock the `useOutletContext` hook and friends
+    - Also, the proposed tests are better done in cyprus
 4. import useGetMediaRecorder in App.tsx
 7. import useOutletContext from react-router-dom in App.tsx
 10. Add a type for getUserMedia as per the docs https://reactrouter.com/en/main/hooks/use-outlet-context#useoutletcontext in App.tsx

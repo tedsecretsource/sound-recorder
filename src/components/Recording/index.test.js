@@ -1,4 +1,3 @@
-import React from 'react';
 import Recording from './index'
 import { render } from '@testing-library/react'
 
