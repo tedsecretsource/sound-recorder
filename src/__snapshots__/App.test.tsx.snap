@@ -19,16 +19,7 @@ exports[`With an empty list of recordings renders Sound Recorder title 1`] = `
       </a>
     </h1>
   </header>
-  <main>
-    <canvas
-      class="visualizer"
-    />
-    <button
-      class="record-play"
-    >
-      Record
-    </button>
-  </main>
+  <main />
   <footer>
     <nav>
       <ul>

@@ -6,7 +6,9 @@ import TermsOfUse from './components/TermsOfUse';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import {
   createHashRouter,
-  RouterProvider
+  createRoutesFromElements,
+  RouterProvider,
+  Route
 } from "react-router-dom";
 import ErrorPage from './404';
 import RecordingsList from './components/RecordingsList/RecordingsList';
@@ -14,35 +16,17 @@ import Settings from './components/Settings/settings';
 import User from './components/User/user';
 import Recorder from './components/Recorder';
 
-const router = createHashRouter([
-  {
-    path: "/",
-    element: <App />,
-    errorElement: <ErrorPage />,
-    children: [
-      {
-        path: "terms-and-conditions",
-        element: <TermsOfUse />,
-      },
-      {
-        path: "recordings",
-        element: <RecordingsList />,
-      },
-      {
-        path: "settings",
-        element: <Settings />,
-      },
-      {
-        path: "user",
-        element: <User />,
-      },
-      {
-        path: "/sound-recorder/",
-        element: <Recorder />,
-      },
-    ]
-  },
-]);
+const router = createHashRouter(
+  createRoutesFromElements(
+    <Route path="/" element={<App />}>
+      <Route index element={<Recorder />} />
+      <Route path="terms-and-conditions" element={<TermsOfUse />} />
+      <Route path="recordings" element={<RecordingsList />} />
+      <Route path="settings" element={<Settings />} />
+      <Route path="user" element={<User />} />
+    </Route>
+  )
+)
 
 const container = document.getElementById('root');
 const root = createRoot(container!)

@@ -1,24 +1,9 @@
-import { useState, useEffect } from 'react'
-import { Link, Outlet, useLocation } from "react-router-dom"
+import { Link, Outlet } from "react-router-dom"
 import Footer from './components/Footer'
 import './App.css';
 import Logo from './components/Logo'
-import Recorder from './components/Recorder';
 
 function App() {
-
-  let location = useLocation()
-
-  const [outlet, setOutlet] = useState(<Outlet />)
-
-  useEffect(() => {
-    if( location.pathname === '/' ) {
-      setOutlet(<Recorder />)
-    } else {
-      setOutlet(<Outlet />)
-    }
-  }, [location])
-
   return (
     <>
     <header>
@@ -30,7 +15,7 @@ function App() {
       </h1>
     </header>
     <main>
-      {outlet}
+      <Outlet />
     </main>
     <Footer />
     </>
