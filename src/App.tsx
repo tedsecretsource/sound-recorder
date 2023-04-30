@@ -2,6 +2,8 @@ import { Link, Outlet } from "react-router-dom"
 import Footer from './components/Footer'
 import './App.css';
 import Logo from './components/Logo'
+import useGetMediaRecorder from './hooks/useGetMediaRecorder'
+
 
 function App() {
   return (
