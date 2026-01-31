@@ -2,6 +2,7 @@ import '../__nativeBrowserObjectMocks__/nativeBrowserObjects'
 import { render, screen, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RecordingSessionProvider, useRecordingSession } from './RecordingSessionContext'
+import { AudioSettingsProvider } from './AudioSettingsContext'
 
 // Mock useRecordings from context
 const mockAddRecording = jest.fn(() => Promise.resolve(1))
@@ -61,6 +62,17 @@ const TestConsumer = () => {
     )
 }
 
+// Helper to wrap with required providers
+const renderWithProviders = (ui: React.ReactElement, mediaRecorder: any) => {
+    return render(
+        <AudioSettingsProvider>
+            <RecordingSessionProvider mediaRecorder={mediaRecorder}>
+                {ui}
+            </RecordingSessionProvider>
+        </AudioSettingsProvider>
+    )
+}
+
 describe('RecordingSessionProvider', () => {
     beforeEach(() => {
         jest.clearAllMocks()
@@ -74,9 +86,11 @@ describe('RecordingSessionProvider', () => {
     it('renders children', () => {
         const mockMediaRecorder = createMockMediaRecorder()
         render(
-            <RecordingSessionProvider mediaRecorder={mockMediaRecorder}>
-                <div data-testid="child">Child Content</div>
-            </RecordingSessionProvider>
+            <AudioSettingsProvider>
+                <RecordingSessionProvider mediaRecorder={mockMediaRecorder}>
+                    <div data-testid="child">Child Content</div>
+                </RecordingSessionProvider>
+            </AudioSettingsProvider>
         )
 
         expect(screen.getByTestId('child')).toHaveTextContent('Child Content')
@@ -84,11 +98,7 @@ describe('RecordingSessionProvider', () => {
 
     it('provides context value with all required fields', () => {
         const mockMediaRecorder = createMockMediaRecorder()
-        render(
-            <RecordingSessionProvider mediaRecorder={mockMediaRecorder}>
-                <TestConsumer />
-            </RecordingSessionProvider>
-        )
+        renderWithProviders(<TestConsumer />, mockMediaRecorder)
 
         expect(screen.getByTestId('isRecording')).toHaveTextContent('false')
         expect(screen.getByTestId('currentRecordingId')).toHaveTextContent('null')
@@ -125,11 +135,7 @@ describe('RecordingSession functions', () => {
 
     it('startRecording creates DB entry and starts MediaRecorder', async () => {
         const mockMediaRecorder = createMockMediaRecorder()
-        render(
-            <RecordingSessionProvider mediaRecorder={mockMediaRecorder}>
-                <TestConsumer />
-            </RecordingSessionProvider>
-        )
+        renderWithProviders(<TestConsumer />, mockMediaRecorder)
 
         await act(async () => {
             await userEvent.click(screen.getByTestId('startBtn'))
@@ -150,11 +156,7 @@ describe('RecordingSession functions', () => {
 
     it('stopRecording saves recording and resets state', async () => {
         const mockMediaRecorder = createMockMediaRecorder()
-        render(
-            <RecordingSessionProvider mediaRecorder={mockMediaRecorder}>
-                <TestConsumer />
-            </RecordingSessionProvider>
-        )
+        renderWithProviders(<TestConsumer />, mockMediaRecorder)
 
         // Start recording first
         await act(async () => {
@@ -191,11 +193,7 @@ describe('RecordingSession functions', () => {
 
     it('ondataavailable accumulates chunks', async () => {
         const mockMediaRecorder = createMockMediaRecorder()
-        render(
-            <RecordingSessionProvider mediaRecorder={mockMediaRecorder}>
-                <TestConsumer />
-            </RecordingSessionProvider>
-        )
+        renderWithProviders(<TestConsumer />, mockMediaRecorder)
 
         // Wait for useEffect to set up handlers
         await waitFor(() => {
@@ -235,11 +233,7 @@ describe('RecordingSession functions', () => {
 
     it('elapsed time increments while recording', async () => {
         const mockMediaRecorder = createMockMediaRecorder()
-        render(
-            <RecordingSessionProvider mediaRecorder={mockMediaRecorder}>
-                <TestConsumer />
-            </RecordingSessionProvider>
-        )
+        renderWithProviders(<TestConsumer />, mockMediaRecorder)
 
         expect(screen.getByTestId('elapsedTime')).toHaveTextContent('0')
 
@@ -273,11 +267,7 @@ describe('beforeunload handling', () => {
 
     it('shows confirmation when recording and user tries to close browser', async () => {
         const mockMediaRecorder = createMockMediaRecorder()
-        render(
-            <RecordingSessionProvider mediaRecorder={mockMediaRecorder}>
-                <TestConsumer />
-            </RecordingSessionProvider>
-        )
+        renderWithProviders(<TestConsumer />, mockMediaRecorder)
 
         // Start recording
         await act(async () => {
@@ -299,11 +289,7 @@ describe('beforeunload handling', () => {
 
     it('does not show confirmation when not recording', async () => {
         const mockMediaRecorder = createMockMediaRecorder()
-        render(
-            <RecordingSessionProvider mediaRecorder={mockMediaRecorder}>
-                <TestConsumer />
-            </RecordingSessionProvider>
-        )
+        renderWithProviders(<TestConsumer />, mockMediaRecorder)
 
         // Ensure we're not recording
         expect(screen.getByTestId('isRecording')).toHaveTextContent('false')
@@ -327,11 +313,7 @@ describe('MediaRecorder event handlers', () => {
         const consoleSpy = jest.spyOn(console, 'info').mockImplementation(() => {})
         const mockMediaRecorder = createMockMediaRecorder()
 
-        render(
-            <RecordingSessionProvider mediaRecorder={mockMediaRecorder}>
-                <TestConsumer />
-            </RecordingSessionProvider>
-        )
+        renderWithProviders(<TestConsumer />, mockMediaRecorder)
 
         await waitFor(() => {
             expect(mockMediaRecorder.onstart).not.toBeNull()
@@ -351,11 +333,7 @@ describe('MediaRecorder event handlers', () => {
         const consoleSpy = jest.spyOn(console, 'info').mockImplementation(() => {})
         const mockMediaRecorder = createMockMediaRecorder()
 
-        render(
-            <RecordingSessionProvider mediaRecorder={mockMediaRecorder}>
-                <TestConsumer />
-            </RecordingSessionProvider>
-        )
+        renderWithProviders(<TestConsumer />, mockMediaRecorder)
 
         await waitFor(() => {
             expect(mockMediaRecorder.onstop).not.toBeNull()
@@ -389,11 +367,7 @@ describe('Error handling', () => {
 
         const mockMediaRecorder = createMockMediaRecorder()
 
-        render(
-            <RecordingSessionProvider mediaRecorder={mockMediaRecorder}>
-                <TestConsumer />
-            </RecordingSessionProvider>
-        )
+        renderWithProviders(<TestConsumer />, mockMediaRecorder)
 
         // Start recording
         await act(async () => {

@@ -53,3 +53,37 @@ article button.editName {
     opacity: 0;
   }
 }
+
+.quality-badge {
+  margin: 0;
+  margin-left: 1rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.badge-voice {
+  background-color: #2d5a27;
+  color: #90ee90;
+}
+
+.badge-music {
+  background-color: #1e3a5f;
+  color: #87ceeb;
+}
+
+.badge-hifi {
+  background-color: #4a1e5f;
+  color: #dda0dd;
+}
+
+.badge-custom {
+  background-color: #5a4a27;
+  color: #f0e68c;
+}

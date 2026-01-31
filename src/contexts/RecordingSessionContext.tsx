@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react'
 import { useRecordings } from './RecordingsContext'
+import { useAudioSettings } from './AudioSettingsContext'
 import { createRecordingObject } from '../utils/recordingUtils'
 
 interface RecordingSessionState {
@@ -23,6 +24,7 @@ interface RecordingSessionProviderProps {
 
 export const RecordingSessionProvider = ({ children, mediaRecorder }: RecordingSessionProviderProps) => {
     const { connectionIsOpen, addRecording, updateRecording } = useRecordings()
+    const { getQualityMetadata } = useAudioSettings()
     const [state, setState] = useState<RecordingSessionState>({
         isRecording: false,
         currentRecordingId: null,
@@ -107,7 +109,13 @@ export const RecordingSessionProvider = ({ children, mediaRecorder }: RecordingS
         await new Promise(resolve => setTimeout(resolve, 100))
 
         const blob = new Blob(chunksRef.current, { type: mediaRecorder.mimeType })
-        const newRecordingObj = createRecordingObject(blob, mediaRecorder.mimeType, state.currentRecordingId)
+        const qualityMetadata = getQualityMetadata()
+        const newRecordingObj = createRecordingObject(
+            blob,
+            mediaRecorder.mimeType,
+            state.currentRecordingId,
+            qualityMetadata
+        )
 
         try {
             await updateRecording(newRecordingObj)
@@ -123,7 +131,7 @@ export const RecordingSessionProvider = ({ children, mediaRecorder }: RecordingS
             currentRecordingId: null,
             elapsedTime: 0
         })
-    }, [mediaRecorder, connectionIsOpen, state.currentRecordingId, updateRecording])
+    }, [mediaRecorder, connectionIsOpen, state.currentRecordingId, updateRecording, getQualityMetadata])
 
     const value: RecordingSessionContextValue = {
         state,

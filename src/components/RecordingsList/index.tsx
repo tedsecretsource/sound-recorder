@@ -59,7 +59,8 @@ const RecordingsList = () => {
                     id={recording.id!}
                     onDeleteHandler={handleDeleteRecording}
                     onEditNameHandler={editRecordingName}
-                    mimeType={mediaRecorder.mimeType} />
+                    mimeType={mediaRecorder.mimeType}
+                    quality={recording.quality} />
                 )
             })
         }

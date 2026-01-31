@@ -1,4 +1,5 @@
 import { DBSchema } from 'idb'
+import { QualityMetadata } from './types/AudioSettings'
 
 export interface Recording {
     id?: number
@@ -6,6 +7,7 @@ export interface Recording {
     name: string
     length: number
     audioURL: string
+    quality?: QualityMetadata
 }
 
 export interface SoundRecorderDB extends DBSchema {

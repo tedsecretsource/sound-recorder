@@ -1,16 +1,23 @@
 import { Recording } from '../SoundRecorderTypes'
+import { QualityMetadata } from '../types/AudioSettings'
 
 export function createAudioURL(blob: Blob): string {
     return window.URL.createObjectURL(blob)
 }
 
-export function createRecordingObject(blob: Blob, mimeType: string, id: number): Recording {
+export function createRecordingObject(
+    blob: Blob,
+    mimeType: string,
+    id: number,
+    quality?: QualityMetadata
+): Recording {
     return {
         data: blob,
         audioURL: createAudioURL(blob),
         name: formatRecordingName(new Date()),
         id: id,
-        length: 0
+        length: 0,
+        quality
     }
 }
 

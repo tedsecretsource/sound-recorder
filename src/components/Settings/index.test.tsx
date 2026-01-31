@@ -1,6 +1,7 @@
 import '../../__nativeBrowserObjectMocks__/nativeBrowserObjects'
 import { render, screen } from '@testing-library/react'
 import Settings from './index'
+import { AudioSettingsProvider } from '../../contexts/AudioSettingsContext'
 
 let mockMediaRecorderValue: any = {
   state: 'inactive',
@@ -26,6 +27,27 @@ jest.mock('../../App', () => ({
   useMediaRecorder: () => mockMediaRecorderValue
 }))
 
+// Mock useRecordingSession from context
+jest.mock('../../contexts/RecordingSessionContext', () => ({
+  useRecordingSession: () => ({
+    state: {
+      isRecording: false,
+      currentRecordingId: null,
+      elapsedTime: 0
+    },
+    startRecording: jest.fn(),
+    stopRecording: jest.fn()
+  })
+}))
+
+const renderSettings = () => {
+  return render(
+    <AudioSettingsProvider>
+      <Settings />
+    </AudioSettingsProvider>
+  )
+}
+
 describe('Settings component', () => {
   beforeEach(() => {
     mockMediaRecorderValue = {
@@ -49,46 +71,51 @@ describe('Settings component', () => {
   })
 
   it('renders without crashing', () => {
-    render(<Settings />)
+    renderSettings()
   })
 
   it('renders Settings heading', () => {
-    render(<Settings />)
+    renderSettings()
     expect(screen.getByRole('heading', { level: 1, name: /settings/i })).toBeInTheDocument()
   })
 
   it('renders MediaRecorder section heading', () => {
-    render(<Settings />)
+    renderSettings()
     expect(screen.getByRole('heading', { level: 2, name: /mediarecorder/i })).toBeInTheDocument()
+  })
+
+  it('renders Audio Quality section heading', () => {
+    renderSettings()
+    expect(screen.getByRole('heading', { level: 2, name: /audio quality/i })).toBeInTheDocument()
   })
 
   describe('mrStatsGenerator extracts correct stats', () => {
     it('displays stream ID', () => {
-      render(<Settings />)
+      renderSettings()
       expect(screen.getByText(/stream ID:/i)).toBeInTheDocument()
       expect(screen.getByText(/stream-id-123/)).toBeInTheDocument()
     })
 
     it('displays stream active status', () => {
-      render(<Settings />)
+      renderSettings()
       expect(screen.getByText(/stream active:/i)).toBeInTheDocument()
       expect(screen.getByText(/true/)).toBeInTheDocument()
     })
 
     it('displays mimeType', () => {
-      render(<Settings />)
+      renderSettings()
       expect(screen.getByText(/mimeType:/i)).toBeInTheDocument()
       expect(screen.getByText(/audio\/webm/)).toBeInTheDocument()
     })
 
     it('displays state', () => {
-      render(<Settings />)
+      renderSettings()
       expect(screen.getByText(/state:/i)).toBeInTheDocument()
       expect(screen.getByText(/inactive/)).toBeInTheDocument()
     })
 
     it('displays audioBitsPerSecond', () => {
-      render(<Settings />)
+      renderSettings()
       expect(screen.getByText(/audioBitsPerSecond:/i)).toBeInTheDocument()
       expect(screen.getByText(/128000/)).toBeInTheDocument()
     })
@@ -96,7 +123,7 @@ describe('Settings component', () => {
 
   describe('mrStats renders all stat items', () => {
     it('renders multiple stat paragraphs', () => {
-      render(<Settings />)
+      renderSettings()
       const statsContainer = screen.getByRole('heading', { level: 2, name: /mediarecorder/i }).parentElement
       const statParagraphs = statsContainer?.querySelectorAll('p')
       expect(statParagraphs?.length).toBeGreaterThan(0)
@@ -106,7 +133,7 @@ describe('Settings component', () => {
   describe('Loading state', () => {
     it('shows loading message when mediaRecorder is null', () => {
       mockMediaRecorderValue = null
-      render(<Settings />)
+      renderSettings()
       expect(screen.getByText(/loading mediarecorder/i)).toBeInTheDocument()
     })
   })
@@ -115,11 +142,28 @@ describe('Settings component', () => {
     it('calls console.table with track settings', () => {
       const consoleSpy = jest.spyOn(console, 'table').mockImplementation(() => {})
 
-      render(<Settings />)
+      renderSettings()
 
       expect(consoleSpy).toHaveBeenCalledWith({ deviceId: 'device-id-456' })
 
       consoleSpy.mockRestore()
+    })
+  })
+
+  describe('Audio Quality Settings', () => {
+    it('renders preset selector', () => {
+      renderSettings()
+      expect(screen.getByLabelText(/quality preset/i)).toBeInTheDocument()
+    })
+
+    it('renders file size estimate', () => {
+      renderSettings()
+      expect(screen.getByText(/estimated file size/i)).toBeInTheDocument()
+    })
+
+    it('renders advanced settings section', () => {
+      renderSettings()
+      expect(screen.getByText(/advanced settings/i)).toBeInTheDocument()
     })
   })
 })

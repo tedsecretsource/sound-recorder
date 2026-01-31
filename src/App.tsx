@@ -5,9 +5,11 @@ import Logo from './components/Logo'
 import useGetMediaRecorder from './hooks/useGetMediaRecorder'
 import { RecordingsProvider } from './contexts/RecordingsContext'
 import { RecordingSessionProvider } from './contexts/RecordingSessionContext'
+import { AudioSettingsProvider, useAudioSettings } from './contexts/AudioSettingsContext'
 
-const App = () => {
-  const mediaRecorder = useGetMediaRecorder()
+const AppContent = () => {
+  const { settings } = useAudioSettings()
+  const mediaRecorder = useGetMediaRecorder({ settings })
 
   return (
     <RecordingsProvider>
@@ -26,6 +28,14 @@ const App = () => {
         <Footer />
       </RecordingSessionProvider>
     </RecordingsProvider>
+  )
+}
+
+const App = () => {
+  return (
+    <AudioSettingsProvider>
+      <AppContent />
+    </AudioSettingsProvider>
   )
 }
 
