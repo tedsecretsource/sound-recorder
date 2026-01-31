@@ -14,12 +14,12 @@ import ErrorPage from './404';
 import RecordingsList from './components/RecordingsList'
 import Settings from './components/Settings'
 import User from './components/User'
-import Recorder from './components/Recorder';
+import RecorderControls from './components/Recorder';
 
 const router = createHashRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
-      <Route index element={<Recorder />} />
+      <Route index element={<RecorderControls />} />
       <Route path="terms-and-conditions" element={<TermsOfUse />} />
       <Route path="recordings" element={<RecordingsList />} />
       <Route path="settings" element={<Settings />} />

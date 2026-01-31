@@ -4,24 +4,27 @@ import './App.css'
 import Logo from './components/Logo'
 import useGetMediaRecorder from './hooks/useGetMediaRecorder'
 import { RecordingsProvider } from './contexts/RecordingsContext'
+import { RecordingSessionProvider } from './contexts/RecordingSessionContext'
 
 const App = () => {
   const mediaRecorder = useGetMediaRecorder()
 
   return (
     <RecordingsProvider>
-      <header>
-        <h1 style={{marginTop: "0", marginBottom: "0"}}>
-          <Link to="/" className='logo'>
-            <Logo />
-            Sound Recorder
-          </Link>
-        </h1>
-      </header>
-      <main>
-        <Outlet context={ mediaRecorder } />
-      </main>
-      <Footer />
+      <RecordingSessionProvider mediaRecorder={mediaRecorder}>
+        <header>
+          <h1 style={{marginTop: "0", marginBottom: "0"}}>
+            <Link to="/" className='logo'>
+              <Logo />
+              Sound Recorder
+            </Link>
+          </h1>
+        </header>
+        <main>
+          <Outlet context={ mediaRecorder } />
+        </main>
+        <Footer />
+      </RecordingSessionProvider>
     </RecordingsProvider>
   )
 }
