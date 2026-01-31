@@ -1,28 +1,30 @@
+import { useRef } from 'react'
 import './style.css'
 
 interface RecordingProps {
-    streamURL: string,
-    name: string,
-    onDeleteHandler: (e) => void,
-    onEditNameHandler: (e) => void,
-    id: number,
+    streamURL: string
+    name: string
+    onDeleteHandler: (id: number) => void
+    onEditNameHandler: (id: number) => void
+    id: number
     mimeType: string
 }
 
 const Recording = (props: RecordingProps) => {
-
     const { streamURL, name, onDeleteHandler, onEditNameHandler, id, mimeType } = props
+    const articleRef = useRef<HTMLElement>(null)
 
-    const deleteRecording = (e: any) => {
-        onDeleteHandler(e)
+    const deleteRecording = () => {
+        articleRef.current?.classList.add('vanish')
+        onDeleteHandler(id)
     }
 
-    const editName = (e: any) => {
-        onEditNameHandler(e)
+    const editName = () => {
+        onEditNameHandler(id)
     }
 
     return (
-        <article id={id?.toString()}>
+        <article ref={articleRef} id={id?.toString()}>
             <audio controls={true} preload="metadata" role="application">
                 <source src={streamURL} type={mimeType} />
             </audio>
@@ -35,4 +37,4 @@ const Recording = (props: RecordingProps) => {
     )
 }
 
-export default Recording;
+export default Recording

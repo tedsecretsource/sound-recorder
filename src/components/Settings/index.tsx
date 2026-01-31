@@ -1,8 +1,8 @@
-import useGetMediaRecorder from '../../hooks/useGetMediaRecorder'
+import { useMediaRecorder } from '../../App'
 import './style.css'
 
 const Settings = () => {
-    const mediaRecorder = useGetMediaRecorder()
+    const mediaRecorder = useMediaRecorder()
     
     const mrStatsGenerator = () => {
         if (mediaRecorder) {

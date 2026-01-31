@@ -1,117 +1,265 @@
-// import setupMockedMediaDevices from '../../__nativeBrowserObjectMocks__/nativeBrowserObjects'
-import {render, screen} from '@testing-library/react'
+import '../../__nativeBrowserObjectMocks__/nativeBrowserObjects'
+import { render, screen, act, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import Recorder from './index'
+import { RenderRouteWithOutletContext } from '../RenderRouteWithOutletContext'
 
-Object.defineProperty(global.URL, 'createObjectURL', {
-  writable: true,
-  value: jest.fn().mockImplementation(() => {
-    return 'blob:https://localhost:3000/12345678-1234-1234-1234-123456789012'
-  })
-})
+const mockAddRecording = jest.fn(() => Promise.resolve(1))
+const mockUpdateRecording = jest.fn(() => Promise.resolve())
 
-
-jest.mock('../../hooks/useIndexedDB', () => () => {
-  const originalModule = jest.requireActual('../../hooks/useIndexedDB');
-
-  return {
-    __esModule: true,
-    ...originalModule,
+// Mock useRecordings from context
+jest.mock('../../contexts/RecordingsContext', () => ({
+  useRecordings: () => ({
+    recordings: [],
+    isLoading: false,
     connectionIsOpen: true,
-    getRecordingFromDB: jest.fn(() => Promise.resolve({
-      id: 1,
-      name: 'test',
-      data: new Blob(['test'], { type: 'audio/mp4' }),
-      length: 0,
-      audioURL: 'test'
-    })),
-    getAllRecordingsFromDB: jest.fn(() => Promise.resolve([])),
-    addRecording: jest.fn(() => Promise.resolve(Math.floor(Math.random() * 100000))),
-    putRecording: jest.fn(() => Promise.resolve(true)),
-    deleteRecordingFromDB: jest.fn(() => Promise.resolve(true)),
-  }
-})
-
-
-// this is necessary because getUserMedia is called in the file being tested (via a custom hook)
-jest.mock('../../hooks/useGetMediaRecorder', () => () => {
-  const originalModule = jest.requireActual('../../hooks/useGetMediaRecorder');
-  const mediaRecorder = {
-    __esModule: true,
-    ...originalModule,
-      state: jest.fn(() => 'inactive'),
-      ondataavailable: jest.fn(),
-      onstop: jest.fn(),
-      onstart: jest.fn(),
-      onerror: jest.fn(),
-      onpause: jest.fn(),
-      onresume: jest.fn(),
-      start: jest.fn(),
-      stop: jest.fn(),
-  }
-  return mediaRecorder
-})
-
-jest.mock('../Visualizer', () => () => 'Visualizer')
-
-// setupMockedMediaDevices()
-// var mr = new global.MediaRecorder(new MediaStream(), { mimeType: 'audio/mp4' })
-
-describe('With an empty list of recordings', () => {
-  beforeEach( async () => {
-    // jest.spyOn(mr, 'start').mockImplementation(() => {
-    //   (mr.state as any) = 'recording'
-    // })
-    // jest.spyOn(mr, 'stop').mockImplementation(() => {
-    //   (mr.state as any) = 'inactive'
-    // })
-  });
-
-  afterEach(() => {
-    jest.resetAllMocks()
+    addRecording: mockAddRecording,
+    updateRecording: mockUpdateRecording,
+    deleteRecording: jest.fn(() => Promise.resolve()),
+    refreshRecordings: jest.fn(() => Promise.resolve()),
   })
-  
-  it('renders without crashing', async () => {
-    render(<Recorder />)
-    await screen.findByText(/record/i)
-    const button = screen.getByRole("button", {name: 'Record'})
-    expect(button).toBeInTheDocument()
-    expect(button).toHaveClass('record-play')
-  });
+}))
 
-  it('user can start a recording pressing the button', async () => {
-    render(<Recorder />)
-    await screen.findByText(/record/i)
-    const button = screen.getByRole("button", { name: 'Record' })
-    expect(button).toHaveTextContent(/record/i);
-  });
+const createMockMediaRecorder = (initialState = 'inactive'): any => {
+  const mr: any = {
+    stream: new MediaStream(),
+    mimeType: 'audio/webm',
+    state: initialState,
+    ondataavailable: null,
+    onstop: null,
+    onstart: null,
+    onerror: jest.fn(),
+    onpause: jest.fn(),
+    onresume: jest.fn(),
+    start: jest.fn(),
+    stop: jest.fn(),
+  }
+  mr.start = jest.fn(() => {
+    mr.state = 'recording'
+    if (mr.onstart) mr.onstart()
+  })
+  mr.stop = jest.fn(() => {
+    mr.state = 'inactive'
+    if (mr.ondataavailable) {
+      mr.ondataavailable({ data: new Blob(['test audio'], { type: 'audio/webm' }) })
+    }
+    if (mr.onstop) mr.onstop()
+  })
+  return mr
+}
 
-  /* Giving up on this test for now. I can't figure out how to mock the MediaRecorder object.
-     Specifically, mediaRecorder.state is always 'inactive' even though I'm mocking it to be 'recording' */
-  
-     // it('user can stop recording by pressing the button', async () => {
-  //   jest.resetModules()
-  //   jest.resetAllMocks()
-  //   // this is necessary because getUserMedia is called in the file being tested (via a custom hook)
-  //   jest.mock('../../hooks/useGetMediaRecorder', () => () => {
-  //     const originalModule = jest.requireActual('../../hooks/useGetMediaRecorder');
-  //     const mediaRecorder = {
-  //       __esModule: true,
-  //       ...originalModule,
-  //         state: jest.fn(() => 'recording'),
-  //         ondataavailable: jest.fn(),
-  //         onstop: jest.fn(),
-  //         onstart: jest.fn(),
-  //         onerror: jest.fn(),
-  //         onpause: jest.fn(),
-  //         onresume: jest.fn(),
-  //         start: jest.fn(),
-  //         stop: jest.fn(),
-  //     }
-  //     return mediaRecorder
-  //   })
-  //   render(<Recorder />)
-  //   await screen.findByText(/stop/i)
-  //   const button = screen.getByRole("button", { name: /stop/i })
-  //   expect(button).toHaveClass('record-play')
-  // })
+describe('Recorder component', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  describe('with mediaRecorder available', () => {
+    it('renders without crashing', async () => {
+      const mockMediaRecorder = createMockMediaRecorder()
+      render(
+        <RenderRouteWithOutletContext context={mockMediaRecorder}>
+          <Recorder />
+        </RenderRouteWithOutletContext>
+      )
+      await screen.findByText(/record/i)
+      const button = screen.getByRole('button', { name: 'Record' })
+      expect(button).toBeInTheDocument()
+      expect(button).toHaveClass('record-play')
+    })
+
+    it('user can start a recording pressing the button', async () => {
+      const mockMediaRecorder = createMockMediaRecorder()
+      render(
+        <RenderRouteWithOutletContext context={mockMediaRecorder}>
+          <Recorder />
+        </RenderRouteWithOutletContext>
+      )
+
+      const button = screen.getByRole('button', { name: 'Record' })
+      expect(button).toHaveTextContent(/record/i)
+
+      await userEvent.click(button)
+
+      expect(mockMediaRecorder.start).toHaveBeenCalledWith(1000)
+    })
+
+    it('initRecording creates placeholder in DB when starting', async () => {
+      const mockMediaRecorder = createMockMediaRecorder()
+      render(
+        <RenderRouteWithOutletContext context={mockMediaRecorder}>
+          <Recorder />
+        </RenderRouteWithOutletContext>
+      )
+
+      const button = screen.getByRole('button', { name: 'Record' })
+      await userEvent.click(button)
+
+      await waitFor(() => {
+        expect(mockAddRecording).toHaveBeenCalledWith({
+          name: 'New Recording',
+          length: 0,
+          audioURL: ''
+        })
+      })
+    })
+
+    it('ondataavailable pushes to chunksRef', async () => {
+      const mockMediaRecorder = createMockMediaRecorder()
+      render(
+        <RenderRouteWithOutletContext context={mockMediaRecorder}>
+          <Recorder />
+        </RenderRouteWithOutletContext>
+      )
+
+      // Wait for useEffect to set up handlers
+      await waitFor(() => {
+        expect(mockMediaRecorder.ondataavailable).not.toBeNull()
+      })
+
+      // Simulate data available event
+      act(() => {
+        if (mockMediaRecorder.ondataavailable) {
+          mockMediaRecorder.ondataavailable({ data: new Blob(['chunk1']) })
+        }
+      })
+
+      // The chunksRef is internal, we'll verify it works by checking updateRecording
+      // is called with a blob when stop is triggered
+    })
+
+    it('onstop logs message', async () => {
+      const consoleSpy = jest.spyOn(console, 'info').mockImplementation(() => {})
+      const mockMediaRecorder = createMockMediaRecorder()
+      render(
+        <RenderRouteWithOutletContext context={mockMediaRecorder}>
+          <Recorder />
+        </RenderRouteWithOutletContext>
+      )
+
+      await waitFor(() => {
+        expect(mockMediaRecorder.onstop).not.toBeNull()
+      })
+
+      act(() => {
+        if (mockMediaRecorder.onstop) {
+          mockMediaRecorder.onstop()
+        }
+      })
+
+      expect(consoleSpy).toHaveBeenCalledWith('stopped recording')
+      consoleSpy.mockRestore()
+    })
+
+    it('updateRecordingsList saves recording data after stop', async () => {
+      const mockMediaRecorder = createMockMediaRecorder()
+
+      // Start in recording state
+      mockMediaRecorder.state = 'recording'
+
+      render(
+        <RenderRouteWithOutletContext context={mockMediaRecorder}>
+          <Recorder />
+        </RenderRouteWithOutletContext>
+      )
+
+      // Wait for setup
+      await waitFor(() => {
+        expect(mockMediaRecorder.ondataavailable).not.toBeNull()
+      })
+
+      // Simulate having some data
+      act(() => {
+        if (mockMediaRecorder.ondataavailable) {
+          mockMediaRecorder.ondataavailable({ data: new Blob(['audio data'], { type: 'audio/webm' }) } as any)
+        }
+      })
+
+      // Click stop button
+      const button = screen.getByRole('button', { name: 'Stop' })
+      await userEvent.click(button)
+
+      await waitFor(() => {
+        expect(mockUpdateRecording).toHaveBeenCalled()
+      })
+    })
+  })
+
+  describe('Loading state', () => {
+    it('shows loading button when mediaRecorder is null', () => {
+      render(
+        <RenderRouteWithOutletContext context={null}>
+          <Recorder />
+        </RenderRouteWithOutletContext>
+      )
+
+      const button = screen.getByRole('button', { name: /loading/i })
+      expect(button).toBeInTheDocument()
+      expect(button).toBeDisabled()
+      expect(button).toHaveAttribute('title', 'Please either allow or decline the use of your microphone')
+    })
+  })
+
+  describe('Recording state UI', () => {
+    it('shows Stop button when recording', () => {
+      const mockMediaRecorder = createMockMediaRecorder('recording')
+      render(
+        <RenderRouteWithOutletContext context={mockMediaRecorder}>
+          <Recorder />
+        </RenderRouteWithOutletContext>
+      )
+
+      const button = screen.getByRole('button', { name: 'Stop' })
+      expect(button).toBeInTheDocument()
+      expect(button).toHaveClass('recording-audio')
+    })
+
+    it('shows Record button when inactive', () => {
+      const mockMediaRecorder = createMockMediaRecorder('inactive')
+      render(
+        <RenderRouteWithOutletContext context={mockMediaRecorder}>
+          <Recorder />
+        </RenderRouteWithOutletContext>
+      )
+
+      const button = screen.getByRole('button', { name: 'Record' })
+      expect(button).toBeInTheDocument()
+      expect(button).not.toHaveClass('recording-audio')
+    })
+  })
+
+  describe('Error handling', () => {
+    it('handles error when save fails', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+      mockUpdateRecording.mockRejectedValueOnce(new Error('Save failed'))
+
+      const mockMediaRecorder = createMockMediaRecorder('recording')
+
+      render(
+        <RenderRouteWithOutletContext context={mockMediaRecorder}>
+          <Recorder />
+        </RenderRouteWithOutletContext>
+      )
+
+      await waitFor(() => {
+        expect(mockMediaRecorder.ondataavailable).not.toBeNull()
+      })
+
+      // Add some data
+      act(() => {
+        if (mockMediaRecorder.ondataavailable) {
+          mockMediaRecorder.ondataavailable({ data: new Blob(['test']) } as any)
+        }
+      })
+
+      // Click stop
+      const button = screen.getByRole('button', { name: 'Stop' })
+      await userEvent.click(button)
+
+      await waitFor(() => {
+        expect(consoleSpy).toHaveBeenCalled()
+      })
+
+      consoleSpy.mockRestore()
+    })
+  })
 })

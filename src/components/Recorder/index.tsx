@@ -1,23 +1,19 @@
-import { useEffect, useState } from 'react'
-import useIndexedDB from '../../hooks/useIndexedDB'
-import useGetMediaRecorder from '../../hooks/useGetMediaRecorder'
+import { useEffect, useState, useRef } from 'react'
+import { useMediaRecorder } from '../../App'
+import { useRecordings } from '../../contexts/RecordingsContext'
+import { createRecordingObject } from '../../utils/recordingUtils'
 import Visualizer from '../Visualizer'
 import './style.css'
 
 const Recorder = () => {
-    const mediaRecorder = useGetMediaRecorder()
-    const {
-        connectionIsOpen,
-        addRecording, 
-        putRecording,
-    } = useIndexedDB()
+    const mediaRecorder = useMediaRecorder()
+    const { connectionIsOpen, addRecording, updateRecording } = useRecordings()
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [recorderState, setRecorderState] = useState('inactive')
     const [currentRecording, setCurrentRecording] = useState(0)
     const defaultRecordClass = 'record-play'
     let recordButtonClassesText = defaultRecordClass
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    let chunks: any[] = []
+    const chunksRef = useRef<Blob[]>([])
 
     useEffect(() => {
         if( mediaRecorder ) {
@@ -25,44 +21,36 @@ const Recorder = () => {
             mediaRecorder.onstart = () => {
                 console.info('started recording')
             }
-        
+
             mediaRecorder.onstop = () => {
                 console.info('stopped recording')
             }
-        
-            mediaRecorder.ondataavailable = (e) => {
-                chunks.push(e.data)
+
+            mediaRecorder.ondataavailable = (e: BlobEvent) => {
+                chunksRef.current.push(e.data)
             }
         }
-    }, [mediaRecorder, chunks])
+    }, [mediaRecorder])
 
-    const updateRecordingsList = () => {
-        const blob = new Blob(chunks, { 'type' : mediaRecorder.mimeType })
-        const audioURL = window.URL.createObjectURL(blob)
-    
-        const newRecordingObj = {
-            data: blob,
-            audioURL: audioURL,
-            name: new Date().toISOString().split('.')[0].split('T').join(' '),
-            id: currentRecording,
-            length: 0
-        }
-        
+    const updateRecordingsList = async () => {
+        const blob = new Blob(chunksRef.current, { 'type' : mediaRecorder.mimeType })
+        const newRecordingObj = createRecordingObject(blob, mediaRecorder.mimeType, currentRecording)
+
         if( connectionIsOpen ) {
-            putRecording(newRecordingObj)
-                .then(() => {
-                    console.info('saved recording')
-                })
-                .catch((error) => {
-                    console.error(error)
-                })
+            try {
+                await updateRecording(newRecordingObj)
+                console.info('saved recording')
+            } catch (error) {
+                console.error(error)
+            }
         }
-        chunks = []
+        chunksRef.current = []
     }
 
     const initRecording = async () => {
         if( connectionIsOpen ) {
-            setCurrentRecording(await addRecording({ name: 'New Recording', length: 0, audioURL: '', data: null }))
+            const id = await addRecording({ name: 'New Recording', length: 0, audioURL: '' })
+            setCurrentRecording(id)
         }
     }
 
@@ -79,6 +67,7 @@ const Recorder = () => {
     }
 
     const recorderUI = () => {
+        console.info('mediarecorder', mediaRecorder)
         recordButtonClassesText = mediaRecorder.state === 'recording' ? `${defaultRecordClass} recording-audio` : defaultRecordClass
         return (
             <>

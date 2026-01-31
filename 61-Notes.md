@@ -15,6 +15,9 @@
 4. import useGetMediaRecorder in App.tsx
 7. import useOutletContext from react-router-dom in App.tsx
 10. Add a type for getUserMedia as per the docs https://reactrouter.com/en/main/hooks/use-outlet-context#useoutletcontext in App.tsx
+    - skipping because the type is a native browser object
 15. Add an export of a custom hook that returns the value of useOutletContext to App.tsx for the reasons mentioned in the documentation
 20. Add a type for the return value of useOutletContext
+23. Set a variable or constant to the return value of useGetMediaRecorder
 25. Add the `context` attribute to the `Outlet` component in App.tsx with a value of the return from useGetMediaRecorder
+30. Import the export of the custom hook in App.tsx in Recorder.tsx

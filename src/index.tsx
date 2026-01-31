@@ -11,9 +11,9 @@ import {
   Route
 } from "react-router-dom";
 import ErrorPage from './404';
-import RecordingsList from './components/RecordingsList/RecordingsList';
-import Settings from './components/Settings/settings';
-import User from './components/User/user';
+import RecordingsList from './components/RecordingsList'
+import Settings from './components/Settings'
+import User from './components/User'
 import Recorder from './components/Recorder';
 
 const router = createHashRouter(
