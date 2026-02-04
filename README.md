@@ -39,6 +39,32 @@ I'm implementing features found in the github issues. I've organized them by mil
 
 You can see a [live demo here](https://tedsecretsource.github.io/sound-recorder/) of the current development version.
 
+## Audio Formats
+
+### Recording Format
+
+The app records in the browser's native format:
+- **WebM/Opus** (`audio/webm;codecs="opus"`) - Chrome, Firefox, Edge
+- **MP4/AAC** (`audio/mp4`) - Safari fallback
+
+See `src/hooks/useGetMediaRecorder.ts` for implementation.
+
+### Freesound Upload Format
+
+When syncing to Freesound, recordings are converted from WebM/Opus to **WAV** (16-bit PCM) before upload. See `src/utils/audioConverter.ts`.
+
+**Why WAV instead of uploading WebM directly?**
+- Freesound officially supports: WAV, FLAC, OGG, MP3, AIFF
+- WebM is not officially listed as supported
+- WAV is universally accepted and avoids potential compatibility issues
+
+**Trade-offs of WAV conversion:**
+- Larger file size (uncompressed PCM vs compressed Opus)
+- Lossy conversion (Opus → PCM is a decode, not a transcode)
+- More processing time on client
+
+**Future consideration:** Freesound also accepts OGG, which uses the same Opus codec as WebM. A WebM → OGG conversion would be a lossless container change (same audio data, different wrapper). However, browsers don't provide a native API for this conversion. Libraries like FFmpeg.wasm could enable this but would add significant bundle size. For now, WAV conversion is simpler and guaranteed to work.
+
 ## Resources
 
 - [MediaRecorder API](https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder)

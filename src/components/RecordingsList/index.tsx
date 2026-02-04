@@ -30,6 +30,25 @@ const RecordingsList = () => {
         }
     }
 
+    const editRecordingDescription = async (id: number) => {
+        const targetItem = recordings.find((item) => item.id === id)
+        if (!targetItem) return
+
+        const currentDescription = targetItem.description ?? ''
+        const promptedDescription = window.prompt('Enter a description for Freesound', currentDescription)
+
+        if (promptedDescription === null) return // User cancelled
+
+        const newDescription = promptedDescription.trim()
+
+        try {
+            await updateRecording({ ...targetItem, description: newDescription })
+            console.info('saved description')
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
     const handleDeleteRecording = async (id: number) => {
         const shouldDelete = window.confirm('Are you sure you want to delete this recording?')
         if (shouldDelete) {
@@ -56,11 +75,14 @@ const RecordingsList = () => {
                     streamURL={recording.audioURL}
                     key={recording.id}
                     name={recording.name}
+                    description={recording.description}
                     id={recording.id!}
                     onDeleteHandler={handleDeleteRecording}
                     onEditNameHandler={editRecordingName}
+                    onEditDescriptionHandler={editRecordingDescription}
                     mimeType={mediaRecorder.mimeType}
-                    quality={recording.quality} />
+                    quality={recording.quality}
+                    freesoundId={recording.freesoundId} />
                 )
             })
         }

@@ -1,0 +1,10 @@
+name = "freesound-oauth-proxy"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[vars]
+FREESOUND_API_BASE = "https://freesound.org/apiv2"
+
+# FREESOUND_CLIENT_ID and FREESOUND_CLIENT_SECRET should be set via:
+#   wrangler secret put FREESOUND_CLIENT_ID
+#   wrangler secret put FREESOUND_CLIENT_SECRET

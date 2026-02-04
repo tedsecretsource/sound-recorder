@@ -6,6 +6,9 @@ import useGetMediaRecorder from './hooks/useGetMediaRecorder'
 import { RecordingsProvider } from './contexts/RecordingsContext'
 import { RecordingSessionProvider } from './contexts/RecordingSessionContext'
 import { AudioSettingsProvider, useAudioSettings } from './contexts/AudioSettingsContext'
+import { FreesoundAuthProvider } from './contexts/FreesoundAuthContext'
+import { SyncProvider } from './contexts/SyncContext'
+import SyncIndicator from './components/SyncIndicator'
 
 const AppContent = () => {
   const { settings } = useAudioSettings()
@@ -13,29 +16,34 @@ const AppContent = () => {
 
   return (
     <RecordingsProvider>
-      <RecordingSessionProvider mediaRecorder={mediaRecorder}>
-        <header>
-          <h1 style={{marginTop: "0", marginBottom: "0"}}>
-            <Link to="/" className='logo'>
-              <Logo />
-              Sound Recorder
-            </Link>
-          </h1>
-        </header>
-        <main>
-          <Outlet context={ mediaRecorder } />
-        </main>
-        <Footer />
-      </RecordingSessionProvider>
+      <SyncProvider>
+        <RecordingSessionProvider mediaRecorder={mediaRecorder}>
+          <header>
+            <h1 style={{marginTop: "0", marginBottom: "0"}}>
+              <Link to="/" className='logo'>
+                <Logo />
+                Sound Recorder
+              </Link>
+              <SyncIndicator />
+            </h1>
+          </header>
+          <main>
+            <Outlet context={ mediaRecorder } />
+          </main>
+          <Footer />
+        </RecordingSessionProvider>
+      </SyncProvider>
     </RecordingsProvider>
   )
 }
 
 const App = () => {
   return (
-    <AudioSettingsProvider>
-      <AppContent />
-    </AudioSettingsProvider>
+    <FreesoundAuthProvider>
+      <AudioSettingsProvider>
+        <AppContent />
+      </AudioSettingsProvider>
+    </FreesoundAuthProvider>
   )
 }
 

@@ -1,0 +1,202 @@
+import { FREESOUND_CONFIG } from '../config/freesound'
+import {
+  FreesoundUser,
+  FreesoundSound,
+  FreesoundSoundsResponse,
+  FreesoundTokenResponse,
+  FreesoundUploadParams,
+} from '../types/Freesound'
+
+class FreesoundApiService {
+  private accessToken: string | null = null
+  private onTokenRefresh: ((tokens: FreesoundTokenResponse) => void) | null = null
+
+  setAccessToken(token: string | null) {
+    this.accessToken = token
+  }
+
+  setTokenRefreshCallback(callback: (tokens: FreesoundTokenResponse) => void) {
+    this.onTokenRefresh = callback
+  }
+
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
+    if (!this.accessToken) {
+      throw new Error('Not authenticated')
+    }
+
+    const url = endpoint.startsWith('http')
+      ? endpoint
+      : `${FREESOUND_CONFIG.API_BASE}${endpoint}`
+
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        ...options.headers,
+      },
+    })
+
+    if (response.status === 401) {
+      throw new Error('Token expired')
+    }
+
+    if (!response.ok) {
+      const error = await response.text()
+      throw new Error(`Freesound API error: ${response.status} - ${error}`)
+    }
+
+    return response.json()
+  }
+
+  async exchangeCodeForTokens(code: string): Promise<FreesoundTokenResponse> {
+    const response = await fetch(`${FREESOUND_CONFIG.OAUTH_PROXY_URL}/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code,
+        redirect_uri: FREESOUND_CONFIG.REDIRECT_URI,
+      }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error_description || error.error || 'Token exchange failed')
+    }
+
+    return response.json()
+  }
+
+  async refreshAccessToken(refreshToken: string): Promise<FreesoundTokenResponse> {
+    const response = await fetch(`${FREESOUND_CONFIG.OAUTH_PROXY_URL}/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error_description || error.error || 'Token refresh failed')
+    }
+
+    const tokens = await response.json()
+
+    if (this.onTokenRefresh) {
+      this.onTokenRefresh(tokens)
+    }
+
+    return tokens
+  }
+
+  async getMe(): Promise<FreesoundUser> {
+    return this.request<FreesoundUser>('/me/')
+  }
+
+  async getMySounds(page = 1): Promise<FreesoundSoundsResponse> {
+    const user = await this.getMe()
+    return this.request<FreesoundSoundsResponse>(
+      `/users/${user.username}/sounds/?page=${page}&page_size=150`
+    )
+  }
+
+  async getSoundsByTag(tag: string, page = 1): Promise<FreesoundSoundsResponse> {
+    const user = await this.getMe()
+    return this.request<FreesoundSoundsResponse>(
+      `/search/text/?query=&filter=username:${user.username} tag:${tag}&page=${page}&page_size=150`
+    )
+  }
+
+  async getSound(id: number): Promise<FreesoundSound> {
+    return this.request<FreesoundSound>(`/sounds/${id}/`)
+  }
+
+  async downloadSound(sound: FreesoundSound): Promise<Blob> {
+    if (!this.accessToken) {
+      throw new Error('Not authenticated')
+    }
+
+    const response = await fetch(sound.download, {
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to download sound: ${response.status}`)
+    }
+
+    return response.blob()
+  }
+
+  async uploadSound(params: FreesoundUploadParams): Promise<{ id: number }> {
+    if (!this.accessToken) {
+      throw new Error('Not authenticated')
+    }
+
+    console.log('Uploading to Freesound:', {
+      name: params.name,
+      tags: params.tags,
+      fileSize: params.audioFile.size,
+      fileType: params.audioFile.type,
+    })
+
+    const formData = new FormData()
+    formData.append('audiofile', params.audioFile)
+    formData.append('name', params.name)
+    formData.append('tags', params.tags.join(' '))
+    formData.append('description', params.description)
+    formData.append('license', params.license)
+
+    const response = await fetch(`${FREESOUND_CONFIG.API_BASE}/sounds/upload/`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+      },
+      body: formData,
+    })
+
+    if (!response.ok) {
+      const error = await response.text()
+      console.error('Freesound upload error:', response.status, error)
+      throw new Error(`Upload failed: ${response.status} - ${error}`)
+    }
+
+    const result = await response.json()
+    console.log('Freesound upload success:', result)
+    return result
+  }
+
+  async describeSound(
+    uploadFilename: string,
+    params: Omit<FreesoundUploadParams, 'audioFile'>
+  ): Promise<void> {
+    if (!this.accessToken) {
+      throw new Error('Not authenticated')
+    }
+
+    const formData = new FormData()
+    formData.append('upload_filename', uploadFilename)
+    formData.append('name', params.name)
+    formData.append('tags', params.tags.join(' '))
+    formData.append('description', params.description)
+    formData.append('license', params.license)
+
+    const response = await fetch(`${FREESOUND_CONFIG.API_BASE}/sounds/describe/`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+      },
+      body: formData,
+    })
+
+    if (!response.ok) {
+      const error = await response.text()
+      throw new Error(`Describe failed: ${response.status} - ${error}`)
+    }
+  }
+}
+
+export const freesoundApi = new FreesoundApiService()
+export default freesoundApi

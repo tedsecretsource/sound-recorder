@@ -1,19 +1,23 @@
 import { useRef } from 'react'
 import { QualityMetadata, formatQualityBadge } from '../../types/AudioSettings'
+import { isDefaultRecordingName } from '../../SoundRecorderTypes'
 import './style.css'
 
 interface RecordingProps {
     streamURL: string
     name: string
+    description?: string
     onDeleteHandler: (id: number) => void
     onEditNameHandler: (id: number) => void
+    onEditDescriptionHandler: (id: number) => void
     id: number
     mimeType: string
     quality?: QualityMetadata
+    freesoundId?: number
 }
 
 const Recording = (props: RecordingProps) => {
-    const { streamURL, name, onDeleteHandler, onEditNameHandler, id, mimeType, quality } = props
+    const { streamURL, name, description, onDeleteHandler, onEditNameHandler, onEditDescriptionHandler, id, mimeType, quality, freesoundId } = props
     const articleRef = useRef<HTMLElement>(null)
 
     const deleteRecording = () => {
@@ -25,6 +29,14 @@ const Recording = (props: RecordingProps) => {
         onEditNameHandler(id)
     }
 
+    const editDescription = () => {
+        onEditDescriptionHandler(id)
+    }
+
+    const hasCustomName = !isDefaultRecordingName(name)
+    const hasDescription = Boolean(description?.trim())
+    const readyForSync = hasCustomName && hasDescription
+
     return (
         <article ref={articleRef} id={id?.toString()}>
             <audio controls={true} preload="metadata" role="application">
@@ -34,11 +46,28 @@ const Recording = (props: RecordingProps) => {
                 <span className="name" role="presentation">{name}</span>
                 <button onClick={editName} className="editName" title="Click to edit name" aria-label="Click to edit name">✏️</button>
             </p>
+            <p className="description-row">
+                <span className="description" role="presentation">
+                    {description?.trim() || <em className="no-description">No description</em>}
+                </span>
+                <button onClick={editDescription} className="editDescription" title="Click to edit description" aria-label="Click to edit description">✏️</button>
+            </p>
             {quality && (
                 <p className="quality-badge">
                     <span className={`badge badge-${quality.preset}`}>
                         {formatQualityBadge(quality.preset)}
                     </span>
+                </p>
+            )}
+            {freesoundId ? (
+                <p className="sync-status synced">Synced to Freesound</p>
+            ) : readyForSync ? (
+                <p className="sync-status ready">Ready to sync</p>
+            ) : (
+                <p className="sync-status not-ready">
+                    {!hasCustomName && 'Rename to sync'}
+                    {!hasCustomName && !hasDescription && ' · '}
+                    {!hasDescription && 'Add description to sync'}
                 </p>
             )}
             <button onClick={deleteRecording} className="delete">Delete</button>

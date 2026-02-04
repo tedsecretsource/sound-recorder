@@ -1,0 +1,31 @@
+.sync-indicator {
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+.sync-offline {
+  color: #888;
+}
+
+.sync-active {
+  color: #4a9eff;
+  animation: spin 1s linear infinite;
+}
+
+.sync-pending {
+  color: #ffa500;
+}
+
+.sync-ok {
+  color: #4ade80;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
