@@ -58,6 +58,18 @@ jest.mock('../../contexts/RecordingsContext', () => ({
   })
 }))
 
+jest.mock('../../contexts/SyncContext', () => ({
+  useSync: () => ({
+    isSyncing: false,
+    isOnline: true,
+    lastSyncTime: null,
+    lastSyncResult: null,
+    pendingCount: 0,
+    triggerSync: jest.fn(),
+    retryModeration: jest.fn(),
+  })
+}))
+
 const user = userEvent
 
 describe('RecordingsList', () => {
@@ -198,6 +210,7 @@ describe('RecordingsList', () => {
     it('recordings are displayed in reverse order', () => {
       render(<RecordingsList />)
       const names = screen.getAllByRole('presentation')
+        .filter(el => el.classList.contains('name'))
 
       // Recordings should be displayed with most recent (highest id) first
       expect(names[0]).toHaveTextContent('test3')

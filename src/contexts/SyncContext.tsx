@@ -19,6 +19,7 @@ interface SyncContextValue {
   lastSyncResult: SyncResult | null
   pendingCount: number
   triggerSync: () => Promise<void>
+  retryModeration: (recordingId: number) => Promise<void>
 }
 
 const SyncContext = createContext<SyncContextValue | null>(null)
@@ -110,6 +111,24 @@ export const SyncProvider = ({ children }: SyncProviderProps) => {
     }, 2000) // Wait 2 seconds after last change before syncing
   }, [triggerSync])
 
+  // Retry a moderation-failed recording by clearing its Freesound state
+  const retryModeration = useCallback(async (recordingId: number) => {
+    const recording = recordings.find(r => r.id === recordingId)
+    if (!recording) return
+
+    await updateRecording({
+      ...recording,
+      freesoundId: undefined,
+      moderationStatus: undefined,
+      syncStatus: 'pending',
+      syncError: undefined,
+      lastSyncedAt: undefined,
+    })
+
+    syncService.queueUpload(recordingId)
+    debouncedSync()
+  }, [recordings, updateRecording, debouncedSync])
+
   // Initial sync when authenticated
   useEffect(() => {
     if (isAuthenticated && isOnline && !hasInitialSyncedRef.current) {
@@ -139,6 +158,7 @@ export const SyncProvider = ({ children }: SyncProviderProps) => {
         !recording.freesoundId &&
         recording.syncStatus !== 'syncing' &&
         recording.syncStatus !== 'error' &&
+        recording.moderationStatus !== 'moderation_failed' &&
         isReadyForSync(recording) // Only queue if has custom name and description
       ) {
         syncService.queueUpload(recording.id)
@@ -168,6 +188,7 @@ export const SyncProvider = ({ children }: SyncProviderProps) => {
     lastSyncResult,
     pendingCount,
     triggerSync,
+    retryModeration,
   }
 
   return (

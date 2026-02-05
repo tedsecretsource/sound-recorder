@@ -141,12 +141,14 @@ export const FreesoundAuthProvider = ({ children }: FreesoundAuthProviderProps) 
       if (!stored.user) {
         try {
           const userInfo = await freesoundApi.getMe()
+          freesoundApi.setUsername(userInfo.username)
           setUser(userInfo)
           saveAuth({ ...stored, user: userInfo })
         } catch (err) {
           console.error('Failed to fetch user info:', err)
         }
       } else {
+        freesoundApi.setUsername(stored.user.username)
         setUser(stored.user)
       }
 
@@ -169,6 +171,7 @@ export const FreesoundAuthProvider = ({ children }: FreesoundAuthProviderProps) 
 
   const logout = useCallback(() => {
     freesoundApi.setAccessToken(null)
+    freesoundApi.setUsername(null)
     setIsAuthenticated(false)
     setUser(null)
     setRefreshToken(null)
@@ -186,6 +189,7 @@ export const FreesoundAuthProvider = ({ children }: FreesoundAuthProviderProps) 
 
       // Fetch user info
       const userInfo = await freesoundApi.getMe()
+      freesoundApi.setUsername(userInfo.username)
       setUser(userInfo)
 
       // Update stored auth with user info

@@ -20,7 +20,7 @@ export const FREESOUND_CONFIG = {
     // Must match the redirect URI registered in Freesound app settings
     return window.location.origin + '/auth/callback'
   },
-  TAG: 'sound-recorder-app',
+  TAG: 'sound-recorder-sync',
   get AUTHORIZE_URL() {
     const params = new URLSearchParams({
       client_id: this.CLIENT_ID,

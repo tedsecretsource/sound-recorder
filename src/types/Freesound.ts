@@ -106,6 +106,20 @@ export const BST_CATEGORIES = {
 
 export type BstCategory = keyof typeof BST_CATEGORIES
 
+export type ModerationStatus = 'processing' | 'in_moderation' | 'approved' | 'moderation_failed'
+
+export interface FreesoundPendingSound {
+  id: number
+  name: string
+  processing_state?: string
+}
+
+export interface FreesoundPendingUploadsResponse {
+  pending_description: { name: string }[]
+  pending_processing: FreesoundPendingSound[]
+  pending_moderation: FreesoundPendingSound[]
+}
+
 export interface FreesoundUploadParams {
   audioFile: File
   name: string

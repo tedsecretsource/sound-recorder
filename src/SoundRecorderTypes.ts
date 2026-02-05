@@ -1,6 +1,6 @@
 import { DBSchema } from 'idb'
 import { QualityMetadata } from './types/AudioSettings'
-import { SyncStatus, BstCategory } from './types/Freesound'
+import { SyncStatus, BstCategory, ModerationStatus } from './types/Freesound'
 
 export interface Recording {
     id?: number
@@ -15,6 +15,7 @@ export interface Recording {
     syncStatus?: SyncStatus
     lastSyncedAt?: string
     syncError?: string
+    moderationStatus?: ModerationStatus
 }
 
 // Default name format is ISO datetime: "2024-01-15 14:30:45"

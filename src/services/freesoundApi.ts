@@ -5,14 +5,30 @@ import {
   FreesoundSoundsResponse,
   FreesoundTokenResponse,
   FreesoundUploadParams,
+  FreesoundPendingUploadsResponse,
 } from '../types/Freesound'
+
+export class RateLimitError extends Error {
+  constructor(message = 'Rate limited by Freesound API') {
+    super(message)
+    this.name = 'RateLimitError'
+  }
+}
 
 class FreesoundApiService {
   private accessToken: string | null = null
+  private cachedUsername: string | null = null
   private onTokenRefresh: ((tokens: FreesoundTokenResponse) => void) | null = null
 
   setAccessToken(token: string | null) {
     this.accessToken = token
+    if (!token) {
+      this.cachedUsername = null
+    }
+  }
+
+  setUsername(username: string | null) {
+    this.cachedUsername = username
   }
 
   setTokenRefreshCallback(callback: (tokens: FreesoundTokenResponse) => void) {
@@ -21,7 +37,8 @@ class FreesoundApiService {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    retryCount = 0
   ): Promise<T> {
     if (!this.accessToken) {
       throw new Error('Not authenticated')
@@ -38,6 +55,16 @@ class FreesoundApiService {
         ...options.headers,
       },
     })
+
+    if (response.status === 429) {
+      if (retryCount < 3) {
+        const retryAfter = response.headers.get('Retry-After')
+        const delaySeconds = retryAfter ? parseInt(retryAfter, 10) : 5 * Math.pow(2, retryCount)
+        await new Promise((resolve) => setTimeout(resolve, delaySeconds * 1000))
+        return this.request<T>(endpoint, options, retryCount + 1)
+      }
+      throw new RateLimitError()
+    }
 
     if (response.status === 401) {
       throw new Error('Token expired')
@@ -95,21 +122,25 @@ class FreesoundApiService {
   }
 
   async getMySounds(page = 1): Promise<FreesoundSoundsResponse> {
-    const user = await this.getMe()
+    const username = this.cachedUsername || (await this.getMe()).username
     return this.request<FreesoundSoundsResponse>(
-      `/users/${user.username}/sounds/?page=${page}&page_size=150`
+      `/users/${username}/sounds/?page=${page}&page_size=150`
     )
   }
 
   async getSoundsByTag(tag: string, page = 1): Promise<FreesoundSoundsResponse> {
-    const user = await this.getMe()
+    const username = this.cachedUsername || (await this.getMe()).username
     return this.request<FreesoundSoundsResponse>(
-      `/search/text/?query=&filter=username:${user.username} tag:${tag}&page=${page}&page_size=150`
+      `/search/text/?query=&filter=username:${username} tag:${tag}&page=${page}&page_size=150`
     )
   }
 
   async getSound(id: number): Promise<FreesoundSound> {
     return this.request<FreesoundSound>(`/sounds/${id}/`)
+  }
+
+  async getPendingUploads(): Promise<FreesoundPendingUploadsResponse> {
+    return this.request<FreesoundPendingUploadsResponse>('/sounds/pending_uploads/')
   }
 
   async downloadSound(sound: FreesoundSound): Promise<Blob> {

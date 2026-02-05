@@ -1,5 +1,5 @@
 import { Recording, isReadyForSync } from '../SoundRecorderTypes'
-import { FreesoundSound } from '../types/Freesound'
+import { FreesoundSound, ModerationStatus } from '../types/Freesound'
 import { FREESOUND_CONFIG } from '../config/freesound'
 import freesoundApi from './freesoundApi'
 import { convertToWav } from '../utils/audioConverter'
@@ -89,6 +89,7 @@ class SyncService {
       // 1. Upload local recordings that don't have a freesoundId
       for (const recording of localWithoutFreesoundId) {
         if (recording.syncStatus === 'synced') continue
+        if (recording.moderationStatus === 'moderation_failed') continue
         if (!recording.data || !recording.id) continue
         if (!isReadyForSync(recording)) continue // Skip if missing name or description
 
@@ -114,7 +115,8 @@ class SyncService {
             freesoundId: uploadResult.id,
             syncStatus: 'synced',
             lastSyncedAt: new Date().toISOString(),
-            syncError: undefined
+            syncError: undefined,
+            moderationStatus: 'processing'
           })
 
           result.uploaded++
@@ -156,6 +158,7 @@ class SyncService {
 
         if (!recording || !recording.data) continue
         if (recording.freesoundId) continue // Already uploaded
+        if (recording.moderationStatus === 'moderation_failed') continue
         if (!isReadyForSync(recording)) continue // Skip if missing name or description
 
         try {
@@ -180,7 +183,8 @@ class SyncService {
             freesoundId: uploadResult.id,
             syncStatus: 'synced',
             lastSyncedAt: new Date().toISOString(),
-            syncError: undefined
+            syncError: undefined,
+            moderationStatus: 'processing'
           })
 
           result.uploaded++
@@ -207,7 +211,50 @@ class SyncService {
         }
       }
 
-      // 3. Download remote sounds we don't have locally
+      // 3. Moderation status check
+      // Fetch pending uploads once per cycle and build ID sets
+      let pendingProcessingIds = new Set<number>()
+      let pendingModerationIds = new Set<number>()
+      let pendingUploadsFetched = false
+
+      try {
+        const pendingUploads = await freesoundApi.getPendingUploads()
+        pendingProcessingIds = new Set(pendingUploads.pending_processing.map(s => s.id))
+        pendingModerationIds = new Set(pendingUploads.pending_moderation.map(s => s.id))
+        pendingUploadsFetched = true
+      } catch (err) {
+        console.warn('Could not fetch pending uploads:', err)
+      }
+
+      // Update moderation status for all local recordings with freesoundId
+      for (const [freesoundId, localRec] of localByFreesoundId) {
+        if (localRec.id === undefined) continue
+        if (localRec.moderationStatus === 'moderation_failed') continue
+
+        let newStatus: ModerationStatus | undefined
+        if (remoteIds.has(freesoundId)) {
+          newStatus = 'approved'
+        } else if (pendingProcessingIds.has(freesoundId)) {
+          newStatus = 'processing'
+        } else if (pendingModerationIds.has(freesoundId)) {
+          newStatus = 'in_moderation'
+        } else if (pendingUploadsFetched) {
+          // Not in search results and not in any pending list
+          if (localRec.moderationStatus === 'approved') {
+            // Was previously approved — deleted on Freesound
+            newStatus = undefined // Will be handled in deletion phase
+          } else {
+            // Was never approved — moderation rejected
+            newStatus = 'moderation_failed'
+          }
+        }
+
+        if (newStatus !== undefined && newStatus !== localRec.moderationStatus) {
+          await this.callbacks.onRecordingUpdate(localRec.id, { moderationStatus: newStatus })
+        }
+      }
+
+      // 4. Download remote sounds we don't have locally
       for (const remoteSound of remoteSounds) {
         if (localByFreesoundId.has(remoteSound.id)) continue
 
@@ -222,7 +269,8 @@ class SyncService {
             data: blob,
             freesoundId: remoteSound.id,
             syncStatus: 'synced',
-            lastSyncedAt: new Date().toISOString()
+            lastSyncedAt: new Date().toISOString(),
+            moderationStatus: 'approved'
           })
 
           result.downloaded++
@@ -232,22 +280,20 @@ class SyncService {
         }
       }
 
-      // 4. Handle deletions: remote deleted → delete local
-      // Only delete if we can confirm the sound was actually removed from Freesound
-      // (not just pending moderation or missing from search)
+      // 5. Handle deletions: remote deleted → delete local
+      // Use pending_uploads data to distinguish moderation states from actual deletion
       for (const [freesoundId, localRec] of localByFreesoundId) {
-        if (!remoteIds.has(freesoundId) && localRec.id !== undefined) {
-          try {
-            await freesoundApi.getSound(freesoundId)
-            // Sound still exists (possibly in moderation) — keep local copy
-          } catch (err) {
-            const message = err instanceof Error ? err.message : ''
-            if (message.includes('404')) {
-              // Sound truly deleted on Freesound — delete local copy
-              await this.callbacks.onRecordingDelete(localRec.id)
-            }
-            // Any other error (network, auth, etc.) — keep local copy to be safe
-          }
+        if (localRec.id === undefined) continue
+        if (remoteIds.has(freesoundId)) continue
+        if (localRec.moderationStatus === 'moderation_failed') continue
+
+        // Sound is in pending processing or moderation — skip
+        if (pendingProcessingIds.has(freesoundId) || pendingModerationIds.has(freesoundId)) continue
+
+        // Only delete if we successfully fetched pending uploads and the sound
+        // was previously approved (meaning it was public but has since been removed)
+        if (pendingUploadsFetched && localRec.moderationStatus === 'approved') {
+          await this.callbacks.onRecordingDelete(localRec.id)
         }
       }
 

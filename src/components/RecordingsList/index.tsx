@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Recording from '../Recording'
 import { useMediaRecorder } from '../../App'
 import { useRecordings } from '../../contexts/RecordingsContext'
+import { useSync } from '../../contexts/SyncContext'
 import { validateRecordingName } from '../../utils/recordingUtils'
 import { BstCategory } from '../../types/Freesound'
 import './style.css'
@@ -9,6 +10,7 @@ import './style.css'
 const RecordingsList = () => {
     const mediaRecorder = useMediaRecorder()
     const { recordings, updateRecording, deleteRecording: deleteRecordingFromDB } = useRecordings()
+    const { retryModeration } = useSync()
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [deletingId, setDeletingId] = useState<number | null>(null)
 
@@ -96,7 +98,9 @@ const RecordingsList = () => {
                     onBstCategoryChange={handleBstCategoryChange}
                     mimeType={mediaRecorder.mimeType}
                     quality={recording.quality}
-                    freesoundId={recording.freesoundId} />
+                    freesoundId={recording.freesoundId}
+                    moderationStatus={recording.moderationStatus}
+                    onRetryModeration={retryModeration} />
                 )
             })
         }
