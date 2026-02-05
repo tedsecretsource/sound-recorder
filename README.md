@@ -10,7 +10,7 @@ so you can install it on your device and use it without an Internet connection.
 
 I am a bit of a sound effects enthusiast. I have a small collection of [sound effects](https://freesound.org/people/tedmasterweb/) and used to use a very nice Roland stereo recording device but it can sometimes be a burden to carry around. The feature I liked the most about it was its reliability. It was always ready to go and I could record a sound effect in a matter of seconds. I wanted to create a similar experience for myself.
 
-The main feature of this application will be reliability. Once installed, you tap it to open it and tap the record button to start recording immediately. My plan is save the recording every second so that should the app crash or you accidentally close it, you will not lose your recording.
+The main feature of this application will be reliability. Once installed, you tap it to open it and tap the record button to start recording immediately. My plan is to save the recording every second so that should the app crash or you accidentally close it, you will not lose your recording.
 
 ## Features
 
@@ -23,15 +23,9 @@ I'm implementing features found in the github issues. I've organized them by mil
 - [x] Download audio
 - [x] Install as a PWA
 - [x] Rename an audio file
-- [ ] Display audio file duration
-- [ ] Display audio file size
-- [ ] Display audio file format
-- [ ] Display audio file sample rate
-- [ ] Display audio file bit rate
-- [ ] Display audio file channels
-- [ ] Display audio file encoding
-- [ ] Display audio file codec
-- [ ] Display audio file container
+- [x] Audio quality presets (Voice, Music, Hi-Fi, Custom)
+- [x] Freesound OAuth integration & sync
+- [x] Recording persists during tab navigation
 - [ ] Display audio file metadata
 
 
@@ -64,6 +58,26 @@ When syncing to Freesound, recordings are converted from WebM/Opus to **WAV** (1
 - More processing time on client
 
 **Future consideration:** Freesound also accepts OGG, which uses the same Opus codec as WebM. A WebM → OGG conversion would be a lossless container change (same audio data, different wrapper). However, browsers don't provide a native API for this conversion. Libraries like FFmpeg.wasm could enable this but would add significant bundle size. For now, WAV conversion is simpler and guaranteed to work.
+
+## Freesound Sync
+
+The app supports bidirectional sync with [Freesound](https://freesound.org/):
+
+- **Upload** — local recordings are uploaded to your Freesound account
+- **Download** — remote sounds tagged `sound-recorder-sync` are downloaded to the app
+
+### Authentication
+
+Freesound sync uses OAuth 2.0. Because Freesound's OAuth flow requires a server-side token exchange, requests are proxied through a lightweight Cloudflare Worker.
+
+### Required Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `REACT_APP_FREESOUND_CLIENT_ID` | Your Freesound API client ID |
+| `REACT_APP_FREESOUND_OAUTH_PROXY_URL` | URL of the OAuth proxy worker |
+
+See `.env.example` for reference.
 
 ## Resources
 
