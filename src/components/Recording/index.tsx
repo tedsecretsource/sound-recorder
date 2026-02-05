@@ -1,15 +1,18 @@
 import { useRef } from 'react'
 import { QualityMetadata, formatQualityBadge } from '../../types/AudioSettings'
 import { isDefaultRecordingName } from '../../SoundRecorderTypes'
+import { BstCategory, BST_CATEGORIES } from '../../types/Freesound'
 import './style.css'
 
 interface RecordingProps {
     streamURL: string
     name: string
     description?: string
+    bstCategory?: BstCategory
     onDeleteHandler: (id: number) => void
     onEditNameHandler: (id: number) => void
     onEditDescriptionHandler: (id: number) => void
+    onBstCategoryChange: (id: number, category: BstCategory) => void
     id: number
     mimeType: string
     quality?: QualityMetadata
@@ -17,7 +20,7 @@ interface RecordingProps {
 }
 
 const Recording = (props: RecordingProps) => {
-    const { streamURL, name, description, onDeleteHandler, onEditNameHandler, onEditDescriptionHandler, id, mimeType, quality, freesoundId } = props
+    const { streamURL, name, description, bstCategory, onDeleteHandler, onEditNameHandler, onEditDescriptionHandler, onBstCategoryChange, id, mimeType, quality, freesoundId } = props
     const articleRef = useRef<HTMLElement>(null)
 
     const deleteRecording = () => {
@@ -51,6 +54,20 @@ const Recording = (props: RecordingProps) => {
                     {description?.trim() || <em className="no-description">No description</em>}
                 </span>
                 <button onClick={editDescription} className="editDescription" title="Click to edit description" aria-label="Click to edit description">✏️</button>
+            </p>
+            <p className="bst-category-row">
+                <label htmlFor={`bst-${id}`}>Category: </label>
+                <select
+                    id={`bst-${id}`}
+                    className="bst-select"
+                    value={bstCategory || 'fx-other'}
+                    onChange={(e) => onBstCategoryChange(id, e.target.value as BstCategory)}
+                    disabled={!!freesoundId}
+                >
+                    {Object.entries(BST_CATEGORIES).map(([code, label]) => (
+                        <option key={code} value={code}>{label}</option>
+                    ))}
+                </select>
             </p>
             {quality && (
                 <p className="quality-badge">

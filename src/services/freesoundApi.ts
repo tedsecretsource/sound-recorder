@@ -148,6 +148,7 @@ class FreesoundApiService {
     formData.append('tags', params.tags.join(' '))
     formData.append('description', params.description)
     formData.append('license', params.license)
+    formData.append('bst_category', params.bst_category)
 
     const response = await fetch(`${FREESOUND_CONFIG.API_BASE}/sounds/upload/`, {
       method: 'POST',

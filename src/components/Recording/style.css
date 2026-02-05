@@ -127,3 +127,30 @@ article button.editDescription {
 .sync-status.not-ready {
   color: #888;
 }
+
+.bst-category-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.bst-category-row label {
+  color: #aaa;
+  flex-shrink: 0;
+}
+
+.bst-select {
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  border: 1px solid #555;
+  background-color: #333;
+  color: #fff;
+  font-size: 0.8rem;
+  max-width: 250px;
+}
+
+.bst-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

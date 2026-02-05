@@ -1,7 +1,21 @@
+// All sensitive values loaded from environment variables
+// See .env.example for required variables
+
+const CLIENT_ID = process.env.REACT_APP_FREESOUND_CLIENT_ID
+const OAUTH_PROXY_URL = process.env.REACT_APP_FREESOUND_OAUTH_PROXY_URL
+
+if (!CLIENT_ID) {
+  console.error('REACT_APP_FREESOUND_CLIENT_ID is not set in environment')
+}
+
+if (!OAUTH_PROXY_URL) {
+  console.error('REACT_APP_FREESOUND_OAUTH_PROXY_URL is not set in environment')
+}
+
 export const FREESOUND_CONFIG = {
   API_BASE: 'https://freesound.org/apiv2',
-  OAUTH_PROXY_URL: 'https://freesound-oauth-proxy.sound-recorder.workers.dev',
-  CLIENT_ID: 'HgSoiwqTRtFnJue0CdPh',
+  OAUTH_PROXY_URL: OAUTH_PROXY_URL || '',
+  CLIENT_ID: CLIENT_ID || '',
   get REDIRECT_URI() {
     // Must match the redirect URI registered in Freesound app settings
     return window.location.origin + '/auth/callback'

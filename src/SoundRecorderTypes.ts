@@ -1,12 +1,13 @@
 import { DBSchema } from 'idb'
 import { QualityMetadata } from './types/AudioSettings'
-import { SyncStatus } from './types/Freesound'
+import { SyncStatus, BstCategory } from './types/Freesound'
 
 export interface Recording {
     id?: number
     data?: Blob
     name: string
     description?: string
+    bstCategory?: BstCategory
     length: number
     audioURL: string
     quality?: QualityMetadata

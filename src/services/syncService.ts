@@ -104,9 +104,10 @@ class SyncService {
           const uploadResult = await freesoundApi.uploadSound({
             audioFile: file,
             name: recording.name,
-            tags: [FREESOUND_CONFIG.TAG, 'recording'],
+            tags: [FREESOUND_CONFIG.TAG, 'field-recording', 'sound-recorder'],
             description: recording.description!,
-            license: 'Creative Commons 0'
+            license: 'Creative Commons 0',
+            bst_category: recording.bstCategory || 'fx-other'
           })
 
           await this.callbacks.onRecordingUpdate(recording.id, {
@@ -169,9 +170,10 @@ class SyncService {
           const uploadResult = await freesoundApi.uploadSound({
             audioFile: file,
             name: recording.name,
-            tags: [FREESOUND_CONFIG.TAG, 'recording'],
+            tags: [FREESOUND_CONFIG.TAG, 'field-recording', 'sound-recorder'],
             description: recording.description!,
-            license: 'Creative Commons 0'
+            license: 'Creative Commons 0',
+            bst_category: recording.bstCategory || 'fx-other'
           })
 
           await this.callbacks.onRecordingUpdate(recordingId, {
@@ -231,13 +233,20 @@ class SyncService {
       }
 
       // 4. Handle deletions: remote deleted → delete local
+      // Only delete if we can confirm the sound was actually removed from Freesound
+      // (not just pending moderation or missing from search)
       for (const [freesoundId, localRec] of localByFreesoundId) {
         if (!remoteIds.has(freesoundId) && localRec.id !== undefined) {
           try {
-            await this.callbacks.onRecordingDelete(localRec.id)
+            await freesoundApi.getSound(freesoundId)
+            // Sound still exists (possibly in moderation) — keep local copy
           } catch (err) {
-            const message = err instanceof Error ? err.message : 'Delete failed'
-            result.errors.push(`Failed to delete local copy of removed sound: ${message}`)
+            const message = err instanceof Error ? err.message : ''
+            if (message.includes('404')) {
+              // Sound truly deleted on Freesound — delete local copy
+              await this.callbacks.onRecordingDelete(localRec.id)
+            }
+            // Any other error (network, auth, etc.) — keep local copy to be safe
           }
         }
       }

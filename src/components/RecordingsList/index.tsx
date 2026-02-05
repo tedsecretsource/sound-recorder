@@ -3,6 +3,7 @@ import Recording from '../Recording'
 import { useMediaRecorder } from '../../App'
 import { useRecordings } from '../../contexts/RecordingsContext'
 import { validateRecordingName } from '../../utils/recordingUtils'
+import { BstCategory } from '../../types/Freesound'
 import './style.css'
 
 const RecordingsList = () => {
@@ -49,6 +50,17 @@ const RecordingsList = () => {
         }
     }
 
+    const handleBstCategoryChange = async (id: number, category: BstCategory) => {
+        const targetItem = recordings.find((item) => item.id === id)
+        if (!targetItem) return
+
+        try {
+            await updateRecording({ ...targetItem, bstCategory: category })
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
     const handleDeleteRecording = async (id: number) => {
         const shouldDelete = window.confirm('Are you sure you want to delete this recording?')
         if (shouldDelete) {
@@ -76,10 +88,12 @@ const RecordingsList = () => {
                     key={recording.id}
                     name={recording.name}
                     description={recording.description}
+                    bstCategory={recording.bstCategory}
                     id={recording.id!}
                     onDeleteHandler={handleDeleteRecording}
                     onEditNameHandler={editRecordingName}
                     onEditDescriptionHandler={editRecordingDescription}
+                    onBstCategoryChange={handleBstCategoryChange}
                     mimeType={mediaRecorder.mimeType}
                     quality={recording.quality}
                     freesoundId={recording.freesoundId} />
