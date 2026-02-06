@@ -161,7 +161,7 @@ class FreesoundApiService {
     return response.blob()
   }
 
-  async uploadSound(params: FreesoundUploadParams): Promise<{ id: number }> {
+  async uploadSound(params: FreesoundUploadParams, recordingId?: number): Promise<{ id: number }> {
     if (!this.accessToken) {
       throw new Error('Not authenticated')
     }
@@ -181,11 +181,16 @@ class FreesoundApiService {
     formData.append('license', params.license)
     formData.append('bst_category', params.bst_category)
 
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${this.accessToken}`,
+    }
+    if (recordingId !== undefined) {
+      headers['X-Recording-Id'] = recordingId.toString()
+    }
+
     const response = await fetch(`${FREESOUND_CONFIG.API_BASE}/sounds/upload/`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-      },
+      headers,
       body: formData,
     })
 

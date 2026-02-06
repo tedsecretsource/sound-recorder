@@ -6,8 +6,10 @@ import {
   useCallback,
   ReactNode,
 } from 'react'
+import { openDB } from 'idb'
 import { FREESOUND_CONFIG } from '../config/freesound'
 import { FreesoundUser, FreesoundTokenResponse } from '../types/Freesound'
+import { SoundRecorderDB } from '../SoundRecorderTypes'
 import freesoundApi from '../services/freesoundApi'
 
 const STORAGE_KEY = 'freesound-auth'
@@ -63,6 +65,26 @@ function clearAuth(): void {
   }
 }
 
+async function saveAuthTokenToIndexedDB(tokens: { accessToken: string; refreshToken: string; expiresAt: number }): Promise<void> {
+  try {
+    const db = await openDB<SoundRecorderDB>('sound-recorder', 2)
+    await db.put('auth-tokens', tokens, 'current')
+    db.close()
+  } catch (error) {
+    console.error('Failed to save auth token to IndexedDB:', error)
+  }
+}
+
+async function clearAuthTokenFromIndexedDB(): Promise<void> {
+  try {
+    const db = await openDB<SoundRecorderDB>('sound-recorder', 2)
+    await db.delete('auth-tokens', 'current')
+    db.close()
+  } catch (error) {
+    console.error('Failed to clear auth token from IndexedDB:', error)
+  }
+}
+
 export const FreesoundAuthProvider = ({ children }: FreesoundAuthProviderProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -82,6 +104,13 @@ export const FreesoundAuthProvider = ({ children }: FreesoundAuthProviderProps) 
       refreshToken: tokens.refresh_token,
       expiresAt,
       user: existingUser || null,
+    })
+
+    // Save to IndexedDB for service worker access
+    saveAuthTokenToIndexedDB({
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token,
+      expiresAt,
     })
   }, [])
 
@@ -177,6 +206,7 @@ export const FreesoundAuthProvider = ({ children }: FreesoundAuthProviderProps) 
     setRefreshToken(null)
     setError(null)
     clearAuth()
+    clearAuthTokenFromIndexedDB()
   }, [])
 
   const handleCallback = useCallback(async (code: string) => {

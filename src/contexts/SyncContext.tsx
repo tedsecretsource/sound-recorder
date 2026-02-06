@@ -181,6 +181,29 @@ export const SyncProvider = ({ children }: SyncProviderProps) => {
     }
   }, [])
 
+  // Listen for service worker upload completion messages
+  useEffect(() => {
+    const handleMessage = async (event: MessageEvent) => {
+      if (event.data?.type === 'UPLOAD_COMPLETE') {
+        const { recordingId, freesoundId } = event.data
+        const recording = recordings.find(r => r.id === recordingId)
+        if (recording) {
+          await updateRecording({
+            ...recording,
+            freesoundId,
+            syncStatus: 'synced',
+            lastSyncedAt: new Date().toISOString(),
+            moderationStatus: 'processing'
+          })
+          console.log(`[SyncContext] Background upload completed for recording ${recordingId}`)
+        }
+      }
+    }
+
+    navigator.serviceWorker?.addEventListener('message', handleMessage)
+    return () => navigator.serviceWorker?.removeEventListener('message', handleMessage)
+  }, [recordings, updateRecording])
+
   const value: SyncContextValue = {
     isSyncing,
     isOnline,

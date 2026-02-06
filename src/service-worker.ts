@@ -13,6 +13,8 @@ import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate } from 'workbox-strategies';
+import { Queue } from 'workbox-background-sync';
+import { openDB } from 'idb';
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -76,5 +78,107 @@ self.addEventListener('message', (event) => {
     self.skipWaiting();
   }
 });
+
+// Background sync queue for Freesound uploads
+const uploadQueue = new Queue('freesound-uploads', {
+  maxRetentionTime: 24 * 60, // 24 hours in minutes
+  onSync: async ({ queue }) => {
+    let entry;
+    while ((entry = await queue.shiftRequest())) {
+      try {
+        // Get fresh token from IndexedDB
+        const db = await openDB('sound-recorder', 2);
+        const auth = await db.get('auth-tokens', 'current');
+        db.close();
+
+        if (!auth?.accessToken) {
+          // No token available, re-queue and stop
+          await queue.unshiftRequest(entry);
+          console.log('[SW] No auth token available, will retry later');
+          return;
+        }
+
+        // Clone request with fresh Authorization header
+        const originalRequest = entry.request;
+        const headers = new Headers(originalRequest.headers);
+        headers.set('Authorization', `Bearer ${auth.accessToken}`);
+
+        const newRequest = new Request(originalRequest.url, {
+          method: originalRequest.method,
+          headers,
+          body: await originalRequest.clone().blob(),
+          mode: originalRequest.mode,
+          credentials: originalRequest.credentials,
+        });
+
+        const response = await fetch(newRequest);
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            // Token expired, re-queue for retry after main thread refreshes
+            await queue.unshiftRequest(entry);
+            console.log('[SW] Token expired, will retry after refresh');
+            return;
+          }
+          throw new Error(`Upload failed: ${response.status}`);
+        }
+
+        // Notify main thread of success
+        const clients = await self.clients.matchAll();
+        const result = await response.json();
+        clients.forEach(client => {
+          client.postMessage({
+            type: 'UPLOAD_COMPLETE',
+            recordingId: entry.metadata?.recordingId,
+            freesoundId: result.id
+          });
+        });
+
+        console.log('[SW] Upload completed successfully:', result.id);
+
+      } catch (error) {
+        console.error('[SW] Upload failed, re-queuing:', error);
+        // Network error - re-queue for retry
+        await queue.unshiftRequest(entry);
+        throw error; // Let workbox handle retry timing
+      }
+    }
+  }
+});
+
+// Register route to intercept Freesound upload requests
+registerRoute(
+  ({ url, request }) =>
+    url.origin === 'https://freesound.org' &&
+    url.pathname === '/apiv2/sounds/upload/' &&
+    request.method === 'POST',
+  async ({ request }) => {
+    try {
+      const response = await fetch(request.clone());
+      if (response.ok) return response;
+
+      // Non-OK response - queue for background sync retry
+      const recordingId = request.headers.get('X-Recording-Id');
+      await uploadQueue.pushRequest({
+        request: request.clone(),
+        metadata: { recordingId: recordingId ? parseInt(recordingId, 10) : undefined }
+      });
+
+      console.log('[SW] Upload failed, queued for background sync');
+      return response;
+    } catch (error) {
+      // Network failure - queue for background sync
+      const recordingId = request.headers.get('X-Recording-Id');
+      await uploadQueue.pushRequest({
+        request: request.clone(),
+        metadata: { recordingId: recordingId ? parseInt(recordingId, 10) : undefined }
+      });
+
+      console.log('[SW] Network error, queued for background sync');
+      throw error;
+    }
+  },
+  'POST'
+);
 
 // Any other custom service worker logic can go here.

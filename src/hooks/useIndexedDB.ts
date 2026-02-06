@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { openDB, IDBPDatabase } from 'idb/with-async-ittr';
-import { Recording, SoundRecorderDB } from '../SoundRecorderTypes';
+import { Recording, SoundRecorderDB, AuthToken } from '../SoundRecorderTypes';
 
 // interface IndexedDBHook {
 //     db: IDBPDatabase<SoundRecorderDB> | null
@@ -18,9 +18,14 @@ const useIndexedDB = () => {
     const storeName = 'recordings'
     
     useEffect(() => {
-        openDB<SoundRecorderDB>(databaseName, 1, {
-            upgrade(db) {
-                db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true })
+        openDB<SoundRecorderDB>(databaseName, 2, {
+            upgrade(db, oldVersion) {
+                if (oldVersion < 1) {
+                    db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true })
+                }
+                if (oldVersion < 2) {
+                    db.createObjectStore('auth-tokens')
+                }
             }
         }).then((db) => {
             setDb(db)
@@ -78,13 +83,40 @@ const useIndexedDB = () => {
         }
     }
 
+    const saveAuthToken = useCallback(async (token: AuthToken) => {
+        if (db) {
+            return db.put('auth-tokens', token, 'current')
+        } else {
+            return Promise.reject('No database connection')
+        }
+    }, [db])
+
+    const getAuthToken = useCallback(async (): Promise<AuthToken | undefined> => {
+        if (db) {
+            return db.get('auth-tokens', 'current')
+        } else {
+            return Promise.reject('No database connection')
+        }
+    }, [db])
+
+    const clearAuthToken = useCallback(async () => {
+        if (db) {
+            return db.delete('auth-tokens', 'current')
+        } else {
+            return Promise.reject('No database connection')
+        }
+    }, [db])
+
     return {
         connectionIsOpen,
         getRecordingFromDB,
         getAllRecordingsFromDB,
         addRecording,
         putRecording,
-        deleteRecordingFromDB
+        deleteRecordingFromDB,
+        saveAuthToken,
+        getAuthToken,
+        clearAuthToken,
     }
 }
 

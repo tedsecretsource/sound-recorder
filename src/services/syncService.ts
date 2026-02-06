@@ -109,7 +109,7 @@ class SyncService {
             description: recording.description!,
             license: 'Creative Commons 0',
             bst_category: recording.bstCategory || 'fx-other'
-          })
+          }, recording.id)
 
           await this.callbacks.onRecordingUpdate(recording.id, {
             freesoundId: uploadResult.id,
@@ -177,7 +177,7 @@ class SyncService {
             description: recording.description!,
             license: 'Creative Commons 0',
             bst_category: recording.bstCategory || 'fx-other'
-          })
+          }, recordingId)
 
           await this.callbacks.onRecordingUpdate(recordingId, {
             freesoundId: uploadResult.id,
