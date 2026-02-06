@@ -3,7 +3,6 @@ import {
   FreesoundUser,
   FreesoundSound,
   FreesoundSoundsResponse,
-  FreesoundTokenResponse,
   FreesoundUploadParams,
   FreesoundPendingUploadsResponse,
 } from '../types/Freesound'
@@ -16,23 +15,10 @@ export class RateLimitError extends Error {
 }
 
 class FreesoundApiService {
-  private accessToken: string | null = null
   private cachedUsername: string | null = null
-  private onTokenRefresh: ((tokens: FreesoundTokenResponse) => void) | null = null
-
-  setAccessToken(token: string | null) {
-    this.accessToken = token
-    if (!token) {
-      this.cachedUsername = null
-    }
-  }
 
   setUsername(username: string | null) {
     this.cachedUsername = username
-  }
-
-  setTokenRefreshCallback(callback: (tokens: FreesoundTokenResponse) => void) {
-    this.onTokenRefresh = callback
   }
 
   private async request<T>(
@@ -40,18 +26,14 @@ class FreesoundApiService {
     options: RequestInit = {},
     retryCount = 0
   ): Promise<T> {
-    if (!this.accessToken) {
-      throw new Error('Not authenticated')
-    }
-
     const url = endpoint.startsWith('http')
       ? endpoint
       : `${FREESOUND_CONFIG.API_BASE}${endpoint}`
 
     const response = await fetch(url, {
       ...options,
+      credentials: 'include',
       headers: {
-        Authorization: `Bearer ${this.accessToken}`,
         ...options.headers,
       },
     })
@@ -67,7 +49,7 @@ class FreesoundApiService {
     }
 
     if (response.status === 401) {
-      throw new Error('Token expired')
+      throw new Error('Not authenticated')
     }
 
     if (!response.ok) {
@@ -78,9 +60,10 @@ class FreesoundApiService {
     return response.json()
   }
 
-  async exchangeCodeForTokens(code: string): Promise<FreesoundTokenResponse> {
+  async exchangeCodeForTokens(code: string): Promise<{ success: boolean; expires_in: number }> {
     const response = await fetch(`${FREESOUND_CONFIG.OAUTH_PROXY_URL}/token`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         code,
@@ -96,25 +79,24 @@ class FreesoundApiService {
     return response.json()
   }
 
-  async refreshAccessToken(refreshToken: string): Promise<FreesoundTokenResponse> {
-    const response = await fetch(`${FREESOUND_CONFIG.OAUTH_PROXY_URL}/refresh`, {
+  async logout(): Promise<void> {
+    await fetch(`${FREESOUND_CONFIG.OAUTH_PROXY_URL}/api/logout`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh_token: refreshToken }),
+      credentials: 'include',
     })
+    this.cachedUsername = null
+  }
 
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.error_description || error.error || 'Token refresh failed')
+  async checkAuthStatus(): Promise<boolean> {
+    try {
+      const response = await fetch(`${FREESOUND_CONFIG.OAUTH_PROXY_URL}/api/auth/status`, {
+        credentials: 'include',
+      })
+      const data = await response.json()
+      return data.authenticated
+    } catch {
+      return false
     }
-
-    const tokens = await response.json()
-
-    if (this.onTokenRefresh) {
-      this.onTokenRefresh(tokens)
-    }
-
-    return tokens
   }
 
   async getMe(): Promise<FreesoundUser> {
@@ -144,14 +126,13 @@ class FreesoundApiService {
   }
 
   async downloadSound(sound: FreesoundSound): Promise<Blob> {
-    if (!this.accessToken) {
-      throw new Error('Not authenticated')
-    }
+    // Rewrite Freesound download URL to go through our proxy
+    // sound.download is like: https://freesound.org/apiv2/sounds/123/download/
+    const downloadPath = sound.download.replace('https://freesound.org/apiv2', '')
+    const proxyUrl = `${FREESOUND_CONFIG.API_BASE}${downloadPath}`
 
-    const response = await fetch(sound.download, {
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-      },
+    const response = await fetch(proxyUrl, {
+      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -162,10 +143,6 @@ class FreesoundApiService {
   }
 
   async uploadSound(params: FreesoundUploadParams, recordingId?: number): Promise<{ id: number }> {
-    if (!this.accessToken) {
-      throw new Error('Not authenticated')
-    }
-
     console.log('Uploading to Freesound:', {
       name: params.name,
       tags: params.tags,
@@ -181,15 +158,14 @@ class FreesoundApiService {
     formData.append('license', params.license)
     formData.append('bst_category', params.bst_category)
 
-    const headers: Record<string, string> = {
-      Authorization: `Bearer ${this.accessToken}`,
-    }
+    const headers: Record<string, string> = {}
     if (recordingId !== undefined) {
       headers['X-Recording-Id'] = recordingId.toString()
     }
 
     const response = await fetch(`${FREESOUND_CONFIG.API_BASE}/sounds/upload/`, {
       method: 'POST',
+      credentials: 'include',
       headers,
       body: formData,
     })
@@ -209,10 +185,6 @@ class FreesoundApiService {
     uploadFilename: string,
     params: Omit<FreesoundUploadParams, 'audioFile'>
   ): Promise<void> {
-    if (!this.accessToken) {
-      throw new Error('Not authenticated')
-    }
-
     const formData = new FormData()
     formData.append('upload_filename', uploadFilename)
     formData.append('name', params.name)
@@ -222,9 +194,7 @@ class FreesoundApiService {
 
     const response = await fetch(`${FREESOUND_CONFIG.API_BASE}/sounds/describe/`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-      },
+      credentials: 'include',
       body: formData,
     })
 

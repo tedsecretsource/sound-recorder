@@ -31,12 +31,6 @@ export function isReadyForSync(recording: Recording): boolean {
     return hasCustomName && hasDescription
 }
 
-export interface AuthToken {
-    accessToken: string
-    refreshToken: string
-    expiresAt: number
-}
-
 export interface SoundRecorderDB extends DBSchema {
     recordings: {
         key: SoundRecorderDB['recordings']['value']['id']
@@ -44,9 +38,5 @@ export interface SoundRecorderDB extends DBSchema {
         indexes: {
             name: string
         }
-    }
-    'auth-tokens': {
-        key: string
-        value: AuthToken
     }
 }

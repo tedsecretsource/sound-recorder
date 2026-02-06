@@ -14,7 +14,6 @@ import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate } from 'workbox-strategies';
 import { Queue } from 'workbox-background-sync';
-import { openDB } from 'idb';
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -80,44 +79,23 @@ self.addEventListener('message', (event) => {
 });
 
 // Background sync queue for Freesound uploads
+// Uses HttpOnly cookies for authentication - no need to read tokens from IndexedDB
 const uploadQueue = new Queue('freesound-uploads', {
   maxRetentionTime: 24 * 60, // 24 hours in minutes
   onSync: async ({ queue }) => {
     let entry;
     while ((entry = await queue.shiftRequest())) {
       try {
-        // Get fresh token from IndexedDB
-        const db = await openDB('sound-recorder', 2);
-        const auth = await db.get('auth-tokens', 'current');
-        db.close();
-
-        if (!auth?.accessToken) {
-          // No token available, re-queue and stop
-          await queue.unshiftRequest(entry);
-          console.log('[SW] No auth token available, will retry later');
-          return;
-        }
-
-        // Clone request with fresh Authorization header
-        const originalRequest = entry.request;
-        const headers = new Headers(originalRequest.headers);
-        headers.set('Authorization', `Bearer ${auth.accessToken}`);
-
-        const newRequest = new Request(originalRequest.url, {
-          method: originalRequest.method,
-          headers,
-          body: await originalRequest.clone().blob(),
-          mode: originalRequest.mode,
-          credentials: originalRequest.credentials,
+        // Replay the request - cookies are automatically included
+        const response = await fetch(entry.request.clone(), {
+          credentials: 'include',
         });
-
-        const response = await fetch(newRequest);
 
         if (!response.ok) {
           if (response.status === 401) {
-            // Token expired, re-queue for retry after main thread refreshes
+            // Session expired, re-queue for retry after user re-authenticates
             await queue.unshiftRequest(entry);
-            console.log('[SW] Token expired, will retry after refresh');
+            console.log('[SW] Session expired, will retry after re-authentication');
             return;
           }
           throw new Error(`Upload failed: ${response.status}`);
@@ -146,15 +124,17 @@ const uploadQueue = new Queue('freesound-uploads', {
   }
 });
 
-// Register route to intercept Freesound upload requests
+// Register route to intercept upload requests to our proxy
+// Uploads now go through the proxy: /api/sounds/upload/
 registerRoute(
   ({ url, request }) =>
-    url.origin === 'https://freesound.org' &&
-    url.pathname === '/apiv2/sounds/upload/' &&
+    url.pathname.includes('/api/sounds/upload/') &&
     request.method === 'POST',
   async ({ request }) => {
     try {
-      const response = await fetch(request.clone());
+      const response = await fetch(request.clone(), {
+        credentials: 'include',
+      });
       if (response.ok) return response;
 
       // Non-OK response - queue for background sync retry

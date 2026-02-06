@@ -1,30 +1,25 @@
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
 import { openDB, IDBPDatabase } from 'idb/with-async-ittr';
-import { Recording, SoundRecorderDB, AuthToken } from '../SoundRecorderTypes';
-
-// interface IndexedDBHook {
-//     db: IDBPDatabase<SoundRecorderDB> | null
-//     getRecordingFromDB: (id: number | IDBKeyRange) => Promise<Recording | undefined>
-//     getAllRecordingsFromDB: () => Promise<Recording[]>
-//     addRecording: (recording: Recording) => Promise<number>
-//     putRecording: (recording: Recording) => Promise<number>
-//     deleteRecordingFromDB: (id: number | IDBKeyRange) => Promise<void>
-// }
+import { Recording, SoundRecorderDB } from '../SoundRecorderTypes';
 
 const useIndexedDB = () => {
     const [db, setDb] = useState<IDBPDatabase<SoundRecorderDB> | null>(null)
     const [connectionIsOpen, setConnectionIsOpen] = useState(false)
     const databaseName = 'sound-recorder'
     const storeName = 'recordings'
-    
+
     useEffect(() => {
-        openDB<SoundRecorderDB>(databaseName, 2, {
+        openDB<SoundRecorderDB>(databaseName, 3, {
             upgrade(db, oldVersion) {
                 if (oldVersion < 1) {
                     db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true })
                 }
-                if (oldVersion < 2) {
-                    db.createObjectStore('auth-tokens')
+                // Migration: auth-tokens store was added in v2, removed in v3
+                // (tokens now stored in HttpOnly cookies)
+                if (oldVersion >= 2 && oldVersion < 3) {
+                    if (db.objectStoreNames.contains('auth-tokens')) {
+                        db.deleteObjectStore('auth-tokens')
+                    }
                 }
             }
         }).then((db) => {
@@ -33,7 +28,7 @@ const useIndexedDB = () => {
         }).catch((err) => {
             console.error(err)
         })
-        
+
         return () => {
             if(db) {
                 db.close()
@@ -83,30 +78,6 @@ const useIndexedDB = () => {
         }
     }
 
-    const saveAuthToken = useCallback(async (token: AuthToken) => {
-        if (db) {
-            return db.put('auth-tokens', token, 'current')
-        } else {
-            return Promise.reject('No database connection')
-        }
-    }, [db])
-
-    const getAuthToken = useCallback(async (): Promise<AuthToken | undefined> => {
-        if (db) {
-            return db.get('auth-tokens', 'current')
-        } else {
-            return Promise.reject('No database connection')
-        }
-    }, [db])
-
-    const clearAuthToken = useCallback(async () => {
-        if (db) {
-            return db.delete('auth-tokens', 'current')
-        } else {
-            return Promise.reject('No database connection')
-        }
-    }, [db])
-
     return {
         connectionIsOpen,
         getRecordingFromDB,
@@ -114,9 +85,6 @@ const useIndexedDB = () => {
         addRecording,
         putRecording,
         deleteRecordingFromDB,
-        saveAuthToken,
-        getAuthToken,
-        clearAuthToken,
     }
 }
 

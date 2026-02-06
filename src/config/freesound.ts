@@ -13,7 +13,8 @@ if (!OAUTH_PROXY_URL) {
 }
 
 export const FREESOUND_CONFIG = {
-  API_BASE: 'https://freesound.org/apiv2',
+  // API calls go through proxy for cookie-based auth
+  API_BASE: (OAUTH_PROXY_URL || '') + '/api',
   OAUTH_PROXY_URL: OAUTH_PROXY_URL || '',
   CLIENT_ID: CLIENT_ID || '',
   get REDIRECT_URI() {

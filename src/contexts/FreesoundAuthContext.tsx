@@ -6,20 +6,9 @@ import {
   useCallback,
   ReactNode,
 } from 'react'
-import { openDB } from 'idb'
 import { FREESOUND_CONFIG } from '../config/freesound'
-import { FreesoundUser, FreesoundTokenResponse } from '../types/Freesound'
-import { SoundRecorderDB } from '../SoundRecorderTypes'
+import { FreesoundUser } from '../types/Freesound'
 import freesoundApi from '../services/freesoundApi'
-
-const STORAGE_KEY = 'freesound-auth'
-
-interface StoredAuth {
-  accessToken: string
-  refreshToken: string
-  expiresAt: number
-  user: FreesoundUser | null
-}
 
 interface FreesoundAuthContextValue {
   isAuthenticated: boolean
@@ -37,95 +26,35 @@ interface FreesoundAuthProviderProps {
   children: ReactNode
 }
 
-function loadStoredAuth(): StoredAuth | null {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      return JSON.parse(stored)
-    }
-  } catch (error) {
-    console.error('Failed to load Freesound auth from localStorage:', error)
-  }
-  return null
-}
-
-function saveAuth(auth: StoredAuth): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(auth))
-  } catch (error) {
-    console.error('Failed to save Freesound auth to localStorage:', error)
-  }
-}
-
-function clearAuth(): void {
-  try {
-    localStorage.removeItem(STORAGE_KEY)
-  } catch (error) {
-    console.error('Failed to clear Freesound auth from localStorage:', error)
-  }
-}
-
-async function saveAuthTokenToIndexedDB(tokens: { accessToken: string; refreshToken: string; expiresAt: number }): Promise<void> {
-  try {
-    const db = await openDB<SoundRecorderDB>('sound-recorder', 2)
-    await db.put('auth-tokens', tokens, 'current')
-    db.close()
-  } catch (error) {
-    console.error('Failed to save auth token to IndexedDB:', error)
-  }
-}
-
-async function clearAuthTokenFromIndexedDB(): Promise<void> {
-  try {
-    const db = await openDB<SoundRecorderDB>('sound-recorder', 2)
-    await db.delete('auth-tokens', 'current')
-    db.close()
-  } catch (error) {
-    console.error('Failed to clear auth token from IndexedDB:', error)
-  }
-}
-
 export const FreesoundAuthProvider = ({ children }: FreesoundAuthProviderProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [user, setUser] = useState<FreesoundUser | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [refreshToken, setRefreshToken] = useState<string | null>(null)
 
-  const handleTokens = useCallback((tokens: FreesoundTokenResponse, existingUser?: FreesoundUser | null) => {
-    const expiresAt = Date.now() + tokens.expires_in * 1000
+  const handleCallback = useCallback(async (code: string) => {
+    setIsLoading(true)
+    setError(null)
 
-    freesoundApi.setAccessToken(tokens.access_token)
-    setRefreshToken(tokens.refresh_token)
-    setIsAuthenticated(true)
+    try {
+      // Exchange code for tokens (sets HttpOnly cookies)
+      await freesoundApi.exchangeCodeForTokens(code)
 
-    saveAuth({
-      accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token,
-      expiresAt,
-      user: existingUser || null,
-    })
-
-    // Save to IndexedDB for service worker access
-    saveAuthTokenToIndexedDB({
-      accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token,
-      expiresAt,
-    })
+      // Fetch user info
+      const userInfo = await freesoundApi.getMe()
+      freesoundApi.setUsername(userInfo.username)
+      setUser(userInfo)
+      setIsAuthenticated(true)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Authentication failed'
+      setError(message)
+      setIsAuthenticated(false)
+    } finally {
+      setIsLoading(false)
+    }
   }, [])
 
-  const refreshAccessToken = useCallback(async (token: string): Promise<boolean> => {
-    try {
-      const tokens = await freesoundApi.refreshAccessToken(token)
-      handleTokens(tokens, user)
-      return true
-    } catch (err) {
-      console.error('Token refresh failed:', err)
-      return false
-    }
-  }, [handleTokens, user])
-
-  // Initialize auth state from localStorage and handle OAuth callback
+  // Initialize auth state and handle OAuth callback
   useEffect(() => {
     const initAuth = async () => {
       // Check for OAuth callback code in URL
@@ -142,99 +71,42 @@ export const FreesoundAuthProvider = ({ children }: FreesoundAuthProviderProps) 
         return
       }
 
-      const stored = loadStoredAuth()
+      // Check if we have a valid session (via HttpOnly cookie)
+      const authenticated = await freesoundApi.checkAuthStatus()
 
-      if (!stored) {
-        setIsLoading(false)
-        return
-      }
-
-      // Check if token is expired or will expire soon (within 5 minutes)
-      const isExpired = Date.now() > stored.expiresAt - 5 * 60 * 1000
-
-      if (isExpired) {
-        // Try to refresh the token
-        const success = await refreshAccessToken(stored.refreshToken)
-        if (!success) {
-          clearAuth()
-          setIsLoading(false)
-          return
-        }
-      } else {
-        freesoundApi.setAccessToken(stored.accessToken)
-        setRefreshToken(stored.refreshToken)
-        setIsAuthenticated(true)
-      }
-
-      // Fetch user info if we don't have it
-      if (!stored.user) {
+      if (authenticated) {
         try {
           const userInfo = await freesoundApi.getMe()
           freesoundApi.setUsername(userInfo.username)
           setUser(userInfo)
-          saveAuth({ ...stored, user: userInfo })
+          setIsAuthenticated(true)
         } catch (err) {
           console.error('Failed to fetch user info:', err)
+          setIsAuthenticated(false)
         }
-      } else {
-        freesoundApi.setUsername(stored.user.username)
-        setUser(stored.user)
       }
 
       setIsLoading(false)
     }
 
     initAuth()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Set up token refresh callback
-  useEffect(() => {
-    freesoundApi.setTokenRefreshCallback((tokens) => {
-      handleTokens(tokens, user)
-    })
-  }, [handleTokens, user])
+  }, [handleCallback])
 
   const login = useCallback(() => {
     window.location.href = FREESOUND_CONFIG.AUTHORIZE_URL
   }, [])
 
-  const logout = useCallback(() => {
-    freesoundApi.setAccessToken(null)
+  const logout = useCallback(async () => {
+    try {
+      await freesoundApi.logout()
+    } catch (err) {
+      console.error('Logout request failed:', err)
+    }
     freesoundApi.setUsername(null)
     setIsAuthenticated(false)
     setUser(null)
-    setRefreshToken(null)
     setError(null)
-    clearAuth()
-    clearAuthTokenFromIndexedDB()
   }, [])
-
-  const handleCallback = useCallback(async (code: string) => {
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const tokens = await freesoundApi.exchangeCodeForTokens(code)
-      handleTokens(tokens)
-
-      // Fetch user info
-      const userInfo = await freesoundApi.getMe()
-      freesoundApi.setUsername(userInfo.username)
-      setUser(userInfo)
-
-      // Update stored auth with user info
-      const stored = loadStoredAuth()
-      if (stored) {
-        saveAuth({ ...stored, user: userInfo })
-      }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Authentication failed'
-      setError(message)
-      setIsAuthenticated(false)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [handleTokens])
 
   const value: FreesoundAuthContextValue = {
     isAuthenticated,
