@@ -276,9 +276,9 @@ export default {
           const contentType = request.headers.get('Content-Type')
 
           if (contentType?.includes('multipart/form-data')) {
-            // For file uploads, pass through the body stream
+            // For file uploads, pass through the body stream and Content-Type (with boundary)
             fetchOptions.body = request.body
-            // Don't set Content-Type - let fetch set it with boundary
+            fetchOptions.headers = { 'Content-Type': contentType }
           } else if (contentType) {
             fetchOptions.body = await request.text()
             fetchOptions.headers = { 'Content-Type': contentType }
