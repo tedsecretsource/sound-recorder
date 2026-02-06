@@ -27,6 +27,6 @@ export const FREESOUND_CONFIG = {
       response_type: 'code',
       redirect_uri: this.REDIRECT_URI,
     })
-    return `${this.API_BASE}/oauth2/authorize/?${params.toString()}`
+    return `${this.API_BASE}/oauth2/logout_and_authorize/?${params.toString()}`
   },
 }
