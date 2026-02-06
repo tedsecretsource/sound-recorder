@@ -114,12 +114,16 @@ async function makeAuthenticatedRequest(
   let accessToken = cookies['fs_access']
 
   // First attempt
+  const headersToSend = {
+    ...options.headers as Record<string, string>,
+    'Authorization': `Bearer ${accessToken}`,
+  }
+  console.log('[Proxy] Sending to Freesound:', freesoundUrl)
+  console.log('[Proxy] Headers:', JSON.stringify(headersToSend))
+
   const response = await fetch(freesoundUrl, {
     ...options,
-    headers: {
-      ...options.headers as Record<string, string>,
-      'Authorization': `Bearer ${accessToken}`,
-    },
+    headers: headersToSend,
   })
 
   // If 401, try to refresh token
@@ -275,13 +279,26 @@ export default {
           // For POST/PUT/DELETE, forward the body
           const contentType = request.headers.get('Content-Type')
 
+          // Debug logging
+          console.log('[Proxy] Content-Type:', contentType)
+          console.log('[Proxy] Method:', request.method)
+
           if (contentType?.includes('multipart/form-data')) {
-            // For file uploads, pass through the body stream and Content-Type (with boundary)
-            fetchOptions.body = request.body
+            // For file uploads, read body as ArrayBuffer for reliable proxying
+            const bodyBuffer = await request.arrayBuffer()
+            console.log('[Proxy] Body size:', bodyBuffer.byteLength)
+            fetchOptions.body = bodyBuffer
             fetchOptions.headers = { 'Content-Type': contentType }
           } else if (contentType) {
             fetchOptions.body = await request.text()
             fetchOptions.headers = { 'Content-Type': contentType }
+          } else {
+            // No Content-Type header - try to read body anyway
+            console.log('[Proxy] Warning: No Content-Type header')
+            const bodyText = await request.text()
+            if (bodyText) {
+              fetchOptions.body = bodyText
+            }
           }
         }
 

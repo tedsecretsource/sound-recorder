@@ -124,17 +124,29 @@ const uploadQueue = new Queue('freesound-uploads', {
   }
 });
 
+// Log all fetch events for debugging
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  if (url.pathname.includes('/api/')) {
+    console.log('[SW] Fetch intercepted:', event.request.method, url.pathname);
+  }
+});
+
 // Register route to intercept upload requests to our proxy
 // Uploads now go through the proxy: /api/sounds/upload/
 registerRoute(
-  ({ url, request }) =>
-    url.pathname.includes('/api/sounds/upload/') &&
-    request.method === 'POST',
+  ({ url, request }) => {
+    const matches = url.pathname.includes('/api/sounds/upload/') && request.method === 'POST';
+    console.log('[SW] Route check:', url.pathname, request.method, 'matches:', matches);
+    return matches;
+  },
   async ({ request }) => {
+    console.log('[SW] Upload route handler called');
     try {
       const response = await fetch(request.clone(), {
         credentials: 'include',
       });
+      console.log('[SW] Upload response:', response.status);
       if (response.ok) return response;
 
       // Non-OK response - queue for background sync retry
@@ -147,6 +159,7 @@ registerRoute(
       console.log('[SW] Upload failed, queued for background sync');
       return response;
     } catch (error) {
+      console.log('[SW] Upload network error, queuing...');
       // Network failure - queue for background sync
       const recordingId = request.headers.get('X-Recording-Id');
       await uploadQueue.pushRequest({

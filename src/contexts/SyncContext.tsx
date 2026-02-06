@@ -40,6 +40,7 @@ export const SyncProvider = ({ children }: SyncProviderProps) => {
 
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const hasInitialSyncedRef = useRef(false)
+  const lastSyncAtRef = useRef<number>(0)
 
   // Wire up sync service callbacks
   useEffect(() => {
@@ -77,7 +78,13 @@ export const SyncProvider = ({ children }: SyncProviderProps) => {
   }, [])
 
   const triggerSync = useCallback(async () => {
-    if (!isAuthenticated || !isOnline || isSyncing) {
+    if (!isAuthenticated || isSyncing) {
+      return
+    }
+
+    // When offline, still attempt uploads - service worker will queue them
+    // But skip if there's nothing to upload
+    if (!isOnline && syncService.isQueueEmpty()) {
       return
     }
 
@@ -88,27 +95,37 @@ export const SyncProvider = ({ children }: SyncProviderProps) => {
       const result = await syncService.performSync()
       setLastSyncResult(result)
       setLastSyncTime(new Date())
+      lastSyncAtRef.current = Date.now()
 
       if (result.errors.length > 0) {
         console.warn('Sync completed with errors:', result.errors)
       }
     } catch (err) {
-      console.error('Sync failed:', err)
+      // Network errors are expected when offline - service worker handles queuing
+      if (isOnline) {
+        console.error('Sync failed:', err)
+      }
     } finally {
       setIsSyncing(false)
       setPendingCount(syncService.getQueueLength())
     }
   }, [isAuthenticated, isOnline, isSyncing])
 
-  // Debounced sync trigger
+  // Debounced sync trigger with minimum interval
+  const SYNC_DEBOUNCE_MS = 5000 // Wait 5 seconds after last change
+  const SYNC_MIN_INTERVAL_MS = 60000 // Minimum 60 seconds between syncs
+
   const debouncedSync = useCallback(() => {
     if (syncTimeoutRef.current) {
       clearTimeout(syncTimeoutRef.current)
     }
 
+    const timeSinceLastSync = Date.now() - lastSyncAtRef.current
+    const delay = Math.max(SYNC_DEBOUNCE_MS, SYNC_MIN_INTERVAL_MS - timeSinceLastSync)
+
     syncTimeoutRef.current = setTimeout(() => {
       triggerSync()
-    }, 2000) // Wait 2 seconds after last change before syncing
+    }, delay)
   }, [triggerSync])
 
   // Retry a moderation-failed recording by clearing its Freesound state

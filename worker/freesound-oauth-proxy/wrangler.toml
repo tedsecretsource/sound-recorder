@@ -9,6 +9,27 @@ FREESOUND_API_BASE = "https://freesound.org/apiv2"
 #   wrangler secret put FREESOUND_CLIENT_ID
 #   wrangler secret put FREESOUND_CLIENT_SECRET
 
+# Development environment - deploys as freesound-oauth-proxy-dev
+[env.dev]
+name = "freesound-oauth-proxy-dev"
+
+[env.dev.vars]
+FREESOUND_API_BASE = "https://freesound.org/apiv2"
+
+# Set dev secrets with:
+#   wrangler secret put FREESOUND_CLIENT_ID --env dev
+#   wrangler secret put FREESOUND_CLIENT_SECRET --env dev
+
+[env.dev.observability]
+enabled = true
+head_sampling_rate = 1
+
+[env.dev.observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+invocation_logs = true
+
 [observability]
 enabled = false
 head_sampling_rate = 1
