@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/sound-recorder/static/css/main.496be6e7.css",
-    "main.js": "/sound-recorder/static/js/main.10a33663.js",
+    "main.js": "/sound-recorder/static/js/main.6688dcc4.js",
     "service-worker.js": "/sound-recorder/service-worker.js",
     "index.html": "/sound-recorder/index.html",
     "main.496be6e7.css.map": "/sound-recorder/static/css/main.496be6e7.css.map",
-    "main.10a33663.js.map": "/sound-recorder/static/js/main.10a33663.js.map"
+    "main.6688dcc4.js.map": "/sound-recorder/static/js/main.6688dcc4.js.map"
   },
   "entrypoints": [
     "static/css/main.496be6e7.css",
-    "static/js/main.10a33663.js"
+    "static/js/main.6688dcc4.js"
   ]
 }
