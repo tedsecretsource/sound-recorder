@@ -17,8 +17,8 @@ const useIndexedDB = () => {
                 // Migration: auth-tokens store was added in v2, removed in v3
                 // (tokens now stored in HttpOnly cookies)
                 if (oldVersion >= 2 && oldVersion < 3) {
-                    if (db.objectStoreNames.contains('auth-tokens')) {
-                        db.deleteObjectStore('auth-tokens')
+                    if (db.objectStoreNames.contains('auth-tokens' as never)) {
+                        db.deleteObjectStore('auth-tokens' as never)
                     }
                 }
             }
