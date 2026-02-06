@@ -25,7 +25,7 @@ function getAllowedOrigins(env: Env): string[] {
   }
   return [
     'http://localhost:3000',
-    'https://trsommer.github.io',
+    'https://tedsecretsource.github.io',
   ]
 }
 

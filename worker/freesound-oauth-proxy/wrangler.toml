@@ -8,3 +8,18 @@ FREESOUND_API_BASE = "https://freesound.org/apiv2"
 # FREESOUND_CLIENT_ID and FREESOUND_CLIENT_SECRET should be set via:
 #   wrangler secret put FREESOUND_CLIENT_ID
 #   wrangler secret put FREESOUND_CLIENT_SECRET
+
+[observability]
+enabled = false
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+invocation_logs = true
+
+[observability.traces]
+enabled = false
+persist = true
+head_sampling_rate = 1
