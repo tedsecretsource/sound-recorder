@@ -52,7 +52,7 @@ describe('useIndexedDB', () => {
             await waitFor(() => {
                 expect(mockedOpenDB).toHaveBeenCalledWith(
                     'sound-recorder',
-                    1,
+                    3,
                     expect.objectContaining({
                         upgrade: expect.any(Function)
                     })
