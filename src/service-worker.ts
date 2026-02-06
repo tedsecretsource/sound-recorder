@@ -83,22 +83,64 @@ self.addEventListener('message', (event) => {
 const uploadQueue = new Queue('freesound-uploads', {
   maxRetentionTime: 24 * 60, // 24 hours in minutes
   onSync: async ({ queue }) => {
+    console.log('[SW] Background sync starting...');
     let entry;
     while ((entry = await queue.shiftRequest())) {
+      const recordingId = entry.metadata?.recordingId;
+      console.log('[SW] Processing queued upload for recording:', recordingId);
+
       try {
         // Replay the request - cookies are automatically included
         const response = await fetch(entry.request.clone(), {
           credentials: 'include',
         });
 
+        console.log('[SW] Upload response status:', response.status);
+
         if (!response.ok) {
+          const errorText = await response.text();
+          console.error('[SW] Upload failed:', response.status, errorText);
+
           if (response.status === 401) {
             // Session expired, re-queue for retry after user re-authenticates
             await queue.unshiftRequest(entry);
             console.log('[SW] Session expired, will retry after re-authentication');
             return;
           }
-          throw new Error(`Upload failed: ${response.status}`);
+
+          if (response.status === 429 || response.status >= 500) {
+            // Rate limited or server error - re-queue for retry
+            await queue.unshiftRequest(entry);
+            console.log('[SW] Server error or rate limited, will retry later');
+            return;
+          }
+
+          // For 4xx client errors, track retry count
+          const retryCount = (entry.metadata?.retryCount || 0) + 1;
+          const maxRetries = 3;
+
+          if (retryCount < maxRetries) {
+            // Re-queue with incremented retry count
+            await queue.unshiftRequest({
+              request: entry.request,
+              metadata: { ...entry.metadata, retryCount }
+            });
+            console.log(`[SW] Upload failed (${response.status}), retry ${retryCount}/${maxRetries}`);
+            return;
+          }
+
+          // Max retries exceeded - notify main thread of permanent failure
+          const clients = await self.clients.matchAll();
+          clients.forEach(client => {
+            client.postMessage({
+              type: 'UPLOAD_FAILED',
+              recordingId,
+              error: `Upload failed after ${maxRetries} retries: ${response.status} - ${errorText}`
+            });
+          });
+
+          console.log('[SW] Upload permanently failed after max retries');
+          continue; // Move to next entry
         }
 
         // Notify main thread of success
@@ -107,7 +149,7 @@ const uploadQueue = new Queue('freesound-uploads', {
         clients.forEach(client => {
           client.postMessage({
             type: 'UPLOAD_COMPLETE',
-            recordingId: entry.metadata?.recordingId,
+            recordingId,
             freesoundId: result.id
           });
         });
@@ -115,12 +157,13 @@ const uploadQueue = new Queue('freesound-uploads', {
         console.log('[SW] Upload completed successfully:', result.id);
 
       } catch (error) {
-        console.error('[SW] Upload failed, re-queuing:', error);
-        // Network error - re-queue for retry
+        console.error('[SW] Network error during upload:', error);
+        // Only re-queue for network errors (fetch threw)
         await queue.unshiftRequest(entry);
         throw error; // Let workbox handle retry timing
       }
     }
+    console.log('[SW] Background sync complete');
   }
 });
 
