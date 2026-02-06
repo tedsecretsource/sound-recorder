@@ -13,6 +13,8 @@ if (!OAUTH_PROXY_URL) {
 }
 
 export const FREESOUND_CONFIG = {
+  // Direct Freesound API (for OAuth redirects)
+  FREESOUND_API_BASE: 'https://freesound.org/apiv2',
   // API calls go through proxy for cookie-based auth
   API_BASE: (OAUTH_PROXY_URL || '') + '/api',
   OAUTH_PROXY_URL: OAUTH_PROXY_URL || '',
@@ -28,6 +30,7 @@ export const FREESOUND_CONFIG = {
       response_type: 'code',
       redirect_uri: this.REDIRECT_URI,
     })
-    return `${this.API_BASE}/oauth2/logout_and_authorize/?${params.toString()}`
+    // OAuth authorization goes directly to Freesound (not through proxy)
+    return `${this.FREESOUND_API_BASE}/oauth2/logout_and_authorize/?${params.toString()}`
   },
 }
