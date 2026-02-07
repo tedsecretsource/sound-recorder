@@ -62,11 +62,18 @@ const TestConsumer = () => {
     )
 }
 
+// Helper to create mock MediaRecorderState
+const createMockMediaRecorderState = (mediaRecorder: any) => ({
+    mediaRecorder,
+    isInitializing: false,
+    error: null
+})
+
 // Helper to wrap with required providers
 const renderWithProviders = (ui: React.ReactElement, mediaRecorder: any) => {
     return render(
         <AudioSettingsProvider>
-            <RecordingSessionProvider mediaRecorder={mediaRecorder}>
+            <RecordingSessionProvider mediaRecorderState={createMockMediaRecorderState(mediaRecorder)}>
                 {ui}
             </RecordingSessionProvider>
         </AudioSettingsProvider>
@@ -87,7 +94,7 @@ describe('RecordingSessionProvider', () => {
         const mockMediaRecorder = createMockMediaRecorder()
         render(
             <AudioSettingsProvider>
-                <RecordingSessionProvider mediaRecorder={mockMediaRecorder}>
+                <RecordingSessionProvider mediaRecorderState={createMockMediaRecorderState(mockMediaRecorder)}>
                     <div data-testid="child">Child Content</div>
                 </RecordingSessionProvider>
             </AudioSettingsProvider>

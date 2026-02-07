@@ -2,7 +2,7 @@ import { Link, Outlet, useOutletContext } from "react-router-dom"
 import Footer from './components/Footer'
 import './App.css'
 import Logo from './components/Logo'
-import useGetMediaRecorder from './hooks/useGetMediaRecorder'
+import useGetMediaRecorder, { MediaRecorderState } from './hooks/useGetMediaRecorder'
 import { RecordingsProvider } from './contexts/RecordingsContext'
 import { RecordingSessionProvider } from './contexts/RecordingSessionContext'
 import { AudioSettingsProvider, useAudioSettings } from './contexts/AudioSettingsContext'
@@ -12,12 +12,12 @@ import SyncIndicator from './components/SyncIndicator'
 
 const AppContent = () => {
   const { settings } = useAudioSettings()
-  const mediaRecorder = useGetMediaRecorder({ settings })
+  const mediaRecorderState = useGetMediaRecorder({ settings })
 
   return (
     <RecordingsProvider>
       <SyncProvider>
-        <RecordingSessionProvider mediaRecorder={mediaRecorder}>
+        <RecordingSessionProvider mediaRecorderState={mediaRecorderState}>
           <header>
             <h1 style={{marginTop: "0", marginBottom: "0"}}>
               <Link to="/" className='logo'>
@@ -28,7 +28,7 @@ const AppContent = () => {
             </h1>
           </header>
           <main>
-            <Outlet context={ mediaRecorder } />
+            <Outlet context={mediaRecorderState} />
           </main>
           <Footer />
         </RecordingSessionProvider>
@@ -48,7 +48,7 @@ const App = () => {
 }
 
 const useMediaRecorder = () => {
-  return useOutletContext<ReturnType<typeof useGetMediaRecorder>>()
+  return useOutletContext<MediaRecorderState>()
 }
 
 export default App

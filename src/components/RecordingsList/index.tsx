@@ -9,7 +9,7 @@ import { ANIMATION } from '../../constants/config'
 import './style.css'
 
 const RecordingsList = () => {
-    const mediaRecorder = useMediaRecorder()
+    const { mediaRecorder, isInitializing, error } = useMediaRecorder()
     const { recordings, updateRecording, deleteRecording: deleteRecordingFromDB } = useRecordings()
     const { retryModeration } = useSync()
 
@@ -81,7 +81,15 @@ const RecordingsList = () => {
     }
 
     const getRecordingsList = () => {
-        if (mediaRecorder === null) {
+        if (isInitializing) {
+            return <p>Loading recordings…</p>
+        }
+
+        if (error) {
+            return <p>Error accessing microphone: {error}</p>
+        }
+
+        if (!mediaRecorder) {
             return <p>Loading recordings…</p>
         }
 

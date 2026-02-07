@@ -5,11 +5,23 @@ interface UseGetMediaRecorderOptions {
     settings?: AudioSettings
 }
 
-const useGetMediaRecorder = (options?: UseGetMediaRecorderOptions) => {
-    const [mr, setMr] = useState<MediaRecorder | null>(null)
+export interface MediaRecorderState {
+    mediaRecorder: MediaRecorder | null
+    isInitializing: boolean
+    error: string | null
+}
+
+const useGetMediaRecorder = (options?: UseGetMediaRecorderOptions): MediaRecorderState => {
+    const [state, setState] = useState<MediaRecorderState>({
+        mediaRecorder: null,
+        isInitializing: true,
+        error: null
+    })
     const settings = options?.settings
 
     const initializeMediaRecorder = useCallback(async () => {
+        setState(prev => ({ ...prev, isInitializing: true, error: null }))
+
         const audioConstraints: MediaTrackConstraints = {
             echoCancellation: false,
             noiseSuppression: false,
@@ -35,7 +47,7 @@ const useGetMediaRecorder = (options?: UseGetMediaRecorderOptions) => {
                     mimeType: 'audio/webm;codecs="opus"',
                     audioBitsPerSecond: bitrate
                 })
-                setMr(recorder)
+                setState({ mediaRecorder: recorder, isInitializing: false, error: null })
                 console.log('Using mimetype audio/webm.')
                 return
             } catch (error) {
@@ -48,13 +60,26 @@ const useGetMediaRecorder = (options?: UseGetMediaRecorderOptions) => {
                     mimeType: 'audio/mp4',
                     audioBitsPerSecond: bitrate
                 })
-                setMr(recorder)
+                setState({ mediaRecorder: recorder, isInitializing: false, error: null })
                 console.log('Using mimetype audio/mp4.')
                 return
             } catch (error) {
                 console.log('Unable to initialize audio using mimetype audio/mp4.')
             }
+
+            // If we got the stream but couldn't create a recorder with any codec
+            setState({
+                mediaRecorder: null,
+                isInitializing: false,
+                error: 'No supported audio codec found'
+            })
         } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Microphone access denied'
+            setState({
+                mediaRecorder: null,
+                isInitializing: false,
+                error: errorMessage
+            })
             console.log('You need to allow access to your microphone to use this app')
         }
     }, [settings])
@@ -63,7 +88,7 @@ const useGetMediaRecorder = (options?: UseGetMediaRecorderOptions) => {
         initializeMediaRecorder()
     }, [initializeMediaRecorder])
 
-    return mr
+    return state
 }
 
 export default useGetMediaRecorder

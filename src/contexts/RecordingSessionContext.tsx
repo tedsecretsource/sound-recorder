@@ -4,6 +4,7 @@ import { useAudioSettings } from './AudioSettingsContext'
 import { createRecordingObject } from '../utils/recordingUtils'
 import logger from '../utils/logger'
 import { createContextHook } from '../utils/createContextHook'
+import { MediaRecorderState } from '../hooks/useGetMediaRecorder'
 
 interface RecordingSessionState {
     isRecording: boolean
@@ -21,10 +22,11 @@ const RecordingSessionContext = createContext<RecordingSessionContextValue | nul
 
 interface RecordingSessionProviderProps {
     children: ReactNode
-    mediaRecorder: MediaRecorder | null
+    mediaRecorderState: MediaRecorderState
 }
 
-export const RecordingSessionProvider = ({ children, mediaRecorder }: RecordingSessionProviderProps) => {
+export const RecordingSessionProvider = ({ children, mediaRecorderState }: RecordingSessionProviderProps) => {
+    const { mediaRecorder } = mediaRecorderState
     const { connectionIsOpen, addRecording, updateRecording } = useRecordings()
     const { getQualityMetadata } = useAudioSettings()
     const [state, setState] = useState<RecordingSessionState>({

@@ -1,11 +1,13 @@
 import { useMediaRecorder } from '../../App'
 import { useRecordingSession } from '../../contexts/RecordingSessionContext'
+import { useRecordings } from '../../contexts/RecordingsContext'
 import Visualizer from '../Visualizer'
 import './style.css'
 
 const RecorderControls = () => {
-    const mediaRecorder = useMediaRecorder()
+    const { mediaRecorder, isInitializing, error } = useMediaRecorder()
     const { state, startRecording, stopRecording } = useRecordingSession()
+    const { connectionIsOpen } = useRecordings()
 
     const defaultRecordClass = 'record-play'
 
@@ -17,22 +19,57 @@ const RecorderControls = () => {
         }
     }
 
+    const isReady = mediaRecorder && connectionIsOpen && !isInitializing
+
     const recorderUI = () => {
         const recordButtonClassesText = state.isRecording ? `${defaultRecordClass} recording-audio` : defaultRecordClass
         return (
             <>
-                <Visualizer stream={mediaRecorder.stream} barColor={[18,124,85]} />
+                <Visualizer stream={mediaRecorder!.stream} barColor={[18,124,85]} />
                 <button onClick={toggleRecording} className={recordButtonClassesText}>{state.isRecording ? 'Stop' : 'Record'}</button>
             </>
         )
     }
 
     const recorderRenderer = () => {
-        if (mediaRecorder === null) {
-            return <button disabled className="record-play" title="Please either allow or decline the use of your microphone">Loading…</button>
-        } else {
+        // Error state - microphone access failed
+        if (error) {
+            return (
+                <button disabled className="record-play record-error" title={error}>
+                    Microphone Error
+                </button>
+            )
+        }
+
+        // Initializing microphone
+        if (isInitializing) {
+            return (
+                <button disabled className="record-play" title="Initializing microphone access...">
+                    Initializing…
+                </button>
+            )
+        }
+
+        // Waiting for database connection
+        if (!connectionIsOpen) {
+            return (
+                <button disabled className="record-play" title="Preparing storage...">
+                    Preparing…
+                </button>
+            )
+        }
+
+        // Ready to record
+        if (isReady) {
             return recorderUI()
         }
+
+        // Fallback loading state
+        return (
+            <button disabled className="record-play" title="Please wait...">
+                Loading…
+            </button>
+        )
     }
 
     return (

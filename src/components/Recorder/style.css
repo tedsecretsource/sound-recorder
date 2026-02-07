@@ -16,3 +16,9 @@ main button.record-play.recording-audio {
     color: white;
     border-radius: 0;
 }
+
+main button.record-play.record-error {
+    background-color: rgb(139, 0, 0);
+    border-color: rgb(139, 0, 0);
+    color: white;
+}

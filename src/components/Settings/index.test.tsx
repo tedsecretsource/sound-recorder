@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import Settings from './index'
 import { AudioSettingsProvider } from '../../contexts/AudioSettingsContext'
 
-let mockMediaRecorderValue: any = {
+let mockMediaRecorder: any = {
   state: 'inactive',
   mimeType: 'audio/webm',
   audioBitsPerSecond: 128000,
@@ -21,10 +21,15 @@ let mockMediaRecorderValue: any = {
     getTracks: jest.fn(() => [{ getSettings: jest.fn(() => ({ deviceId: 'device-id-456' })) }])
   },
 }
+let mockMediaRecorderState: any = {
+  mediaRecorder: mockMediaRecorder,
+  isInitializing: false,
+  error: null
+}
 
 // Mock useMediaRecorder from App
 jest.mock('../../App', () => ({
-  useMediaRecorder: () => mockMediaRecorderValue
+  useMediaRecorder: () => mockMediaRecorderState
 }))
 
 // Mock useRecordingSession from context
@@ -50,7 +55,7 @@ const renderSettings = () => {
 
 describe('Settings component', () => {
   beforeEach(() => {
-    mockMediaRecorderValue = {
+    mockMediaRecorder = {
       state: 'inactive',
       mimeType: 'audio/webm',
       audioBitsPerSecond: 128000,
@@ -67,6 +72,11 @@ describe('Settings component', () => {
         active: true,
         getTracks: jest.fn(() => [{ getSettings: jest.fn(() => ({ deviceId: 'device-id-456' })) }])
       },
+    }
+    mockMediaRecorderState = {
+      mediaRecorder: mockMediaRecorder,
+      isInitializing: false,
+      error: null
     }
   })
 
@@ -131,10 +141,24 @@ describe('Settings component', () => {
   })
 
   describe('Loading state', () => {
-    it('shows loading message when mediaRecorder is null', () => {
-      mockMediaRecorderValue = null
+    it('shows loading message when isInitializing is true', () => {
+      mockMediaRecorderState = {
+        mediaRecorder: null,
+        isInitializing: true,
+        error: null
+      }
       renderSettings()
       expect(screen.getByText(/loading mediarecorder/i)).toBeInTheDocument()
+    })
+
+    it('shows error message when there is an error', () => {
+      mockMediaRecorderState = {
+        mediaRecorder: null,
+        isInitializing: false,
+        error: 'Permission denied'
+      }
+      renderSettings()
+      expect(screen.getByText(/error: permission denied/i)).toBeInTheDocument()
     })
   })
 

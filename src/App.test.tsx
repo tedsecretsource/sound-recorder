@@ -22,7 +22,13 @@ const mockMediaRecorder = {
   },
 }
 
-jest.mock('./hooks/useGetMediaRecorder', () => () => mockMediaRecorder)
+const mockMediaRecorderState = {
+  mediaRecorder: mockMediaRecorder,
+  isInitializing: false,
+  error: null
+}
+
+jest.mock('./hooks/useGetMediaRecorder', () => () => mockMediaRecorderState)
 
 // Mock RecordingsContext to avoid IndexedDB issues in App test
 jest.mock('./contexts/RecordingsContext', () => ({
@@ -92,11 +98,11 @@ describe('App component', () => {
   })
 
   describe('Outlet context', () => {
-    it('Outlet receives mediaRecorder context', () => {
+    it('Outlet receives mediaRecorderState context', () => {
       // Create a test component to access outlet context
       const TestOutletConsumer = () => {
-        const mr = useMediaRecorder()
-        return <div data-testid="outlet-consumer">{mr?.mimeType || 'no context'}</div>
+        const mrState = useMediaRecorder()
+        return <div data-testid="outlet-consumer">{mrState?.mediaRecorder?.mimeType || 'no context'}</div>
       }
 
       render(
@@ -114,13 +120,14 @@ describe('App component', () => {
   })
 
   describe('useMediaRecorder hook', () => {
-    it('returns the mediaRecorder from context', () => {
+    it('returns the mediaRecorderState from context', () => {
       const TestComponent = () => {
-        const mr = useMediaRecorder()
+        const mrState = useMediaRecorder()
         return (
           <div>
-            <span data-testid="mimeType">{mr?.mimeType}</span>
-            <span data-testid="state">{mr?.state}</span>
+            <span data-testid="mimeType">{mrState?.mediaRecorder?.mimeType}</span>
+            <span data-testid="state">{mrState?.mediaRecorder?.state}</span>
+            <span data-testid="isInitializing">{mrState?.isInitializing?.toString()}</span>
           </div>
         )
       }
@@ -137,6 +144,7 @@ describe('App component', () => {
 
       expect(screen.getByTestId('mimeType')).toHaveTextContent('audio/webm')
       expect(screen.getByTestId('state')).toHaveTextContent('inactive')
+      expect(screen.getByTestId('isInitializing')).toHaveTextContent('false')
     })
   })
 

@@ -32,7 +32,7 @@ const mockDeleteRecording = jest.fn(() => Promise.resolve())
 
 // Variables prefixed with 'mock' are allowed in jest.mock
 let mockRecordingsData = [...mockThreeRecordings]
-let mockMediaRecorderData: any = {
+let mockMediaRecorder: any = {
   start: jest.fn(),
   stop: jest.fn(),
   state: 'inactive',
@@ -41,9 +41,14 @@ let mockMediaRecorderData: any = {
   onstop: jest.fn(),
   onstart: jest.fn(),
 }
+let mockMediaRecorderState: any = {
+  mediaRecorder: mockMediaRecorder,
+  isInitializing: false,
+  error: null
+}
 
 jest.mock('../../App', () => ({
-  useMediaRecorder: () => mockMediaRecorderData
+  useMediaRecorder: () => mockMediaRecorderState
 }))
 
 jest.mock('../../contexts/RecordingsContext', () => ({
@@ -87,7 +92,7 @@ describe('RecordingsList', () => {
     mockRecordingsData = [...mockThreeRecordings]
     mockPrompt.mockReturnValue('new recording name')
     mockConfirm.mockReturnValue(true)
-    mockMediaRecorderData = {
+    mockMediaRecorder = {
       start: jest.fn(),
       stop: jest.fn(),
       state: 'inactive',
@@ -95,6 +100,11 @@ describe('RecordingsList', () => {
       ondataavailable: jest.fn(),
       onstop: jest.fn(),
       onstart: jest.fn(),
+    }
+    mockMediaRecorderState = {
+      mediaRecorder: mockMediaRecorder,
+      isInitializing: false,
+      error: null
     }
   })
 
@@ -220,10 +230,24 @@ describe('RecordingsList', () => {
   })
 
   describe('Loading state', () => {
-    it('shows loading message when mediaRecorder is null', () => {
-      mockMediaRecorderData = null
+    it('shows loading message when isInitializing is true', () => {
+      mockMediaRecorderState = {
+        mediaRecorder: null,
+        isInitializing: true,
+        error: null
+      }
       render(<RecordingsList />)
       expect(screen.getByText(/loading recordings/i)).toBeInTheDocument()
+    })
+
+    it('shows error message when there is an error', () => {
+      mockMediaRecorderState = {
+        mediaRecorder: null,
+        isInitializing: false,
+        error: 'Permission denied'
+      }
+      render(<RecordingsList />)
+      expect(screen.getByText(/error accessing microphone/i)).toBeInTheDocument()
     })
   })
 
