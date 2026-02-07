@@ -2,18 +2,23 @@ import { useEffect, useRef } from 'react';
 import './style.css'
 
 interface VisualizerProps {
-    stream: MediaStream, 
-    barColor: Array<number>
+    stream: MediaStream,
+    barColor: Array<number>,
+    sensitivity?: number
 }
 
 const Visualizer = (props: VisualizerProps) => {
-    const {stream, barColor} = props
+    const {stream, barColor, sensitivity = 4} = props
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const requestIdRef = useRef<number | null>(null)
     const analyserRef = useRef<AnalyserNode | null>(null)
     const dataArrayRef = useRef<Uint8Array | null>(null)
     const bufferLengthRef = useRef<number>(0)
     const previousTimeStampRef = useRef<number>(0)
+    const sensitivityRef = useRef<number>(sensitivity)
+
+    // Keep ref in sync with prop
+    sensitivityRef.current = sensitivity
     
     useEffect(() => {
         visualize(stream)
@@ -98,13 +103,12 @@ const Visualizer = (props: VisualizerProps) => {
 
             // Build array of points for smooth curve
             const points: {x: number, y: number}[] = []
-            const sensitivity = 4 // Amplification factor for quiet audio
             for (let i = 0; i < bufferLengthRef.current; i++) {
                 const x = i * sliceWidth
                 // Normalize: 128 is silence (center), values range 0-255
                 // Map to amplitude where 0 = center, positive = above, negative = below
                 let amplitude = (dataArrayRef.current[i] - 128) / 128
-                amplitude = amplitude * sensitivity
+                amplitude = amplitude * sensitivityRef.current
                 // Clamp to prevent going off-canvas
                 amplitude = Math.max(-1, Math.min(1, amplitude))
                 const y = centerY - (amplitude * centerY * 0.85)

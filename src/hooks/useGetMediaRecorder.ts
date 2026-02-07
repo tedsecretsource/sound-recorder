@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { AudioSettings } from '../types/AudioSettings'
 
 interface UseGetMediaRecorderOptions {
@@ -9,14 +9,19 @@ export interface MediaRecorderState {
     mediaRecorder: MediaRecorder | null
     isInitializing: boolean
     error: string | null
+    gainNode: GainNode | null
+    audioContext: AudioContext | null
 }
 
 const useGetMediaRecorder = (options?: UseGetMediaRecorderOptions): MediaRecorderState => {
     const [state, setState] = useState<MediaRecorderState>({
         mediaRecorder: null,
         isInitializing: true,
-        error: null
+        error: null,
+        gainNode: null,
+        audioContext: null
     })
+    const audioContextRef = useRef<AudioContext | null>(null)
     const settings = options?.settings
 
     const initializeMediaRecorder = useCallback(async () => {
@@ -34,20 +39,34 @@ const useGetMediaRecorder = (options?: UseGetMediaRecorderOptions): MediaRecorde
         }
 
         try {
-            const theStream = await navigator.mediaDevices.getUserMedia({
+            const rawStream = await navigator.mediaDevices.getUserMedia({
                 video: false,
                 audio: audioConstraints
             })
+
+            // Create Web Audio API processing chain for gain control
+            const audioContext = new AudioContext()
+            audioContextRef.current = audioContext
+            const source = audioContext.createMediaStreamSource(rawStream)
+            const gainNode = audioContext.createGain()
+            const destination = audioContext.createMediaStreamDestination()
+
+            // Connect: Source → GainNode → Destination
+            source.connect(gainNode)
+            gainNode.connect(destination)
+
+            // Use the processed stream for recording
+            const processedStream = destination.stream
 
             const bitrate = settings?.bitrate ?? 128000
 
             // Try audio/webm (everything except Safari)
             try {
-                const recorder = new MediaRecorder(theStream, {
+                const recorder = new MediaRecorder(processedStream, {
                     mimeType: 'audio/webm;codecs="opus"',
                     audioBitsPerSecond: bitrate
                 })
-                setState({ mediaRecorder: recorder, isInitializing: false, error: null })
+                setState({ mediaRecorder: recorder, isInitializing: false, error: null, gainNode, audioContext })
                 console.log('Using mimetype audio/webm.')
                 return
             } catch (error) {
@@ -56,11 +75,11 @@ const useGetMediaRecorder = (options?: UseGetMediaRecorderOptions): MediaRecorde
 
             // Try audio/mp4 (Safari)
             try {
-                const recorder = new MediaRecorder(theStream, {
+                const recorder = new MediaRecorder(processedStream, {
                     mimeType: 'audio/mp4',
                     audioBitsPerSecond: bitrate
                 })
-                setState({ mediaRecorder: recorder, isInitializing: false, error: null })
+                setState({ mediaRecorder: recorder, isInitializing: false, error: null, gainNode, audioContext })
                 console.log('Using mimetype audio/mp4.')
                 return
             } catch (error) {
@@ -68,17 +87,22 @@ const useGetMediaRecorder = (options?: UseGetMediaRecorderOptions): MediaRecorde
             }
 
             // If we got the stream but couldn't create a recorder with any codec
+            audioContext.close()
             setState({
                 mediaRecorder: null,
                 isInitializing: false,
-                error: 'No supported audio codec found'
+                error: 'No supported audio codec found',
+                gainNode: null,
+                audioContext: null
             })
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Microphone access denied'
             setState({
                 mediaRecorder: null,
                 isInitializing: false,
-                error: errorMessage
+                error: errorMessage,
+                gainNode: null,
+                audioContext: null
             })
             console.log('You need to allow access to your microphone to use this app')
         }
@@ -86,6 +110,13 @@ const useGetMediaRecorder = (options?: UseGetMediaRecorderOptions): MediaRecorde
 
     useEffect(() => {
         initializeMediaRecorder()
+
+        return () => {
+            // Cleanup: close AudioContext when component unmounts
+            if (audioContextRef.current) {
+                audioContextRef.current.close()
+            }
+        }
     }, [initializeMediaRecorder])
 
     return state

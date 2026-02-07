@@ -22,3 +22,48 @@ main button.record-play.record-error {
     border-color: rgb(139, 0, 0);
     color: white;
 }
+
+.gain-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+    user-select: none;
+}
+
+.gain-btn {
+    padding: 16px 32px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border: 2px solid rgb(88, 86, 86);
+    background-color: rgb(50, 50, 50);
+    color: rgb(150, 150, 150);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.gain-btn-left {
+    border-radius: 8px 0 0 8px;
+    border-right: 1px solid rgb(88, 86, 86);
+}
+
+.gain-btn-right {
+    border-radius: 0 8px 8px 0;
+    border-left: 1px solid rgb(88, 86, 86);
+}
+
+.gain-btn:hover:not(.active) {
+    background-color: rgb(70, 70, 70);
+    color: rgb(200, 200, 200);
+}
+
+.gain-btn.active {
+    background-color: rgb(0, 162, 144);
+    border-color: rgb(0, 162, 144);
+    color: white;
+}
+
+.gain-btn-right.active {
+    background-color: rgb(220, 120, 50);
+    border-color: rgb(220, 120, 50);
+}

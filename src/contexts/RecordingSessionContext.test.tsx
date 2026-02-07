@@ -66,7 +66,9 @@ const TestConsumer = () => {
 const createMockMediaRecorderState = (mediaRecorder: any) => ({
     mediaRecorder,
     isInitializing: false,
-    error: null
+    error: null,
+    gainNode: null,
+    audioContext: null
 })
 
 // Helper to wrap with required providers
