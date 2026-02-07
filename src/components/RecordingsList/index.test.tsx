@@ -171,7 +171,7 @@ describe('RecordingsList', () => {
         await user.click(editButtons[0])
       })
 
-      expect(consoleSpy).toHaveBeenCalledWith('The name must not be blank and less than 500 characters.')
+      expect(consoleSpy).toHaveBeenCalledWith('[INFO]', 'The name must not be blank and less than 500 characters.')
       expect(mockUpdateRecording).not.toHaveBeenCalled()
       consoleSpy.mockRestore()
     })
@@ -188,7 +188,7 @@ describe('RecordingsList', () => {
         await user.click(editButtons[0])
       })
 
-      expect(consoleSpy).toHaveBeenCalledWith('The name must not be blank and less than 500 characters.')
+      expect(consoleSpy).toHaveBeenCalledWith('[INFO]', 'The name must not be blank and less than 500 characters.')
       expect(mockUpdateRecording).not.toHaveBeenCalled()
       consoleSpy.mockRestore()
     })

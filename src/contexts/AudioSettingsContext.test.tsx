@@ -125,7 +125,7 @@ describe('useAudioSettings', () => {
     it('throws error when not used within AudioSettingsProvider', () => {
         const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
 
-        expect(() => render(<TestConsumer />)).toThrow('useAudioSettings must be used within an AudioSettingsProvider')
+        expect(() => render(<TestConsumer />)).toThrow('useAudioSettings must be used within its Provider')
 
         consoleError.mockRestore()
     })

@@ -1,7 +1,9 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react'
+import { createContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react'
 import { useRecordings } from './RecordingsContext'
 import { useAudioSettings } from './AudioSettingsContext'
 import { createRecordingObject } from '../utils/recordingUtils'
+import logger from '../utils/logger'
+import { createContextHook } from '../utils/createContextHook'
 
 interface RecordingSessionState {
     isRecording: boolean
@@ -38,11 +40,11 @@ export const RecordingSessionProvider = ({ children, mediaRecorder }: RecordingS
         if (!mediaRecorder) return
 
         mediaRecorder.onstart = () => {
-            console.info('started recording')
+            logger.debug('Started recording')
         }
 
         mediaRecorder.onstop = () => {
-            console.info('stopped recording')
+            logger.debug('Stopped recording')
         }
 
         mediaRecorder.ondataavailable = (e: BlobEvent) => {
@@ -119,9 +121,9 @@ export const RecordingSessionProvider = ({ children, mediaRecorder }: RecordingS
 
         try {
             await updateRecording(newRecordingObj)
-            console.info('saved recording')
+            logger.debug('Saved recording')
         } catch (error) {
-            console.error(error)
+            logger.error('Failed to save recording:', error)
         }
 
         // Reset state
@@ -146,12 +148,6 @@ export const RecordingSessionProvider = ({ children, mediaRecorder }: RecordingS
     )
 }
 
-export const useRecordingSession = (): RecordingSessionContextValue => {
-    const context = useContext(RecordingSessionContext)
-    if (!context) {
-        throw new Error('useRecordingSession must be used within a RecordingSessionProvider')
-    }
-    return context
-}
+export const useRecordingSession = createContextHook(RecordingSessionContext, 'useRecordingSession')
 
 export default RecordingSessionContext

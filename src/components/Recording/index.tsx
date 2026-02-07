@@ -4,38 +4,49 @@ import { isDefaultRecordingName } from '../../SoundRecorderTypes'
 import { BstCategory, BST_CATEGORIES, ModerationStatus } from '../../types/Freesound'
 import './style.css'
 
-interface RecordingProps {
+/** Callback handlers for recording actions */
+export interface RecordingActions {
+    onDelete: (id: number) => void
+    onEditName: (id: number) => void
+    onEditDescription: (id: number) => void
+    onBstCategoryChange: (id: number, category: BstCategory) => void
+    onRetryModeration?: (id: number) => void
+}
+
+/** Data from a recording needed for display */
+export interface RecordingData {
+    id: number
     streamURL: string
     name: string
     description?: string
     bstCategory?: BstCategory
-    onDeleteHandler: (id: number) => void
-    onEditNameHandler: (id: number) => void
-    onEditDescriptionHandler: (id: number) => void
-    onBstCategoryChange: (id: number, category: BstCategory) => void
-    id: number
-    mimeType: string
     quality?: QualityMetadata
     freesoundId?: number
     moderationStatus?: ModerationStatus
-    onRetryModeration?: (id: number) => void
 }
 
-const Recording = (props: RecordingProps) => {
-    const { streamURL, name, description, bstCategory, onDeleteHandler, onEditNameHandler, onEditDescriptionHandler, onBstCategoryChange, id, mimeType, quality, freesoundId, moderationStatus, onRetryModeration } = props
+interface RecordingProps {
+    recording: RecordingData
+    mimeType: string
+    actions: RecordingActions
+}
+
+const Recording = ({ recording, mimeType, actions }: RecordingProps) => {
+    const { id, streamURL, name, description, bstCategory, quality, freesoundId, moderationStatus } = recording
+    const { onDelete, onEditName, onEditDescription, onBstCategoryChange, onRetryModeration } = actions
     const articleRef = useRef<HTMLElement>(null)
 
     const deleteRecording = () => {
         articleRef.current?.classList.add('vanish')
-        onDeleteHandler(id)
+        onDelete(id)
     }
 
     const editName = () => {
-        onEditNameHandler(id)
+        onEditName(id)
     }
 
     const editDescription = () => {
-        onEditDescriptionHandler(id)
+        onEditDescription(id)
     }
 
     const hasCustomName = !isDefaultRecordingName(name)

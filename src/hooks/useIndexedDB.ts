@@ -1,10 +1,14 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { openDB, IDBPDatabase } from 'idb/with-async-ittr';
 import { Recording, SoundRecorderDB } from '../SoundRecorderTypes';
+import logger from '../utils/logger';
+import { ensureDb } from '../utils/ensureDb';
 
 const useIndexedDB = () => {
     const [db, setDb] = useState<IDBPDatabase<SoundRecorderDB> | null>(null)
     const [connectionIsOpen, setConnectionIsOpen] = useState(false)
+    // Track database connection via ref for cleanup (fixes cleanup bug where db was null)
+    const dbRef = useRef<IDBPDatabase<SoundRecorderDB> | null>(null)
     const databaseName = 'sound-recorder'
     const storeName = 'recordings'
 
@@ -22,60 +26,42 @@ const useIndexedDB = () => {
                     }
                 }
             }
-        }).then((db) => {
-            setDb(db)
+        }).then((database) => {
+            dbRef.current = database
+            setDb(database)
             setConnectionIsOpen(true)
         }).catch((err) => {
-            console.error(err)
+            logger.error('Failed to open database:', err)
         })
 
         return () => {
-            if(db) {
-                db.close()
+            // Use ref to access database connection in cleanup
+            if (dbRef.current) {
+                dbRef.current.close()
+                dbRef.current = null
                 setConnectionIsOpen(false)
             }
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const getRecordingFromDB = (id: number | IDBKeyRange) => {
-        if(db) {
-            return db.get(storeName, id)
-        } else {
-            return Promise.reject('No database connection')
-        }
+        return ensureDb(db).get(storeName, id)
     }
 
     const getAllRecordingsFromDB = () => {
-        if(db) {
-            return db.getAll(storeName)
-        } else {
-            return Promise.reject('No database connection')
-        }
+        return ensureDb(db).getAll(storeName)
     }
 
     const addRecording = (recording: Recording) => {
-        if(db) {
-            return db.add(storeName, recording)
-        } else {
-            return Promise.reject('No database connection')
-        }
+        return ensureDb(db).add(storeName, recording)
     }
 
     const putRecording = (recording: Recording) => {
-        if(db) {
-            return db.put(storeName, recording)
-        } else {
-            return Promise.reject('No database connection')
-        }
+        return ensureDb(db).put(storeName, recording)
     }
 
     const deleteRecordingFromDB = (id: number | IDBKeyRange) => {
-        if(db) {
-            return db.delete(storeName, id)
-        } else {
-            return Promise.reject('No database connection')
-        }
+        return ensureDb(db).delete(storeName, id)
     }
 
     return {

@@ -1,6 +1,8 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
+import { createContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react'
 import { openDB, IDBPDatabase } from 'idb/with-async-ittr'
 import { Recording, SoundRecorderDB } from '../SoundRecorderTypes'
+import logger from '../utils/logger'
+import { createContextHook } from '../utils/createContextHook'
 
 interface RecordingsContextValue {
     recordings: Recording[]
@@ -24,6 +26,11 @@ export const RecordingsProvider = ({ children }: RecordingsProviderProps) => {
     const [isLoading, setIsLoading] = useState(true)
     const [connectionIsOpen, setConnectionIsOpen] = useState(false)
 
+    // Track database connection via ref for cleanup (fixes cleanup bug where db was null)
+    const dbRef = useRef<IDBPDatabase<SoundRecorderDB> | null>(null)
+    // Track Object URLs to revoke them before creating new ones (prevents memory leak)
+    const urlMapRef = useRef<Map<number, string>>(new Map())
+
     const databaseName = 'sound-recorder'
     const storeName = 'recordings'
 
@@ -33,20 +40,27 @@ export const RecordingsProvider = ({ children }: RecordingsProviderProps) => {
                 db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true })
             }
         }).then((database) => {
+            dbRef.current = database
             setDb(database)
             setConnectionIsOpen(true)
         }).catch((err) => {
-            console.error(err)
+            logger.error('Failed to open database:', err)
             setIsLoading(false)
         })
 
         return () => {
-            if (db) {
-                db.close()
+            // Use ref to access database connection in cleanup
+            if (dbRef.current) {
+                dbRef.current.close()
+                dbRef.current = null
                 setConnectionIsOpen(false)
             }
+            // Copy ref value for cleanup to satisfy eslint rule
+            const urlMap = urlMapRef.current
+            // Revoke all Object URLs on unmount
+            urlMap.forEach((url) => URL.revokeObjectURL(url))
+            urlMap.clear()
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const refreshRecordings = useCallback(async () => {
@@ -55,13 +69,21 @@ export const RecordingsProvider = ({ children }: RecordingsProviderProps) => {
         try {
             const savedRecordings = await db.getAll(storeName)
             savedRecordings.forEach((recording) => {
-                if (recording.data !== null && recording.data !== undefined) {
-                    recording.audioURL = window.URL.createObjectURL(recording.data)
+                if (recording.data !== null && recording.data !== undefined && recording.id !== undefined) {
+                    // Revoke old Object URL if it exists to prevent memory leak
+                    const oldUrl = urlMapRef.current.get(recording.id)
+                    if (oldUrl) {
+                        URL.revokeObjectURL(oldUrl)
+                    }
+                    // Create new Object URL and track it
+                    const newUrl = URL.createObjectURL(recording.data)
+                    urlMapRef.current.set(recording.id, newUrl)
+                    recording.audioURL = newUrl
                 }
             })
             setRecordings(savedRecordings)
         } catch (error) {
-            console.error(error)
+            logger.error('Failed to refresh recordings:', error)
         } finally {
             setIsLoading(false)
         }
@@ -115,12 +137,6 @@ export const RecordingsProvider = ({ children }: RecordingsProviderProps) => {
     )
 }
 
-export const useRecordings = (): RecordingsContextValue => {
-    const context = useContext(RecordingsContext)
-    if (!context) {
-        throw new Error('useRecordings must be used within a RecordingsProvider')
-    }
-    return context
-}
+export const useRecordings = createContextHook(RecordingsContext, 'useRecordings')
 
 export default RecordingsContext

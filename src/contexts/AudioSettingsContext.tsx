@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
+import { createContext, useState, useEffect, useCallback, ReactNode } from 'react'
 import {
     AudioSettings,
     AudioQualityPreset,
@@ -6,6 +6,8 @@ import {
     DEFAULT_AUDIO_SETTINGS,
     QualityMetadata
 } from '../types/AudioSettings'
+import logger from '../utils/logger'
+import { createContextHook } from '../utils/createContextHook'
 
 const STORAGE_KEY = 'audio-settings'
 
@@ -37,7 +39,7 @@ function loadSettings(): AudioSettings {
             }
         }
     } catch (error) {
-        console.error('Failed to load audio settings from localStorage:', error)
+        logger.error('Failed to load audio settings from localStorage:', error)
     }
     return DEFAULT_AUDIO_SETTINGS
 }
@@ -46,7 +48,7 @@ function saveSettings(settings: AudioSettings): void {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
     } catch (error) {
-        console.error('Failed to save audio settings to localStorage:', error)
+        logger.error('Failed to save audio settings to localStorage:', error)
     }
 }
 
@@ -117,12 +119,6 @@ export const AudioSettingsProvider = ({ children }: AudioSettingsProviderProps) 
     )
 }
 
-export const useAudioSettings = (): AudioSettingsContextValue => {
-    const context = useContext(AudioSettingsContext)
-    if (!context) {
-        throw new Error('useAudioSettings must be used within an AudioSettingsProvider')
-    }
-    return context
-}
+export const useAudioSettings = createContextHook(AudioSettingsContext, 'useAudioSettings')
 
 export default AudioSettingsContext

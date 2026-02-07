@@ -1,9 +1,13 @@
 import { render, screen, waitFor, act } from '@testing-library/react'
 
-// Mock URL.createObjectURL
+// Mock URL.createObjectURL and URL.revokeObjectURL
 Object.defineProperty(global.URL, 'createObjectURL', {
     writable: true,
     value: jest.fn(() => 'blob:https://localhost:3000/mock-url')
+})
+Object.defineProperty(global.URL, 'revokeObjectURL', {
+    writable: true,
+    value: jest.fn()
 })
 
 // Create mock db functions first
@@ -100,7 +104,7 @@ describe('useRecordings', () => {
     it('throws error when not used within RecordingsProvider', () => {
         const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
 
-        expect(() => render(<TestConsumer />)).toThrow('useRecordings must be used within a RecordingsProvider')
+        expect(() => render(<TestConsumer />)).toThrow('useRecordings must be used within its Provider')
 
         consoleError.mockRestore()
     })

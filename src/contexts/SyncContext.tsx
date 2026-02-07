@@ -1,6 +1,5 @@
 import {
   createContext,
-  useContext,
   useState,
   useEffect,
   useCallback,
@@ -11,6 +10,9 @@ import { useFreesoundAuth } from './FreesoundAuthContext'
 import { useRecordings } from './RecordingsContext'
 import { Recording, isReadyForSync } from '../SoundRecorderTypes'
 import syncService, { SyncResult } from '../services/syncService'
+import { SYNC, INITIAL_SYNC_DELAY_MS } from '../constants/config'
+import logger from '../utils/logger'
+import { createContextHook } from '../utils/createContextHook'
 
 interface SyncContextValue {
   isSyncing: boolean
@@ -98,12 +100,12 @@ export const SyncProvider = ({ children }: SyncProviderProps) => {
       lastSyncAtRef.current = Date.now()
 
       if (result.errors.length > 0) {
-        console.warn('Sync completed with errors:', result.errors)
+        logger.warn('Sync completed with errors:', result.errors)
       }
     } catch (err) {
       // Network errors are expected when offline - service worker handles queuing
       if (isOnline) {
-        console.error('Sync failed:', err)
+        logger.error('Sync failed:', err)
       }
     } finally {
       setIsSyncing(false)
@@ -112,16 +114,13 @@ export const SyncProvider = ({ children }: SyncProviderProps) => {
   }, [isAuthenticated, isOnline, isSyncing])
 
   // Debounced sync trigger with minimum interval
-  const SYNC_DEBOUNCE_MS = 5000 // Wait 5 seconds after last change
-  const SYNC_MIN_INTERVAL_MS = 60000 // Minimum 60 seconds between syncs
-
   const debouncedSync = useCallback(() => {
     if (syncTimeoutRef.current) {
       clearTimeout(syncTimeoutRef.current)
     }
 
     const timeSinceLastSync = Date.now() - lastSyncAtRef.current
-    const delay = Math.max(SYNC_DEBOUNCE_MS, SYNC_MIN_INTERVAL_MS - timeSinceLastSync)
+    const delay = Math.max(SYNC.DEBOUNCE_MS, SYNC.MIN_INTERVAL_MS - timeSinceLastSync)
 
     syncTimeoutRef.current = setTimeout(() => {
       triggerSync()
@@ -153,7 +152,7 @@ export const SyncProvider = ({ children }: SyncProviderProps) => {
       // Delay initial sync slightly to let the app settle
       const timeout = setTimeout(() => {
         triggerSync()
-      }, 1000)
+      }, INITIAL_SYNC_DELAY_MS)
       return () => clearTimeout(timeout)
     }
   }, [isAuthenticated, isOnline, triggerSync])
@@ -212,7 +211,7 @@ export const SyncProvider = ({ children }: SyncProviderProps) => {
             lastSyncedAt: new Date().toISOString(),
             moderationStatus: 'processing'
           })
-          console.log(`[SyncContext] Background upload completed for recording ${recordingId}`)
+          logger.info(`Background upload completed for recording ${recordingId}`)
         }
       }
     }
@@ -238,12 +237,6 @@ export const SyncProvider = ({ children }: SyncProviderProps) => {
   )
 }
 
-export const useSync = (): SyncContextValue => {
-  const context = useContext(SyncContext)
-  if (!context) {
-    throw new Error('useSync must be used within a SyncProvider')
-  }
-  return context
-}
+export const useSync = createContextHook(SyncContext, 'useSync')
 
 export default SyncContext

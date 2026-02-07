@@ -6,6 +6,8 @@ import {
   FreesoundUploadParams,
   FreesoundPendingUploadsResponse,
 } from '../types/Freesound'
+import { API } from '../constants/config'
+import logger from '../utils/logger'
 
 export class RateLimitError extends Error {
   constructor(message = 'Rate limited by Freesound API') {
@@ -39,9 +41,9 @@ class FreesoundApiService {
     })
 
     if (response.status === 429) {
-      if (retryCount < 3) {
+      if (retryCount < API.MAX_RETRIES) {
         const retryAfter = response.headers.get('Retry-After')
-        const delaySeconds = retryAfter ? parseInt(retryAfter, 10) : 5 * Math.pow(2, retryCount)
+        const delaySeconds = retryAfter ? parseInt(retryAfter, 10) : API.INITIAL_BACKOFF_SECONDS * Math.pow(2, retryCount)
         await new Promise((resolve) => setTimeout(resolve, delaySeconds * 1000))
         return this.request<T>(endpoint, options, retryCount + 1)
       }
@@ -143,7 +145,7 @@ class FreesoundApiService {
   }
 
   async uploadSound(params: FreesoundUploadParams, recordingId?: number): Promise<{ id: number }> {
-    console.log('Uploading to Freesound:', {
+    logger.debug('Uploading to Freesound:', {
       name: params.name,
       tags: params.tags,
       fileSize: params.audioFile.size,
@@ -172,12 +174,12 @@ class FreesoundApiService {
 
     if (!response.ok) {
       const error = await response.text()
-      console.error('Freesound upload error:', response.status, error)
+      logger.error('Freesound upload error:', response.status, error)
       throw new Error(`Upload failed: ${response.status} - ${error}`)
     }
 
     const result = await response.json()
-    console.log('Freesound upload success:', result)
+    logger.debug('Freesound upload success:', result)
     return result
   }
 

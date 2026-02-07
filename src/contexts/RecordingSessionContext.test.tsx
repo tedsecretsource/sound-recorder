@@ -116,7 +116,7 @@ describe('useRecordingSession', () => {
     it('throws error when not used within RecordingSessionProvider', () => {
         const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
 
-        expect(() => render(<TestConsumer />)).toThrow('useRecordingSession must be used within a RecordingSessionProvider')
+        expect(() => render(<TestConsumer />)).toThrow('useRecordingSession must be used within its Provider')
 
         consoleError.mockRestore()
     })
@@ -310,7 +310,7 @@ describe('MediaRecorder event handlers', () => {
     })
 
     it('onstart logs message', async () => {
-        const consoleSpy = jest.spyOn(console, 'info').mockImplementation(() => {})
+        const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
         const mockMediaRecorder = createMockMediaRecorder()
 
         renderWithProviders(<TestConsumer />, mockMediaRecorder)
@@ -325,12 +325,12 @@ describe('MediaRecorder event handlers', () => {
             }
         })
 
-        expect(consoleSpy).toHaveBeenCalledWith('started recording')
+        expect(consoleSpy).toHaveBeenCalledWith('[DEBUG]', 'Started recording')
         consoleSpy.mockRestore()
     })
 
     it('onstop logs message', async () => {
-        const consoleSpy = jest.spyOn(console, 'info').mockImplementation(() => {})
+        const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
         const mockMediaRecorder = createMockMediaRecorder()
 
         renderWithProviders(<TestConsumer />, mockMediaRecorder)
@@ -345,7 +345,7 @@ describe('MediaRecorder event handlers', () => {
             }
         })
 
-        expect(consoleSpy).toHaveBeenCalledWith('stopped recording')
+        expect(consoleSpy).toHaveBeenCalledWith('[DEBUG]', 'Stopped recording')
         consoleSpy.mockRestore()
     })
 })

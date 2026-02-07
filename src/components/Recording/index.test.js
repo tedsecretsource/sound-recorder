@@ -2,13 +2,23 @@ import Recording from './index'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-const mockProps = {
+const mockActions = {
+    onDelete: jest.fn(),
+    onEditName: jest.fn(),
+    onEditDescription: jest.fn(),
+    onBstCategoryChange: jest.fn(),
+}
+
+const mockRecording = {
+    id: 1,
     streamURL: 'blob:https://localhost:3000/test-audio',
     name: '2021-06-18 07:37:46',
-    id: 1,
+}
+
+const mockProps = {
+    recording: mockRecording,
     mimeType: 'audio/webm',
-    onDeleteHandler: jest.fn(),
-    onEditNameHandler: jest.fn()
+    actions: mockActions,
 }
 
 describe('Recording component', () => {
@@ -44,24 +54,24 @@ describe('Recording component', () => {
         expect(deleteButton).toBeInTheDocument()
     })
 
-    it('edit button calls onEditNameHandler with id', async () => {
+    it('edit button calls onEditName with id', async () => {
         render(<Recording {...mockProps} />)
 
         const editButton = screen.getByRole('button', { name: /click to edit name/i })
         await userEvent.click(editButton)
 
-        expect(mockProps.onEditNameHandler).toHaveBeenCalledTimes(1)
-        expect(mockProps.onEditNameHandler).toHaveBeenCalledWith(1)
+        expect(mockActions.onEditName).toHaveBeenCalledTimes(1)
+        expect(mockActions.onEditName).toHaveBeenCalledWith(1)
     })
 
-    it('delete button calls onDeleteHandler with id', async () => {
+    it('delete button calls onDelete with id', async () => {
         render(<Recording {...mockProps} />)
 
         const deleteButton = screen.getByRole('button', { name: /delete/i })
         await userEvent.click(deleteButton)
 
-        expect(mockProps.onDeleteHandler).toHaveBeenCalledTimes(1)
-        expect(mockProps.onDeleteHandler).toHaveBeenCalledWith(1)
+        expect(mockActions.onDelete).toHaveBeenCalledTimes(1)
+        expect(mockActions.onDelete).toHaveBeenCalledWith(1)
     })
 
     it('delete adds vanish class to article', async () => {

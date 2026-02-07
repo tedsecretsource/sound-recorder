@@ -78,12 +78,12 @@ describe('useIndexedDB', () => {
             expect(recording).toEqual(mockRecording)
         })
 
-        it('rejects with "No database connection" when db is null', async () => {
+        it('throws "No database connection" when db is null', async () => {
             mockedOpenDB.mockImplementation(() => Promise.resolve(null))
 
             const { result } = renderHook(() => useIndexedDB())
 
-            await expect(result.current.getRecordingFromDB(1)).rejects.toBe('No database connection')
+            expect(() => result.current.getRecordingFromDB(1)).toThrow('No database connection')
         })
     })
 
@@ -107,12 +107,12 @@ describe('useIndexedDB', () => {
             expect(recordings).toEqual(mockRecordings)
         })
 
-        it('rejects with "No database connection" when db is null', async () => {
+        it('throws "No database connection" when db is null', async () => {
             mockedOpenDB.mockImplementation(() => Promise.resolve(null))
 
             const { result } = renderHook(() => useIndexedDB())
 
-            await expect(result.current.getAllRecordingsFromDB()).rejects.toBe('No database connection')
+            expect(() => result.current.getAllRecordingsFromDB()).toThrow('No database connection')
         })
     })
 
@@ -132,12 +132,12 @@ describe('useIndexedDB', () => {
             expect(id).toBe(42)
         })
 
-        it('rejects with "No database connection" when db is null', async () => {
+        it('throws "No database connection" when db is null', async () => {
             mockedOpenDB.mockImplementation(() => Promise.resolve(null))
 
             const { result } = renderHook(() => useIndexedDB())
 
-            await expect(result.current.addRecording({ name: 'test', length: 0, audioURL: '' } as any)).rejects.toBe('No database connection')
+            expect(() => result.current.addRecording({ name: 'test', length: 0, audioURL: '' } as any)).toThrow('No database connection')
         })
     })
 
@@ -157,12 +157,12 @@ describe('useIndexedDB', () => {
             expect(id).toBe(5)
         })
 
-        it('rejects with "No database connection" when db is null', async () => {
+        it('throws "No database connection" when db is null', async () => {
             mockedOpenDB.mockImplementation(() => Promise.resolve(null))
 
             const { result } = renderHook(() => useIndexedDB())
 
-            await expect(result.current.putRecording({ id: 1, name: 'test', length: 0, audioURL: '' } as any)).rejects.toBe('No database connection')
+            expect(() => result.current.putRecording({ id: 1, name: 'test', length: 0, audioURL: '' } as any)).toThrow('No database connection')
         })
     })
 
@@ -179,12 +179,12 @@ describe('useIndexedDB', () => {
             expect(mockDb.delete).toHaveBeenCalledWith('recordings', 3)
         })
 
-        it('rejects with "No database connection" when db is null', async () => {
+        it('throws "No database connection" when db is null', async () => {
             mockedOpenDB.mockImplementation(() => Promise.resolve(null))
 
             const { result } = renderHook(() => useIndexedDB())
 
-            await expect(result.current.deleteRecordingFromDB(1)).rejects.toBe('No database connection')
+            expect(() => result.current.deleteRecordingFromDB(1)).toThrow('No database connection')
         })
     })
 })

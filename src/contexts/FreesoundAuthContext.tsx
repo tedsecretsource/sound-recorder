@@ -1,6 +1,5 @@
 import {
   createContext,
-  useContext,
   useState,
   useEffect,
   useCallback,
@@ -9,6 +8,8 @@ import {
 import { FREESOUND_CONFIG } from '../config/freesound'
 import { FreesoundUser } from '../types/Freesound'
 import freesoundApi from '../services/freesoundApi'
+import logger from '../utils/logger'
+import { createContextHook } from '../utils/createContextHook'
 
 interface FreesoundAuthContextValue {
   isAuthenticated: boolean
@@ -81,7 +82,7 @@ export const FreesoundAuthProvider = ({ children }: FreesoundAuthProviderProps) 
           setUser(userInfo)
           setIsAuthenticated(true)
         } catch (err) {
-          console.error('Failed to fetch user info:', err)
+          logger.error('Failed to fetch user info:', err)
           setIsAuthenticated(false)
         }
       }
@@ -100,7 +101,7 @@ export const FreesoundAuthProvider = ({ children }: FreesoundAuthProviderProps) 
     try {
       await freesoundApi.logout()
     } catch (err) {
-      console.error('Logout request failed:', err)
+      logger.error('Logout request failed:', err)
     }
     freesoundApi.setUsername(null)
     setIsAuthenticated(false)
@@ -125,12 +126,6 @@ export const FreesoundAuthProvider = ({ children }: FreesoundAuthProviderProps) 
   )
 }
 
-export const useFreesoundAuth = (): FreesoundAuthContextValue => {
-  const context = useContext(FreesoundAuthContext)
-  if (!context) {
-    throw new Error('useFreesoundAuth must be used within a FreesoundAuthProvider')
-  }
-  return context
-}
+export const useFreesoundAuth = createContextHook(FreesoundAuthContext, 'useFreesoundAuth')
 
 export default FreesoundAuthContext
