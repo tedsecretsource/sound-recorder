@@ -1,7 +1,7 @@
 .sync-indicator {
-  font-size: 0.75rem;
-  margin-left: 0.5rem;
-  vertical-align: middle;
+  font-size: 0.85rem;
+  margin-left: auto;
+  margin-right: 1rem;
 }
 
 .sync-offline {

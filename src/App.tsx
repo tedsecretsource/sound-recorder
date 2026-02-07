@@ -19,13 +19,15 @@ const AppContent = () => {
       <SyncProvider>
         <RecordingSessionProvider mediaRecorderState={mediaRecorderState}>
           <header>
-            <h1 style={{marginTop: "0", marginBottom: "0"}}>
-              <Link to="/" className='logo'>
-                <Logo />
-                Sound Recorder
-              </Link>
+            <div className="header-content">
+              <h1 style={{margin: 0}}>
+                <Link to="/" className='logo'>
+                  <Logo />
+                  Sound Recorder
+                </Link>
+              </h1>
               <SyncIndicator />
-            </h1>
+            </div>
           </header>
           <main>
             <Outlet context={mediaRecorderState} />
