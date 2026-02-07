@@ -21,7 +21,7 @@ export const FREESOUND_CONFIG = {
   CLIENT_ID: CLIENT_ID || '',
   get REDIRECT_URI() {
     // Must match the redirect URI registered in Freesound app settings
-    return window.location.origin + process.env.PUBLIC_URL + '/auth/callback'
+    return window.location.origin + process.env.PUBLIC_URL + '/'
   },
   TAG: 'sound-recorder-sync',
   get AUTHORIZE_URL() {
