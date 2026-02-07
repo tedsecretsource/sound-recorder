@@ -64,12 +64,12 @@ const Visualizer = (props: VisualizerProps) => {
 
     /**
      * Draws a frame of animation
-     * 
+     *
      * We check the previousTimeStamp because if it is the same as the current
      * timestamp, we don't want to animate as the frame is of little value in
      * this context. We only animate the differences.
-     * 
-     * @param {float} timestamp 
+     *
+     * @param {float} timestamp
      */
     const draw = (timestamp: number, canvas: HTMLCanvasElement) => {
         if( previousTimeStampRef.current !== timestamp && analyserRef.current && dataArrayRef.current ) {
@@ -77,23 +77,106 @@ const Visualizer = (props: VisualizerProps) => {
             if (!canvasCtx) return
             const WIDTH = canvas.width
             const HEIGHT = canvas.height
+            const centerY = HEIGHT / 2
 
             // https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData
             analyserRef.current.getByteTimeDomainData(dataArrayRef.current)
 
-            let barWidth: number = (WIDTH / bufferLengthRef.current)
-            let barHeight: number
-            let x = 0
-
             canvasCtx.clearRect(0, 0, WIDTH, HEIGHT)
 
-            for(let i = 0; i < bufferLengthRef.current; i++) {
-                barHeight = dataArrayRef.current[i]
-                canvasCtx.fillStyle = `rgb(${barColor[0]}, ${barColor[1]}, ${barColor[2]})`
-                canvasCtx.fillRect(x, HEIGHT, barWidth, 0-barHeight/2)
+            const sliceWidth = WIDTH / bufferLengthRef.current
 
-                x += barWidth + 1
+            // Create gradient for the upper wave (fades upward)
+            const upperGradient = canvasCtx.createLinearGradient(0, centerY, 0, 0)
+            upperGradient.addColorStop(0, `rgba(${barColor[0]}, ${barColor[1]}, ${barColor[2]}, 0.8)`)
+            upperGradient.addColorStop(1, `rgba(${barColor[0]}, ${barColor[1]}, ${barColor[2]}, 0)`)
+
+            // Create gradient for the lower wave (fades downward)
+            const lowerGradient = canvasCtx.createLinearGradient(0, centerY, 0, HEIGHT)
+            lowerGradient.addColorStop(0, `rgba(${barColor[0]}, ${barColor[1]}, ${barColor[2]}, 0.8)`)
+            lowerGradient.addColorStop(1, `rgba(${barColor[0]}, ${barColor[1]}, ${barColor[2]}, 0)`)
+
+            // Build array of points for smooth curve
+            const points: {x: number, y: number}[] = []
+            for (let i = 0; i < bufferLengthRef.current; i++) {
+                const x = i * sliceWidth
+                // Normalize: 128 is silence (center), values range 0-255
+                // Map to amplitude where 0 = center, positive = above, negative = below
+                const amplitude = (dataArrayRef.current[i] - 128) / 128
+                const y = centerY - (amplitude * centerY * 0.8) // 0.8 to leave some margin
+                points.push({x, y})
             }
+
+            // Draw upper filled wave (from center to wave, with gradient)
+            canvasCtx.beginPath()
+            canvasCtx.moveTo(0, centerY)
+
+            // Draw smooth curve through points using quadratic bezier
+            for (let i = 0; i < points.length - 1; i++) {
+                const current = points[i]
+                const next = points[i + 1]
+                const midX = (current.x + next.x) / 2
+                const midY = (current.y + next.y) / 2
+
+                if (i === 0) {
+                    canvasCtx.lineTo(current.x, current.y)
+                }
+                canvasCtx.quadraticCurveTo(current.x, current.y, midX, midY)
+            }
+
+            // Connect to last point and close path
+            const lastPoint = points[points.length - 1]
+            canvasCtx.lineTo(lastPoint.x, lastPoint.y)
+            canvasCtx.lineTo(WIDTH, centerY)
+            canvasCtx.closePath()
+            canvasCtx.fillStyle = upperGradient
+            canvasCtx.fill()
+
+            // Draw lower mirrored wave (reflected below center)
+            canvasCtx.beginPath()
+            canvasCtx.moveTo(0, centerY)
+
+            for (let i = 0; i < points.length - 1; i++) {
+                const current = points[i]
+                const next = points[i + 1]
+                // Mirror the y position around centerY
+                const mirroredY = centerY + (centerY - current.y)
+                const nextMirroredY = centerY + (centerY - next.y)
+                const midX = (current.x + next.x) / 2
+                const midY = (mirroredY + nextMirroredY) / 2
+
+                if (i === 0) {
+                    canvasCtx.lineTo(current.x, mirroredY)
+                }
+                canvasCtx.quadraticCurveTo(current.x, mirroredY, midX, midY)
+            }
+
+            const lastMirroredY = centerY + (centerY - lastPoint.y)
+            canvasCtx.lineTo(lastPoint.x, lastMirroredY)
+            canvasCtx.lineTo(WIDTH, centerY)
+            canvasCtx.closePath()
+            canvasCtx.fillStyle = lowerGradient
+            canvasCtx.fill()
+
+            // Draw center line accent
+            canvasCtx.beginPath()
+            canvasCtx.moveTo(0, centerY)
+            for (let i = 0; i < points.length - 1; i++) {
+                const current = points[i]
+                const next = points[i + 1]
+                const midX = (current.x + next.x) / 2
+                const midY = (current.y + next.y) / 2
+
+                if (i === 0) {
+                    canvasCtx.lineTo(current.x, current.y)
+                }
+                canvasCtx.quadraticCurveTo(current.x, current.y, midX, midY)
+            }
+            canvasCtx.lineTo(lastPoint.x, lastPoint.y)
+            canvasCtx.strokeStyle = `rgba(${barColor[0]}, ${barColor[1]}, ${barColor[2]}, 1)`
+            canvasCtx.lineWidth = 2
+            canvasCtx.stroke()
+
             previousTimeStampRef.current = timestamp
         }
     }
