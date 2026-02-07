@@ -1,7 +1,7 @@
 export {}
 
 describe('logger', () => {
-  const originalEnv = process.env.NODE_ENV
+  const originalEnv = process.env
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -9,12 +9,12 @@ describe('logger', () => {
   })
 
   afterEach(() => {
-    process.env.NODE_ENV = originalEnv
+    process.env = originalEnv
   })
 
   describe('in development mode', () => {
     beforeEach(() => {
-      process.env.NODE_ENV = 'development'
+      process.env = { ...originalEnv, NODE_ENV: 'development' }
     })
 
     it('exports logger object with all methods', () => {
@@ -86,7 +86,7 @@ describe('logger', () => {
 
   describe('in production mode', () => {
     beforeEach(() => {
-      process.env.NODE_ENV = 'production'
+      process.env = { ...originalEnv, NODE_ENV: 'production' }
     })
 
     it('does not log debug in production', () => {

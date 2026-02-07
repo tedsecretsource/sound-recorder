@@ -48,7 +48,7 @@ describe('Logo component', () => {
   })
 
   it('renders with empty PUBLIC_URL', () => {
-    process.env.PUBLIC_URL = ''
+    process.env = { ...process.env, PUBLIC_URL: '' }
     render(<Logo />)
 
     const logo = screen.getByRole('img')
