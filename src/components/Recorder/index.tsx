@@ -62,7 +62,7 @@ const RecorderControls = () => {
         const recordButtonClassesText = state.isRecording ? `${defaultRecordClass} recording-audio` : defaultRecordClass
         return (
             <>
-                <Visualizer stream={mediaRecorder!.stream} barColor={[18,124,85]} sensitivity={4} />
+                <Visualizer stream={mediaRecorder!.stream} barColor={[18,124,85]} sensitivity={boostGain ? 28 : 4} />
                 <button onClick={toggleRecording} className={recordButtonClassesText}>{state.isRecording ? 'Stop' : 'Record'}</button>
                 <div className="toggle-controls">
                     <div className="toggle-group">
