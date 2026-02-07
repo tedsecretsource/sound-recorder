@@ -23,11 +23,32 @@ main button.record-play.record-error {
     color: white;
 }
 
-.gain-toggle {
+.toggle-controls {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.toggle-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.toggle-label {
+    font-size: 0.85rem;
+    color: rgb(150, 150, 150);
+    font-weight: 500;
+}
+
+.gain-toggle,
+.reverb-toggle {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 30px;
     user-select: none;
 }
 
@@ -66,4 +87,41 @@ main button.record-play.record-error {
 .gain-btn-right.active {
     background-color: rgb(220, 120, 50);
     border-color: rgb(220, 120, 50);
+}
+
+.reverb-btn {
+    padding: 16px 32px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border: 2px solid rgb(88, 86, 86);
+    background-color: rgb(50, 50, 50);
+    color: rgb(150, 150, 150);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.reverb-btn-left {
+    border-radius: 8px 0 0 8px;
+    border-right: 1px solid rgb(88, 86, 86);
+}
+
+.reverb-btn-right {
+    border-radius: 0 8px 8px 0;
+    border-left: 1px solid rgb(88, 86, 86);
+}
+
+.reverb-btn:hover:not(.active) {
+    background-color: rgb(70, 70, 70);
+    color: rgb(200, 200, 200);
+}
+
+.reverb-btn.active {
+    background-color: rgb(0, 162, 144);
+    border-color: rgb(0, 162, 144);
+    color: white;
+}
+
+.reverb-btn-right.active {
+    background-color: rgb(100, 80, 180);
+    border-color: rgb(100, 80, 180);
 }

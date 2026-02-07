@@ -6,19 +6,28 @@ import Visualizer from '../Visualizer'
 import './style.css'
 
 const GAIN_STORAGE_KEY = 'sound-recorder-boost-gain'
+const REVERB_STORAGE_KEY = 'sound-recorder-reverb'
 
 const RecorderControls = () => {
-    const { mediaRecorder, isInitializing, error, gainNode, audioContext } = useMediaRecorder()
+    const { mediaRecorder, isInitializing, error, gainNode, reverbGainNode, audioContext } = useMediaRecorder()
     const { state, startRecording, stopRecording } = useRecordingSession()
     const { connectionIsOpen } = useRecordings()
     const [boostGain, setBoostGain] = useState(() => {
         return localStorage.getItem(GAIN_STORAGE_KEY) === 'true'
+    })
+    const [reverbEnabled, setReverbEnabled] = useState(() => {
+        return localStorage.getItem(REVERB_STORAGE_KEY) === 'true'
     })
 
     // Persist gain setting
     useEffect(() => {
         localStorage.setItem(GAIN_STORAGE_KEY, String(boostGain))
     }, [boostGain])
+
+    // Persist reverb setting
+    useEffect(() => {
+        localStorage.setItem(REVERB_STORAGE_KEY, String(reverbEnabled))
+    }, [reverbEnabled])
 
     // Control the gain node based on boostGain toggle
     useEffect(() => {
@@ -28,6 +37,14 @@ const RecorderControls = () => {
             gainNode.gain.setValueAtTime(targetGain, audioContext.currentTime)
         }
     }, [boostGain, gainNode, audioContext])
+
+    // Control the reverb gain node based on reverbEnabled toggle
+    useEffect(() => {
+        if (reverbGainNode && audioContext) {
+            const targetGain = reverbEnabled ? 0.375 : 0
+            reverbGainNode.gain.setValueAtTime(targetGain, audioContext.currentTime)
+        }
+    }, [reverbEnabled, reverbGainNode, audioContext])
 
     const defaultRecordClass = 'record-play'
 
@@ -47,19 +64,41 @@ const RecorderControls = () => {
             <>
                 <Visualizer stream={mediaRecorder!.stream} barColor={[18,124,85]} sensitivity={4} />
                 <button onClick={toggleRecording} className={recordButtonClassesText}>{state.isRecording ? 'Stop' : 'Record'}</button>
-                <div className="gain-toggle">
-                    <button
-                        className={`gain-btn gain-btn-left ${!boostGain ? 'active' : ''}`}
-                        onClick={() => setBoostGain(false)}
-                    >
-                        1x
-                    </button>
-                    <button
-                        className={`gain-btn gain-btn-right ${boostGain ? 'active' : ''}`}
-                        onClick={() => setBoostGain(true)}
-                    >
-                        7x
-                    </button>
+                <div className="toggle-controls">
+                    <div className="toggle-group">
+                        <span className="toggle-label">Gain</span>
+                        <div className="gain-toggle">
+                            <button
+                                className={`gain-btn gain-btn-left ${!boostGain ? 'active' : ''}`}
+                                onClick={() => setBoostGain(false)}
+                            >
+                                1x
+                            </button>
+                            <button
+                                className={`gain-btn gain-btn-right ${boostGain ? 'active' : ''}`}
+                                onClick={() => setBoostGain(true)}
+                            >
+                                7x
+                            </button>
+                        </div>
+                    </div>
+                    <div className="toggle-group">
+                        <span className="toggle-label">Reverb</span>
+                        <div className="reverb-toggle">
+                            <button
+                                className={`reverb-btn reverb-btn-left ${!reverbEnabled ? 'active' : ''}`}
+                                onClick={() => setReverbEnabled(false)}
+                            >
+                                Off
+                            </button>
+                            <button
+                                className={`reverb-btn reverb-btn-right ${reverbEnabled ? 'active' : ''}`}
+                                onClick={() => setReverbEnabled(true)}
+                            >
+                                On
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </>
         )

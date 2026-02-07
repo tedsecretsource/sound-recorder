@@ -68,6 +68,7 @@ const createMockMediaRecorderState = (mediaRecorder: any) => ({
     isInitializing: false,
     error: null,
     gainNode: null,
+    reverbGainNode: null,
     audioContext: null
 })
 

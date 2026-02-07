@@ -10,6 +10,7 @@ export interface MediaRecorderState {
     isInitializing: boolean
     error: string | null
     gainNode: GainNode | null
+    reverbGainNode: GainNode | null
     audioContext: AudioContext | null
 }
 
@@ -19,6 +20,7 @@ const useGetMediaRecorder = (options?: UseGetMediaRecorderOptions): MediaRecorde
         isInitializing: true,
         error: null,
         gainNode: null,
+        reverbGainNode: null,
         audioContext: null
     })
     const audioContextRef = useRef<AudioContext | null>(null)
@@ -44,16 +46,35 @@ const useGetMediaRecorder = (options?: UseGetMediaRecorderOptions): MediaRecorde
                 audio: audioConstraints
             })
 
-            // Create Web Audio API processing chain for gain control
+            // Create Web Audio API processing chain for gain control and reverb
             const audioContext = new AudioContext()
             audioContextRef.current = audioContext
             const source = audioContext.createMediaStreamSource(rawStream)
             const gainNode = audioContext.createGain()
             const destination = audioContext.createMediaStreamDestination()
 
-            // Connect: Source → GainNode → Destination
+            // Create reverb nodes (delay-based reverb)
+            const delayNode = audioContext.createDelay(1.0)
+            delayNode.delayTime.value = 0.3 // 300ms delay
+
+            const feedbackGain = audioContext.createGain()
+            feedbackGain.gain.value = 0.4 // Feedback amount
+
+            const reverbGainNode = audioContext.createGain()
+            reverbGainNode.gain.value = 0 // Start with reverb off (dry only)
+
+            // Connect: Source → GainNode
             source.connect(gainNode)
+
+            // Dry path: gainNode → destination
             gainNode.connect(destination)
+
+            // Wet path: gainNode → delay → feedback loop → reverbGain → destination
+            gainNode.connect(delayNode)
+            delayNode.connect(feedbackGain)
+            feedbackGain.connect(delayNode) // Feedback loop
+            delayNode.connect(reverbGainNode)
+            reverbGainNode.connect(destination)
 
             // Use the processed stream for recording
             const processedStream = destination.stream
@@ -66,7 +87,7 @@ const useGetMediaRecorder = (options?: UseGetMediaRecorderOptions): MediaRecorde
                     mimeType: 'audio/webm;codecs="opus"',
                     audioBitsPerSecond: bitrate
                 })
-                setState({ mediaRecorder: recorder, isInitializing: false, error: null, gainNode, audioContext })
+                setState({ mediaRecorder: recorder, isInitializing: false, error: null, gainNode, reverbGainNode, audioContext })
                 console.log('Using mimetype audio/webm.')
                 return
             } catch (error) {
@@ -79,7 +100,7 @@ const useGetMediaRecorder = (options?: UseGetMediaRecorderOptions): MediaRecorde
                     mimeType: 'audio/mp4',
                     audioBitsPerSecond: bitrate
                 })
-                setState({ mediaRecorder: recorder, isInitializing: false, error: null, gainNode, audioContext })
+                setState({ mediaRecorder: recorder, isInitializing: false, error: null, gainNode, reverbGainNode, audioContext })
                 console.log('Using mimetype audio/mp4.')
                 return
             } catch (error) {
@@ -93,6 +114,7 @@ const useGetMediaRecorder = (options?: UseGetMediaRecorderOptions): MediaRecorde
                 isInitializing: false,
                 error: 'No supported audio codec found',
                 gainNode: null,
+                reverbGainNode: null,
                 audioContext: null
             })
         } catch (error) {
@@ -102,6 +124,7 @@ const useGetMediaRecorder = (options?: UseGetMediaRecorderOptions): MediaRecorde
                 isInitializing: false,
                 error: errorMessage,
                 gainNode: null,
+                reverbGainNode: null,
                 audioContext: null
             })
             console.log('You need to allow access to your microphone to use this app')
