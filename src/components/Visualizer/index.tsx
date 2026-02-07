@@ -98,12 +98,16 @@ const Visualizer = (props: VisualizerProps) => {
 
             // Build array of points for smooth curve
             const points: {x: number, y: number}[] = []
+            const sensitivity = 4 // Amplification factor for quiet audio
             for (let i = 0; i < bufferLengthRef.current; i++) {
                 const x = i * sliceWidth
                 // Normalize: 128 is silence (center), values range 0-255
                 // Map to amplitude where 0 = center, positive = above, negative = below
-                const amplitude = (dataArrayRef.current[i] - 128) / 128
-                const y = centerY - (amplitude * centerY * 0.8) // 0.8 to leave some margin
+                let amplitude = (dataArrayRef.current[i] - 128) / 128
+                amplitude = amplitude * sensitivity
+                // Clamp to prevent going off-canvas
+                amplitude = Math.max(-1, Math.min(1, amplitude))
+                const y = centerY - (amplitude * centerY * 0.85)
                 points.push({x, y})
             }
 
