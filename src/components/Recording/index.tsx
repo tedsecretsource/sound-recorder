@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import { QualityMetadata, formatQualityBadge } from '../../types/AudioSettings'
 import { isDefaultRecordingName } from '../../SoundRecorderTypes'
 import { BstCategory, BST_CATEGORIES, ModerationStatus } from '../../types/Freesound'
@@ -35,6 +35,42 @@ const Recording = ({ recording, mimeType, actions }: RecordingProps) => {
     const { id, streamURL, name, description, bstCategory, quality, freesoundId, moderationStatus } = recording
     const { onDelete, onEditName, onEditDescription, onBstCategoryChange, onRetryModeration } = actions
     const articleRef = useRef<HTMLElement>(null)
+    const audioRef = useRef<HTMLAudioElement>(null)
+
+    // Force duration calculation for blob URLs
+    useEffect(() => {
+        const audio = audioRef.current
+        if (!audio) return
+
+        let seekingToEnd = false
+
+        const forceDurationCalculation = () => {
+            if (!isFinite(audio.duration)) {
+                seekingToEnd = true
+                audio.currentTime = Number.MAX_SAFE_INTEGER
+            }
+        }
+
+        const handleSeeked = () => {
+            if (seekingToEnd) {
+                seekingToEnd = false
+                audio.currentTime = 0
+            }
+        }
+
+        audio.addEventListener('loadedmetadata', forceDurationCalculation)
+        audio.addEventListener('seeked', handleSeeked)
+
+        // Handle case where metadata already loaded
+        if (audio.readyState >= 1 && !isFinite(audio.duration)) {
+            forceDurationCalculation()
+        }
+
+        return () => {
+            audio.removeEventListener('loadedmetadata', forceDurationCalculation)
+            audio.removeEventListener('seeked', handleSeeked)
+        }
+    }, [streamURL])
 
     const deleteRecording = () => {
         articleRef.current?.classList.add('vanish')
@@ -55,7 +91,7 @@ const Recording = ({ recording, mimeType, actions }: RecordingProps) => {
 
     return (
         <article ref={articleRef} id={id?.toString()}>
-            <audio controls={true} preload="metadata" role="application">
+            <audio ref={audioRef} controls={true} preload="metadata" role="application">
                 <source src={streamURL} type={mimeType} />
             </audio>
             <p>
