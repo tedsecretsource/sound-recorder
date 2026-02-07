@@ -5,11 +5,20 @@ import { useRecordings } from '../../contexts/RecordingsContext'
 import Visualizer from '../Visualizer'
 import './style.css'
 
+const GAIN_STORAGE_KEY = 'sound-recorder-boost-gain'
+
 const RecorderControls = () => {
     const { mediaRecorder, isInitializing, error, gainNode, audioContext } = useMediaRecorder()
     const { state, startRecording, stopRecording } = useRecordingSession()
     const { connectionIsOpen } = useRecordings()
-    const [boostGain, setBoostGain] = useState(false)
+    const [boostGain, setBoostGain] = useState(() => {
+        return localStorage.getItem(GAIN_STORAGE_KEY) === 'true'
+    })
+
+    // Persist gain setting
+    useEffect(() => {
+        localStorage.setItem(GAIN_STORAGE_KEY, String(boostGain))
+    }, [boostGain])
 
     // Control the gain node based on boostGain toggle
     useEffect(() => {
