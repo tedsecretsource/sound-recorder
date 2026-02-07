@@ -8,8 +8,8 @@ describe('Footer component', () => {
     render(<HashRouter><Footer /></HashRouter>)
     expect(screen.getByText('🎙')).toBeInTheDocument()
     expect(screen.getByText('🎧')).toBeInTheDocument()
-    expect(screen.getByText('🛠')).toBeInTheDocument()
     expect(screen.getByText('⚙️')).toBeInTheDocument()
+    expect(screen.getByText('👤')).toBeInTheDocument()
   })
 
   it('renders footer element', () => {
@@ -37,13 +37,13 @@ describe('Footer component', () => {
 
     it('Settings link points to /settings', () => {
       render(<HashRouter><Footer /></HashRouter>)
-      const settingsLink = screen.getByRole('link', { name: '🛠' })
+      const settingsLink = screen.getByRole('link', { name: '⚙️' })
       expect(settingsLink).toHaveAttribute('href', '#/settings')
     })
 
     it('User link points to /user', () => {
       render(<HashRouter><Footer /></HashRouter>)
-      const userLink = screen.getByRole('link', { name: '⚙️' })
+      const userLink = screen.getByRole('link', { name: '👤' })
       expect(userLink).toHaveAttribute('href', '#/user')
     })
   })
@@ -63,13 +63,13 @@ describe('Footer component', () => {
 
     it('Settings link has correct title', () => {
       render(<HashRouter><Footer /></HashRouter>)
-      const settingsLink = screen.getByRole('link', { name: '🛠' })
+      const settingsLink = screen.getByRole('link', { name: '⚙️' })
       expect(settingsLink).toHaveAttribute('title', 'Settings')
     })
 
     it('User link has correct title', () => {
       render(<HashRouter><Footer /></HashRouter>)
-      const userLink = screen.getByRole('link', { name: '⚙️' })
+      const userLink = screen.getByRole('link', { name: '👤' })
       expect(userLink).toHaveAttribute('title', 'User Details')
     })
   })
@@ -101,7 +101,7 @@ describe('Footer component', () => {
           <Footer />
         </MemoryRouter>
       )
-      const settingsLink = screen.getByRole('link', { name: '🛠' })
+      const settingsLink = screen.getByRole('link', { name: '⚙️' })
       expect(settingsLink).toHaveClass('selected')
     })
 
@@ -111,7 +111,7 @@ describe('Footer component', () => {
           <Footer />
         </MemoryRouter>
       )
-      const userLink = screen.getByRole('link', { name: '⚙️' })
+      const userLink = screen.getByRole('link', { name: '👤' })
       expect(userLink).toHaveClass('selected')
     })
   })
