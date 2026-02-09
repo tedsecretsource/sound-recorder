@@ -319,53 +319,6 @@ describe('SyncProvider', () => {
     })
   })
 
-  describe('automatic sync triggers', () => {
-    it('triggers initial sync when authenticated and online', async () => {
-      render(
-        <SyncProvider>
-          <TestConsumer />
-        </SyncProvider>
-      )
-
-      await act(async () => {
-        jest.advanceTimersByTime(100)
-      })
-
-      await waitFor(() => {
-        expect(mockPerformSync).toHaveBeenCalled()
-      })
-    })
-
-    it('queues recordings without freesoundId for sync', async () => {
-      ;(useRecordings as jest.Mock).mockReturnValue({
-        recordings: [
-          {
-            id: 1,
-            name: 'Custom Name',
-            description: 'Description',
-            syncStatus: 'pending',
-          },
-        ],
-        updateRecording: jest.fn(),
-        addRecording: jest.fn(),
-        deleteRecording: jest.fn(),
-      })
-      mockIsQueueEmpty.mockReturnValue(false)
-      mockGetQueueLength.mockReturnValue(1)
-
-      render(
-        <SyncProvider>
-          <TestConsumer />
-        </SyncProvider>
-      )
-
-      await act(async () => {
-        jest.advanceTimersByTime(100)
-      })
-
-      expect(mockQueueUpload).toHaveBeenCalledWith(1)
-    })
-  })
 })
 
 describe('useSync', () => {

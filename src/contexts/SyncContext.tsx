@@ -8,9 +8,9 @@ import {
 } from 'react'
 import { useFreesoundAuth } from './FreesoundAuthContext'
 import { useRecordings } from './RecordingsContext'
-import { Recording, isReadyForSync } from '../SoundRecorderTypes'
+import { Recording } from '../SoundRecorderTypes'
 import syncService, { SyncResult } from '../services/syncService'
-import { SYNC, INITIAL_SYNC_DELAY_MS } from '../constants/config'
+import { SYNC } from '../constants/config'
 import logger from '../utils/logger'
 import { createContextHook } from '../utils/createContextHook'
 
@@ -41,7 +41,6 @@ export const SyncProvider = ({ children }: SyncProviderProps) => {
   const [pendingCount, setPendingCount] = useState(0)
 
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const hasInitialSyncedRef = useRef(false)
   const lastSyncAtRef = useRef<number>(0)
 
   // Wire up sync service callbacks
@@ -144,49 +143,6 @@ export const SyncProvider = ({ children }: SyncProviderProps) => {
     syncService.queueUpload(recordingId)
     debouncedSync()
   }, [recordings, updateRecording, debouncedSync])
-
-  // Initial sync when authenticated
-  useEffect(() => {
-    if (isAuthenticated && isOnline && !hasInitialSyncedRef.current) {
-      hasInitialSyncedRef.current = true
-      // Delay initial sync slightly to let the app settle
-      const timeout = setTimeout(() => {
-        triggerSync()
-      }, INITIAL_SYNC_DELAY_MS)
-      return () => clearTimeout(timeout)
-    }
-  }, [isAuthenticated, isOnline, triggerSync])
-
-  // Sync when coming back online
-  useEffect(() => {
-    if (isOnline && isAuthenticated && hasInitialSyncedRef.current) {
-      debouncedSync()
-    }
-  }, [isOnline, isAuthenticated, debouncedSync])
-
-  // Queue new recordings for upload and trigger sync
-  useEffect(() => {
-    if (!isAuthenticated) return
-
-    for (const recording of recordings) {
-      if (
-        recording.id !== undefined &&
-        !recording.freesoundId &&
-        recording.syncStatus !== 'syncing' &&
-        recording.syncStatus !== 'error' &&
-        recording.moderationStatus !== 'moderation_failed' &&
-        isReadyForSync(recording) // Only queue if has custom name and description
-      ) {
-        syncService.queueUpload(recording.id)
-      }
-    }
-
-    setPendingCount(syncService.getQueueLength())
-
-    if (!syncService.isQueueEmpty()) {
-      debouncedSync()
-    }
-  }, [recordings, isAuthenticated, debouncedSync])
 
   // Cleanup timeout on unmount
   useEffect(() => {

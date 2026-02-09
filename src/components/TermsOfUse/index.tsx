@@ -1,19 +1,4 @@
-import { useState, useEffect } from 'react';
-
 const TermsOfUse = () => {
-  const [terms, setTerms] = useState<string>('');
-
-  useEffect(() => {
-    let termsURL = `${process.env.PUBLIC_URL}/terms_of_use.html`;
-    fetch(termsURL)
-      .then(response => {
-        return response.text()
-      })
-      .then(text => {
-        setTerms(text)
-      })
-  }, [terms]);
-
   return (
     <div>
       <h1 id="termsofusesoundrecorder">Terms of Use Sound Recorder</h1>

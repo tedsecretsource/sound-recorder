@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import Recording, { RecordingActions, RecordingData } from '../Recording'
 import { useMediaRecorder } from '../../App'
 import { useRecordings } from '../../contexts/RecordingsContext'
@@ -11,7 +12,12 @@ import './style.css'
 const RecordingsList = () => {
     const { mediaRecorder, isInitializing, error } = useMediaRecorder()
     const { recordings, updateRecording, deleteRecording: deleteRecordingFromDB } = useRecordings()
-    const { retryModeration } = useSync()
+    const { triggerSync, retryModeration } = useSync()
+
+    // Trigger sync when the Recordings List screen is opened
+    useEffect(() => {
+        triggerSync()
+    }, [triggerSync])
 
     const editRecordingName = async (id: number) => {
         const targetItem = recordings.find((item) => item.id === id)
