@@ -17,7 +17,8 @@ const RecordingsList = () => {
     // Trigger sync when the Recordings List screen is opened
     useEffect(() => {
         triggerSync()
-    }, [triggerSync])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     const editRecordingName = async (id: number) => {
         const targetItem = recordings.find((item) => item.id === id)
