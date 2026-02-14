@@ -14,19 +14,41 @@ The main feature of this application will be reliability. Once installed, you ta
 
 ## Features
 
-I'm implementing features found in the github issues. I've organized them by milestone, but there are potentially hundreds of features and, as of this writing, we are at the very beginning of the project.
+### Recording
+- Record audio from device microphone with real-time waveform visualization
+- Quality presets: Voice (22.05kHz mono 64kbps), Music (44.1kHz stereo 128kbps), Hi-Fi (48kHz stereo 320kbps), and Custom
+- Gain boost toggle (1x / 7x amplification)
+- Reverb effect toggle
+- Recording persists during tab navigation
+- File size estimation based on selected quality settings
+- Supports WebM/Opus (Chrome, Firefox, Edge) and MP4/AAC (Safari)
 
-- [x] Record audio
-- [x] Save audio
-- [x] Play audio
-- [x] Delete audio
-- [x] Download audio
-- [x] Install as a PWA
-- [x] Rename an audio file
-- [x] Audio quality presets (Voice, Music, Hi-Fi, Custom)
-- [x] Freesound OAuth integration & sync
-- [x] Recording persists during tab navigation
-- [ ] Display audio file metadata
+### Recording Management
+- Play, rename, and delete recordings
+- Add descriptions and categories (Broad Sound Taxonomy)
+- Recordings listed in reverse chronological order with quality badges and sync status indicators
+
+### Freesound.org Sync
+- OAuth2 authentication with Freesound
+- Upload recordings to your Freesound account (auto-converts to WAV)
+- Download sounds tagged `sound-recorder-sync` from your account
+- Edit name/description on approved sounds and push changes to Freesound
+- Track moderation status (Processing, In Moderation, Approved, Failed)
+- Cross-device sync — recordings uploaded on one device appear on others
+- Rate limit handling with automatic backoff and retry
+
+### Offline & PWA
+- Install as a standalone app on any device
+- Full offline support — record, edit, and manage without internet
+- Background sync queues uploads for when connectivity returns
+- Service worker with asset precaching for offline-first experience
+- Online/offline status indicator
+
+### Navigation
+- **Record** — recording interface with visualizer
+- **Recordings** — manage all local and synced recordings
+- **Settings** — quality presets and advanced audio configuration
+- **User** — Freesound account connection and profile info
 
 
 ## Live Demo
