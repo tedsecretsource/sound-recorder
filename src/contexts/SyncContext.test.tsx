@@ -137,13 +137,15 @@ describe('SyncProvider', () => {
     expect(screen.getByTestId('lastSyncTime')).toHaveTextContent('null')
   })
 
-  it('sets up sync service callbacks on mount', async () => {
+  it('sets up sync service callbacks synchronously during render', async () => {
     render(
       <SyncProvider>
         <TestConsumer />
       </SyncProvider>
     )
 
+    // Callbacks are set synchronously during render (not in useEffect)
+    // so they're available before child effects like triggerSync fire
     expect(mockSetCallbacks).toHaveBeenCalledWith(
       expect.objectContaining({
         onRecordingUpdate: expect.any(Function),

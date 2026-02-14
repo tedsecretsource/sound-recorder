@@ -91,4 +91,44 @@ describe('Recording component', () => {
         const article = screen.getByRole('article')
         expect(article).toHaveAttribute('id', '1')
     })
+
+    it('hides edit buttons when moderationStatus is processing', () => {
+        const props = {
+            ...mockProps,
+            recording: { ...mockRecording, freesoundId: 123, moderationStatus: 'processing' },
+        }
+        render(<Recording {...props} />)
+
+        expect(screen.queryByRole('button', { name: /click to edit name/i })).not.toBeInTheDocument()
+        expect(screen.queryByRole('button', { name: /click to edit description/i })).not.toBeInTheDocument()
+    })
+
+    it('hides edit buttons when moderationStatus is in_moderation', () => {
+        const props = {
+            ...mockProps,
+            recording: { ...mockRecording, freesoundId: 123, moderationStatus: 'in_moderation' },
+        }
+        render(<Recording {...props} />)
+
+        expect(screen.queryByRole('button', { name: /click to edit name/i })).not.toBeInTheDocument()
+        expect(screen.queryByRole('button', { name: /click to edit description/i })).not.toBeInTheDocument()
+    })
+
+    it('shows edit buttons when moderationStatus is approved', () => {
+        const props = {
+            ...mockProps,
+            recording: { ...mockRecording, freesoundId: 123, moderationStatus: 'approved' },
+        }
+        render(<Recording {...props} />)
+
+        expect(screen.getByRole('button', { name: /click to edit name/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /click to edit description/i })).toBeInTheDocument()
+    })
+
+    it('shows edit buttons when no moderationStatus (not yet synced)', () => {
+        render(<Recording {...mockProps} />)
+
+        expect(screen.getByRole('button', { name: /click to edit name/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /click to edit description/i })).toBeInTheDocument()
+    })
 })

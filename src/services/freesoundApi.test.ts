@@ -403,6 +403,50 @@ describe('FreesoundApiService', () => {
     })
   })
 
+  describe('editSound', () => {
+    it('sends POST request to edit endpoint with name and description', async () => {
+      mockFetch.mockResolvedValueOnce({ ok: true })
+
+      await freesoundApi.editSound(123, { name: 'New Name', description: 'New Desc' })
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://proxy.example.com/api/sounds/123/edit/',
+        expect.objectContaining({
+          method: 'POST',
+          credentials: 'include',
+        })
+      )
+
+      const [, options] = mockFetch.mock.calls[0]
+      const body = options.body as FormData
+      expect(body.get('name')).toBe('New Name')
+      expect(body.get('description')).toBe('New Desc')
+    })
+
+    it('only sends provided fields', async () => {
+      mockFetch.mockResolvedValueOnce({ ok: true })
+
+      await freesoundApi.editSound(123, { name: 'New Name' })
+
+      const [, options] = mockFetch.mock.calls[0]
+      const body = options.body as FormData
+      expect(body.get('name')).toBe('New Name')
+      expect(body.has('description')).toBe(false)
+    })
+
+    it('throws on edit failure', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        text: () => Promise.resolve('Invalid name'),
+      })
+
+      await expect(freesoundApi.editSound(123, { name: '' })).rejects.toThrow(
+        'Edit failed: 400 - Invalid name'
+      )
+    })
+  })
+
   describe('describeSound', () => {
     it('describes uploaded sound with FormData', async () => {
       mockFetch.mockResolvedValueOnce({ ok: true })

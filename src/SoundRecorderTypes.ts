@@ -16,6 +16,7 @@ export interface Recording {
     lastSyncedAt?: string
     syncError?: string
     moderationStatus?: ModerationStatus
+    pendingEdit?: boolean
 }
 
 // Default name format is ISO datetime: "2024-01-15 14:30:45"

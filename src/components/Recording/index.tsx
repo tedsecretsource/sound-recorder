@@ -88,6 +88,7 @@ const Recording = ({ recording, mimeType, actions }: RecordingProps) => {
     const hasCustomName = !isDefaultRecordingName(name)
     const hasDescription = Boolean(description?.trim())
     const readyForSync = hasCustomName && hasDescription
+    const inModeration = moderationStatus === 'processing' || moderationStatus === 'in_moderation'
 
     return (
         <article ref={articleRef} id={id?.toString()}>
@@ -96,13 +97,13 @@ const Recording = ({ recording, mimeType, actions }: RecordingProps) => {
             </audio>
             <p>
                 <span className="name" role="presentation">{name}</span>
-                <button onClick={editName} className="editName" title="Click to edit name" aria-label="Click to edit name">✏️</button>
+                {!inModeration && <button onClick={editName} className="editName" title="Click to edit name" aria-label="Click to edit name">✏️</button>}
             </p>
             <p className="description-row">
                 <span className="description" role="presentation">
                     {description?.trim() || <em className="no-description">No description</em>}
                 </span>
-                <button onClick={editDescription} className="editDescription" title="Click to edit description" aria-label="Click to edit description">✏️</button>
+                {!inModeration && <button onClick={editDescription} className="editDescription" title="Click to edit description" aria-label="Click to edit description">✏️</button>}
             </p>
             <div className="metadata-row">
                 {quality && (

@@ -7,6 +7,7 @@ jest.mock('./freesoundApi', () => {
     getSoundsByTag: jest.fn(),
     getPendingUploads: jest.fn(),
     downloadSound: jest.fn(),
+    editSound: jest.fn(),
   }
   return {
     __esModule: true,
@@ -50,6 +51,7 @@ describe('SyncService', () => {
   let mockGetSoundsByTag: jest.Mock
   let mockGetPendingUploads: jest.Mock
   let mockDownloadSound: jest.Mock
+  let mockEditSound: jest.Mock
 
   const createMockRecording = (overrides: Partial<Recording> = {}): Recording => ({
     id: 1,
@@ -73,6 +75,7 @@ describe('SyncService', () => {
     mockGetSoundsByTag = freesoundApi.getSoundsByTag as jest.Mock
     mockGetPendingUploads = freesoundApi.getPendingUploads as jest.Mock
     mockDownloadSound = freesoundApi.downloadSound as jest.Mock
+    mockEditSound = freesoundApi.editSound as jest.Mock
 
     callbacks = {
       onRecordingUpdate: jest.fn(() => Promise.resolve()),
@@ -282,6 +285,7 @@ describe('SyncService', () => {
       const remoteSound = {
         id: 99999,
         name: 'Remote Sound',
+        description: 'A remote sound description',
         duration: 5.5,
       }
 
@@ -296,6 +300,7 @@ describe('SyncService', () => {
       expect(callbacks.onRecordingAdd).toHaveBeenCalledWith(
         expect.objectContaining({
           name: 'Remote Sound',
+          description: 'A remote sound description',
           freesoundId: 99999,
           syncStatus: 'synced',
         })
@@ -507,6 +512,91 @@ describe('SyncService', () => {
       await syncService.performSync()
 
       expect(syncService.getQueueLength()).toBe(0)
+    })
+  })
+
+  describe('performSync - remote edits', () => {
+    it('pushes edits to Freesound for approved recordings with pendingEdit', async () => {
+      const recording = createMockRecording({
+        id: 1,
+        freesoundId: 12345,
+        syncStatus: 'synced',
+        moderationStatus: 'approved',
+        pendingEdit: true,
+        name: 'Updated Name',
+        description: 'Updated Description',
+      })
+
+      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([recording])
+      mockGetSoundsByTag.mockResolvedValue({ results: [{ id: 12345, name: 'Old Name', duration: 5 }] })
+      mockEditSound.mockResolvedValue(undefined)
+
+      await syncService.performSync()
+
+      expect(mockEditSound).toHaveBeenCalledWith(12345, {
+        name: 'Updated Name',
+        description: 'Updated Description',
+      })
+      expect(callbacks.onRecordingUpdate).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({
+          pendingEdit: undefined,
+          lastSyncedAt: expect.any(String),
+        })
+      )
+    })
+
+    it('skips recordings without pendingEdit flag', async () => {
+      const recording = createMockRecording({
+        id: 1,
+        freesoundId: 12345,
+        syncStatus: 'synced',
+        moderationStatus: 'approved',
+      })
+
+      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([recording])
+      mockGetSoundsByTag.mockResolvedValue({ results: [{ id: 12345, name: 'Test', duration: 5 }] })
+
+      await syncService.performSync()
+
+      expect(mockEditSound).not.toHaveBeenCalled()
+    })
+
+    it('skips recordings not yet approved', async () => {
+      const recording = createMockRecording({
+        id: 1,
+        freesoundId: 12345,
+        syncStatus: 'synced',
+        moderationStatus: 'processing',
+        pendingEdit: true,
+      })
+
+      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([recording])
+      mockGetSoundsByTag.mockResolvedValue({ results: [] })
+
+      await syncService.performSync()
+
+      expect(mockEditSound).not.toHaveBeenCalled()
+    })
+
+    it('handles edit errors gracefully', async () => {
+      const recording = createMockRecording({
+        id: 1,
+        freesoundId: 12345,
+        syncStatus: 'synced',
+        moderationStatus: 'approved',
+        pendingEdit: true,
+      })
+
+      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([recording])
+      mockGetSoundsByTag.mockResolvedValue({ results: [{ id: 12345, name: 'Test', duration: 5 }] })
+      mockEditSound.mockRejectedValue(new Error('Edit failed: 400 - Bad Request'))
+
+      const result = await syncService.performSync()
+
+      expect(result.errors).toContainEqual(
+        expect.stringContaining('Failed to update')
+      )
     })
   })
 

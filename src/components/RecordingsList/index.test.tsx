@@ -63,6 +63,12 @@ jest.mock('../../contexts/RecordingsContext', () => ({
   })
 }))
 
+jest.mock('../../contexts/FreesoundAuthContext', () => ({
+  useFreesoundAuth: () => ({
+    isAuthenticated: false,
+  })
+}))
+
 jest.mock('../../contexts/SyncContext', () => ({
   useSync: () => ({
     isSyncing: false,

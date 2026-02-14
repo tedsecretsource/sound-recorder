@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import Recording, { RecordingActions, RecordingData } from '../Recording'
 import { useMediaRecorder } from '../../App'
 import { useRecordings } from '../../contexts/RecordingsContext'
+import { useFreesoundAuth } from '../../contexts/FreesoundAuthContext'
 import { useSync } from '../../contexts/SyncContext'
 import { validateRecordingName } from '../../utils/recordingUtils'
 import { BstCategory } from '../../types/Freesound'
@@ -12,6 +13,7 @@ import './style.css'
 const RecordingsList = () => {
     const { mediaRecorder, isInitializing, error } = useMediaRecorder()
     const { recordings, updateRecording, deleteRecording: deleteRecordingFromDB } = useRecordings()
+    const { isAuthenticated } = useFreesoundAuth()
     const { triggerSync, retryModeration } = useSync()
 
     // Trigger sync when the Recordings List screen is opened
@@ -32,7 +34,11 @@ const RecordingsList = () => {
         }
 
         try {
-            await updateRecording({ ...targetItem, name: newName })
+            await updateRecording({
+                ...targetItem,
+                name: newName,
+                pendingEdit: targetItem.freesoundId ? true : targetItem.pendingEdit,
+            })
             logger.debug('Saved recording name')
         } catch (error) {
             logger.error('Failed to update recording name:', error)
@@ -51,7 +57,11 @@ const RecordingsList = () => {
         const newDescription = promptedDescription.trim()
 
         try {
-            await updateRecording({ ...targetItem, description: newDescription })
+            await updateRecording({
+                ...targetItem,
+                description: newDescription,
+                pendingEdit: targetItem.freesoundId ? true : targetItem.pendingEdit,
+            })
             logger.debug('Saved description')
         } catch (error) {
             logger.error('Failed to update description:', error)
@@ -125,6 +135,11 @@ const RecordingsList = () => {
 
     return (
         <>
+            {!isAuthenticated && (
+                <p className="sync-reminder">
+                    Connect to Freesound.org to sync your recordings across devices.
+                </p>
+            )}
             {getRecordingsList()}
         </>
     )

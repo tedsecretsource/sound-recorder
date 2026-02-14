@@ -114,8 +114,9 @@ class FreesoundApiService {
 
   async getSoundsByTag(tag: string, page = 1): Promise<FreesoundSoundsResponse> {
     const username = this.cachedUsername || (await this.getMe()).username
+    const fields = 'id,name,tags,description,created,license,type,channels,filesize,bitrate,bitdepth,duration,samplerate,username,download,previews'
     return this.request<FreesoundSoundsResponse>(
-      `/search/text/?query=&filter=username:${username} tag:${tag}&page=${page}&page_size=150`
+      `/search/text/?query=&filter=username:${username} tag:${tag}&fields=${fields}&page=${page}&page_size=150`
     )
   }
 
@@ -181,6 +182,26 @@ class FreesoundApiService {
     const result = await response.json()
     logger.debug('Freesound upload success:', result)
     return result
+  }
+
+  async editSound(
+    soundId: number,
+    params: { name?: string; description?: string }
+  ): Promise<void> {
+    const formData = new FormData()
+    if (params.name !== undefined) formData.append('name', params.name)
+    if (params.description !== undefined) formData.append('description', params.description)
+
+    const response = await fetch(`${FREESOUND_CONFIG.API_BASE}/sounds/${soundId}/edit/`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    })
+
+    if (!response.ok) {
+      const error = await response.text()
+      throw new Error(`Edit failed: ${response.status} - ${error}`)
+    }
   }
 
   async describeSound(

@@ -226,6 +226,37 @@ class SyncService {
   }
 
   /**
+   * Pushes local name/description edits to Freesound for approved recordings.
+   */
+  private async updateRemoteRecordings(
+    recordings: Recording[],
+    context: UploadContext
+  ): Promise<void> {
+    const { callbacks, result } = context
+
+    for (const recording of recordings) {
+      if (!recording.pendingEdit) continue
+      if (!recording.freesoundId || recording.id === undefined) continue
+      if (recording.moderationStatus !== 'approved') continue
+
+      try {
+        await freesoundApi.editSound(recording.freesoundId, {
+          name: recording.name,
+          description: recording.description,
+        })
+
+        await callbacks.onRecordingUpdate(recording.id, {
+          pendingEdit: undefined,
+          lastSyncedAt: new Date().toISOString(),
+        })
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Edit failed'
+        result.errors.push(`Failed to update "${recording.name}": ${message}`)
+      }
+    }
+  }
+
+  /**
    * Downloads remote sounds that don't exist locally.
    */
   private async downloadRemoteSounds(
@@ -244,6 +275,7 @@ class SyncService {
 
         await callbacks.onRecordingAdd({
           name: remoteSound.name,
+          description: remoteSound.description,
           length: remoteSound.duration,
           audioURL,
           data: blob,
@@ -336,7 +368,10 @@ class SyncService {
       // 2. Process explicit upload queue (recordings that were modified)
       await this.processUploadQueue(localRecordings, context)
 
-      // 3. Fetch pending uploads for moderation status check
+      // 3. Push local edits to Freesound for approved recordings
+      await this.updateRemoteRecordings(localRecordings, context)
+
+      // 4. Fetch pending uploads for moderation status check
       let pendingProcessingIds = new Set<number>()
       let pendingModerationIds = new Set<number>()
       let pendingUploadsFetched = false
@@ -350,7 +385,7 @@ class SyncService {
         logger.warn('Could not fetch pending uploads:', err)
       }
 
-      // 4. Update moderation statuses
+      // 5. Update moderation statuses
       await this.updateModerationStatuses(
         localByFreesoundId,
         remoteIds,
@@ -360,10 +395,10 @@ class SyncService {
         this.callbacks
       )
 
-      // 5. Download remote sounds we don't have locally
+      // 6. Download remote sounds we don't have locally
       await this.downloadRemoteSounds(remoteSounds, localByFreesoundId, context)
 
-      // 6. Handle deletions: remote deleted → delete local
+      // 7. Handle deletions: remote deleted → delete local
       await this.handleDeletedSounds(
         localByFreesoundId,
         remoteIds,

@@ -43,26 +43,25 @@ export const SyncProvider = ({ children }: SyncProviderProps) => {
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const lastSyncAtRef = useRef<number>(0)
 
-  // Wire up sync service callbacks
-  useEffect(() => {
-    syncService.setCallbacks({
-      onRecordingUpdate: async (id, updates) => {
-        const recording = recordings.find(r => r.id === id)
-        if (recording) {
-          await updateRecording({ ...recording, ...updates })
-        }
-      },
-      onRecordingAdd: async (recording) => {
-        return await addRecording(recording as Recording)
-      },
-      onRecordingDelete: async (id) => {
-        await deleteRecording(id)
-      },
-      getRecordings: async () => {
-        return recordings
-      },
-    })
-  }, [recordings, updateRecording, addRecording, deleteRecording])
+  // Wire up sync service callbacks synchronously so they're available
+  // before child useEffect hooks fire (e.g. RecordingsList's triggerSync)
+  syncService.setCallbacks({
+    onRecordingUpdate: async (id, updates) => {
+      const recording = recordings.find(r => r.id === id)
+      if (recording) {
+        await updateRecording({ ...recording, ...updates })
+      }
+    },
+    onRecordingAdd: async (recording) => {
+      return await addRecording(recording as Recording)
+    },
+    onRecordingDelete: async (id) => {
+      await deleteRecording(id)
+    },
+    getRecordings: async () => {
+      return recordings
+    },
+  })
 
   // Track online/offline status
   useEffect(() => {
@@ -143,6 +142,13 @@ export const SyncProvider = ({ children }: SyncProviderProps) => {
     syncService.queueUpload(recordingId)
     debouncedSync()
   }, [recordings, updateRecording, debouncedSync])
+
+  // Trigger sync when recordings have pending edits
+  useEffect(() => {
+    if (recordings.some(r => r.pendingEdit)) {
+      debouncedSync()
+    }
+  }, [recordings, debouncedSync])
 
   // Cleanup timeout on unmount
   useEffect(() => {
