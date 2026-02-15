@@ -9,6 +9,7 @@ import { AudioSettingsProvider, useAudioSettings } from './contexts/AudioSetting
 import { FreesoundAuthProvider } from './contexts/FreesoundAuthContext'
 import { SyncProvider } from './contexts/SyncContext'
 import SyncIndicator from './components/SyncIndicator'
+import InstallBanner from './components/InstallBanner'
 
 const AppContent = () => {
   const { settings } = useAudioSettings()
@@ -29,6 +30,7 @@ const AppContent = () => {
               <SyncIndicator />
             </div>
           </header>
+          <InstallBanner />
           <main>
             <Outlet context={mediaRecorderState} />
           </main>

@@ -1,0 +1,42 @@
+.install-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background-color: rgba(0, 162, 144, 0.15);
+    border-bottom: 1px solid rgb(0, 162, 144);
+    font-size: 0.85rem;
+    color: rgb(0, 162, 144);
+}
+
+.install-banner-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.install-banner button {
+    background: rgb(0, 162, 144);
+    color: rgb(27, 30, 38);
+    border: none;
+    border-radius: 4px;
+    padding: 4px 12px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+.install-banner button:hover {
+    background: rgb(0, 182, 164);
+}
+
+.install-banner-dismiss {
+    background: transparent !important;
+    color: rgb(0, 162, 144) !important;
+    font-size: 1.2rem !important;
+    padding: 4px 6px !important;
+}
+
+.install-banner-dismiss:hover {
+    background: rgba(0, 162, 144, 0.2) !important;
+}
