@@ -46,7 +46,7 @@ describe('useInstallPrompt', () => {
 
     it('starts as not installable', () => {
         const { result } = renderHook(() => useInstallPrompt())
-        expect(result.current.isInstallable).toBe(false)
+        expect(result.current.showBanner).toBe(false)
     })
 
     it('becomes installable when beforeinstallprompt fires', () => {
@@ -57,7 +57,7 @@ describe('useInstallPrompt', () => {
             capturedHandler!(event)
         })
 
-        expect(result.current.isInstallable).toBe(true)
+        expect(result.current.showBanner).toBe(true)
     })
 
     it('prevents the default browser mini-infobar', () => {
@@ -72,7 +72,7 @@ describe('useInstallPrompt', () => {
         expect(preventDefaultSpy).toHaveBeenCalled()
     })
 
-    it('calls prompt() on the deferred event when promptInstall is called', async () => {
+    it('calls prompt() on the captured event when install is called', async () => {
         const { result } = renderHook(() => useInstallPrompt())
 
         const event = createBeforeInstallPromptEvent()
@@ -81,7 +81,7 @@ describe('useInstallPrompt', () => {
         })
 
         await act(async () => {
-            await result.current.promptInstall()
+            await result.current.install()
         })
 
         expect(event.prompt).toHaveBeenCalled()
@@ -96,10 +96,10 @@ describe('useInstallPrompt', () => {
         })
 
         await act(async () => {
-            await result.current.promptInstall()
+            await result.current.install()
         })
 
-        expect(result.current.isInstallable).toBe(false)
+        expect(result.current.showBanner).toBe(false)
     })
 
     it('remains installable after user dismisses the install dialog', async () => {
@@ -112,10 +112,10 @@ describe('useInstallPrompt', () => {
         })
 
         await act(async () => {
-            await result.current.promptInstall()
+            await result.current.install()
         })
 
-        expect(result.current.isInstallable).toBe(true)
+        expect(result.current.showBanner).toBe(true)
     })
 
     it('dismiss() hides the prompt and persists to localStorage', () => {
@@ -125,13 +125,13 @@ describe('useInstallPrompt', () => {
         act(() => {
             capturedHandler!(event)
         })
-        expect(result.current.isInstallable).toBe(true)
+        expect(result.current.showBanner).toBe(true)
 
         act(() => {
             result.current.dismiss()
         })
 
-        expect(result.current.isInstallable).toBe(false)
+        expect(result.current.showBanner).toBe(false)
         expect(localStorage.getItem(DISMISSED_KEY)).toBe('true')
     })
 
@@ -145,7 +145,7 @@ describe('useInstallPrompt', () => {
             capturedHandler!(event)
         })
 
-        expect(result.current.isInstallable).toBe(false)
+        expect(result.current.showBanner).toBe(false)
     })
 
     it('cleans up event listeners on unmount', () => {

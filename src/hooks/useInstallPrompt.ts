@@ -8,43 +8,44 @@ interface BeforeInstallPromptEvent extends Event {
 const DISMISSED_KEY = 'pwa-install-dismissed'
 
 const useInstallPrompt = () => {
-    const [isInstallable, setIsInstallable] = useState(false)
-    const deferredPrompt = useRef<BeforeInstallPromptEvent | null>(null)
+    const [showBanner, setShowBanner] = useState(false)
+    const installEvent = useRef<BeforeInstallPromptEvent | null>(null)
 
+    // Capture the browser's install event so we can trigger it later on user action
     useEffect(() => {
         const isDismissed = localStorage.getItem(DISMISSED_KEY) === 'true'
 
         const handler = (e: Event) => {
             e.preventDefault()
             if (isDismissed) return
-            deferredPrompt.current = e as BeforeInstallPromptEvent
-            setIsInstallable(true)
+            installEvent.current = e as BeforeInstallPromptEvent
+            setShowBanner(true)
         }
 
         window.addEventListener('beforeinstallprompt', handler)
         return () => window.removeEventListener('beforeinstallprompt', handler)
     }, [])
 
-    const promptInstall = useCallback(async () => {
-        const prompt = deferredPrompt.current
-        if (!prompt) return
+    const install = useCallback(async () => {
+        const event = installEvent.current
+        if (!event) return
 
-        await prompt.prompt()
-        const { outcome } = await prompt.userChoice
+        await event.prompt()
+        const { outcome } = await event.userChoice
 
         if (outcome === 'accepted') {
-            deferredPrompt.current = null
-            setIsInstallable(false)
+            installEvent.current = null
+            setShowBanner(false)
         }
     }, [])
 
     const dismiss = useCallback(() => {
-        deferredPrompt.current = null
-        setIsInstallable(false)
+        installEvent.current = null
+        setShowBanner(false)
         localStorage.setItem(DISMISSED_KEY, 'true')
     }, [])
 
-    return { isInstallable, promptInstall, dismiss }
+    return { showBanner, install, dismiss }
 }
 
 export default useInstallPrompt

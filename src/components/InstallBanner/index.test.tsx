@@ -11,8 +11,8 @@ import InstallBanner from './index'
 
 describe('InstallBanner', () => {
     const defaultHookValue = {
-        isInstallable: true,
-        promptInstall: jest.fn(),
+        showBanner: true,
+        install: jest.fn(),
         dismiss: jest.fn(),
     }
 
@@ -31,24 +31,24 @@ describe('InstallBanner', () => {
     it('renders nothing when not installable', () => {
         mockUseInstallPrompt.mockReturnValue({
             ...defaultHookValue,
-            isInstallable: false,
+            showBanner: false,
         })
 
         const { container } = render(<InstallBanner />)
         expect(container.firstChild).toBeNull()
     })
 
-    it('calls promptInstall when install button is clicked', () => {
-        const promptInstall = jest.fn()
+    it('calls install when install button is clicked', () => {
+        const install = jest.fn()
         mockUseInstallPrompt.mockReturnValue({
             ...defaultHookValue,
-            promptInstall,
+            install,
         })
 
         render(<InstallBanner />)
         fireEvent.click(screen.getByRole('button', { name: 'Install' }))
 
-        expect(promptInstall).toHaveBeenCalled()
+        expect(install).toHaveBeenCalled()
     })
 
     it('calls dismiss when dismiss button is clicked', () => {
