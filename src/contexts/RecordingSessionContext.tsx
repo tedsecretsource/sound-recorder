@@ -5,6 +5,7 @@ import { createRecordingObject } from '../utils/recordingUtils'
 import logger from '../utils/logger'
 import { createContextHook } from '../utils/createContextHook'
 import { MediaRecorderState } from '../hooks/useGetMediaRecorder'
+import useKeepScreenAwake from '../hooks/useKeepScreenAwake'
 
 interface RecordingSessionState {
     isRecording: boolean
@@ -36,6 +37,8 @@ export const RecordingSessionProvider = ({ children, mediaRecorderState }: Recor
     })
     const chunksRef = useRef<Blob[]>([])
     const elapsedIntervalRef = useRef<number | null>(null)
+
+    useKeepScreenAwake(state.isRecording)
 
     // Set up MediaRecorder event handlers
     useEffect(() => {
