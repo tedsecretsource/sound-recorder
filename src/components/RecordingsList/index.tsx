@@ -45,21 +45,14 @@ const RecordingsList = () => {
         }
     }
 
-    const editRecordingDescription = async (id: number) => {
+    const saveRecordingDescription = async (id: number, description: string) => {
         const targetItem = recordings.find((item) => item.id === id)
         if (!targetItem) return
-
-        const currentDescription = targetItem.description ?? ''
-        const promptedDescription = window.prompt('Enter a description for Freesound', currentDescription)
-
-        if (promptedDescription === null) return // User cancelled
-
-        const newDescription = promptedDescription.trim()
 
         try {
             await updateRecording({
                 ...targetItem,
-                description: newDescription,
+                description,
                 pendingEdit: targetItem.freesoundId ? true : targetItem.pendingEdit,
             })
             logger.debug('Saved description')
@@ -92,7 +85,7 @@ const RecordingsList = () => {
     const actions: RecordingActions = {
         onDelete: handleDeleteRecording,
         onEditName: editRecordingName,
-        onEditDescription: editRecordingDescription,
+        onSaveDescription: saveRecordingDescription,
         onBstCategoryChange: handleBstCategoryChange,
         onRetryModeration: retryModeration,
     }

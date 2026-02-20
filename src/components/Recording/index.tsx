@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { QualityMetadata, formatQualityBadge } from '../../types/AudioSettings'
 import { isDefaultRecordingName } from '../../SoundRecorderTypes'
 import { BstCategory, BST_CATEGORIES, ModerationStatus } from '../../types/Freesound'
@@ -8,7 +8,7 @@ import './style.css'
 export interface RecordingActions {
     onDelete: (id: number) => void
     onEditName: (id: number) => void
-    onEditDescription: (id: number) => void
+    onSaveDescription: (id: number, description: string) => void
     onBstCategoryChange: (id: number, category: BstCategory) => void
     onRetryModeration?: (id: number) => void
 }
@@ -31,11 +31,15 @@ interface RecordingProps {
     actions: RecordingActions
 }
 
+const DESCRIPTION_MAX_LENGTH = 500
+
 const Recording = ({ recording, mimeType, actions }: RecordingProps) => {
     const { id, streamURL, name, description, bstCategory, quality, freesoundId, moderationStatus } = recording
-    const { onDelete, onEditName, onEditDescription, onBstCategoryChange, onRetryModeration } = actions
+    const { onDelete, onEditName, onSaveDescription, onBstCategoryChange, onRetryModeration } = actions
     const articleRef = useRef<HTMLElement>(null)
     const audioRef = useRef<HTMLAudioElement>(null)
+    const [isEditingDescription, setIsEditingDescription] = useState(false)
+    const [draftDescription, setDraftDescription] = useState('')
 
     // Force duration calculation for blob URLs
     useEffect(() => {
@@ -81,8 +85,18 @@ const Recording = ({ recording, mimeType, actions }: RecordingProps) => {
         onEditName(id)
     }
 
-    const editDescription = () => {
-        onEditDescription(id)
+    const startEditingDescription = () => {
+        setDraftDescription(description?.trim() ?? '')
+        setIsEditingDescription(true)
+    }
+
+    const saveDescription = () => {
+        onSaveDescription(id, draftDescription.trim())
+        setIsEditingDescription(false)
+    }
+
+    const cancelEditingDescription = () => {
+        setIsEditingDescription(false)
     }
 
     const hasCustomName = !isDefaultRecordingName(name)
@@ -99,12 +113,30 @@ const Recording = ({ recording, mimeType, actions }: RecordingProps) => {
                 <span className="name" role="presentation">{name}</span>
                 {!inModeration && <button onClick={editName} className="editName" title="Click to edit name" aria-label="Click to edit name">✏️</button>}
             </p>
-            <p className="description-row">
-                <span className="description" role="presentation">
-                    {description?.trim() || <em className="no-description">No description</em>}
-                </span>
-                {!inModeration && <button onClick={editDescription} className="editDescription" title="Click to edit description" aria-label="Click to edit description">✏️</button>}
-            </p>
+            {isEditingDescription ? (
+                <div className="description-edit">
+                    <textarea
+                        className="description-textarea"
+                        rows={5}
+                        maxLength={DESCRIPTION_MAX_LENGTH}
+                        autoCapitalize="sentences"
+                        value={draftDescription}
+                        onChange={(e) => setDraftDescription(e.target.value)}
+                        autoFocus
+                    />
+                    <div className="description-edit-buttons">
+                        <button onClick={saveDescription} className="description-save-btn">Save</button>
+                        <button onClick={cancelEditingDescription} className="description-cancel-btn">Cancel</button>
+                    </div>
+                </div>
+            ) : (
+                <p className="description-row">
+                    <span className="description" role="presentation">
+                        {description?.trim() || <em className="no-description">No description</em>}
+                    </span>
+                    {!inModeration && <button onClick={startEditingDescription} className="editDescription" title="Click to edit description" aria-label="Click to edit description">✏️</button>}
+                </p>
+            )}
             <div className="metadata-row">
                 {quality && (
                     <span className={`badge badge-${quality.preset}`}>

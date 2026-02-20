@@ -110,6 +110,54 @@ article button.editDescription {
   flex-shrink: 0;
 }
 
+.description-edit {
+  margin-left: 1rem;
+}
+
+.description-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: #ddd;
+  background-color: #2a2a2a;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 0.5rem;
+  resize: vertical;
+}
+
+.description-textarea:focus {
+  outline: none;
+  border-color: rgb(0, 162, 144);
+}
+
+.description-edit-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.description-save-btn,
+.description-cancel-btn {
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.description-save-btn {
+  background-color: rgb(0, 162, 144);
+  color: white;
+}
+
+.description-cancel-btn {
+  background-color: rgb(88, 86, 86);
+  color: #ccc;
+}
+
 .metadata-row {
   display: grid;
   grid-template-columns: auto 1fr;

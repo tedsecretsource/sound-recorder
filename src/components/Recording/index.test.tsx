@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event'
 const mockActions = {
     onDelete: jest.fn(),
     onEditName: jest.fn(),
-    onEditDescription: jest.fn(),
+    onSaveDescription: jest.fn(),
     onBstCategoryChange: jest.fn(),
 }
 
@@ -95,7 +95,7 @@ describe('Recording component', () => {
     it('hides edit buttons when moderationStatus is processing', () => {
         const props = {
             ...mockProps,
-            recording: { ...mockRecording, freesoundId: 123, moderationStatus: 'processing' },
+            recording: { ...mockRecording, freesoundId: 123, moderationStatus: 'processing' as const },
         }
         render(<Recording {...props} />)
 
@@ -106,7 +106,7 @@ describe('Recording component', () => {
     it('hides edit buttons when moderationStatus is in_moderation', () => {
         const props = {
             ...mockProps,
-            recording: { ...mockRecording, freesoundId: 123, moderationStatus: 'in_moderation' },
+            recording: { ...mockRecording, freesoundId: 123, moderationStatus: 'in_moderation' as const },
         }
         render(<Recording {...props} />)
 
@@ -117,7 +117,7 @@ describe('Recording component', () => {
     it('shows edit buttons when moderationStatus is approved', () => {
         const props = {
             ...mockProps,
-            recording: { ...mockRecording, freesoundId: 123, moderationStatus: 'approved' },
+            recording: { ...mockRecording, freesoundId: 123, moderationStatus: 'approved' as const },
         }
         render(<Recording {...props} />)
 
@@ -130,5 +130,92 @@ describe('Recording component', () => {
 
         expect(screen.getByRole('button', { name: /click to edit name/i })).toBeInTheDocument()
         expect(screen.getByRole('button', { name: /click to edit description/i })).toBeInTheDocument()
+    })
+
+    describe('Inline description editing', () => {
+        it('clicking edit description button shows textarea with Save and Cancel buttons', async () => {
+            render(<Recording {...mockProps} />)
+
+            const editButton = screen.getByRole('button', { name: /click to edit description/i })
+            await userEvent.click(editButton)
+
+            expect(screen.getByRole('textbox')).toBeInTheDocument()
+            expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument()
+            expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
+        })
+
+        it('textarea has correct attributes for mobile input', async () => {
+            render(<Recording {...mockProps} />)
+
+            const editButton = screen.getByRole('button', { name: /click to edit description/i })
+            await userEvent.click(editButton)
+
+            const textarea = screen.getByRole('textbox')
+            expect(textarea).toHaveAttribute('rows', '5')
+            expect(textarea).toHaveAttribute('maxlength', '500')
+            expect(textarea).toHaveAttribute('autocapitalize', 'sentences')
+        })
+
+        it('textarea is pre-filled with existing description', async () => {
+            const props = {
+                ...mockProps,
+                recording: { ...mockRecording, description: 'Existing description text' },
+            }
+            render(<Recording {...props} />)
+
+            const editButton = screen.getByRole('button', { name: /click to edit description/i })
+            await userEvent.click(editButton)
+
+            const textarea = screen.getByRole('textbox')
+            expect(textarea).toHaveValue('Existing description text')
+        })
+
+        it('Save button calls onSaveDescription with id and trimmed text', async () => {
+            render(<Recording {...mockProps} />)
+
+            const editButton = screen.getByRole('button', { name: /click to edit description/i })
+            await userEvent.click(editButton)
+
+            const textarea = screen.getByRole('textbox')
+            await userEvent.type(textarea, 'A new description')
+
+            const saveButton = screen.getByRole('button', { name: /save/i })
+            await userEvent.click(saveButton)
+
+            expect(mockActions.onSaveDescription).toHaveBeenCalledWith(1, 'A new description')
+            // Textarea should be hidden after save
+            expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+        })
+
+        it('Cancel button reverts to display mode without saving', async () => {
+            const props = {
+                ...mockProps,
+                recording: { ...mockRecording, description: 'Original' },
+            }
+            render(<Recording {...props} />)
+
+            const editButton = screen.getByRole('button', { name: /click to edit description/i })
+            await userEvent.click(editButton)
+
+            const textarea = screen.getByRole('textbox')
+            await userEvent.clear(textarea)
+            await userEvent.type(textarea, 'Changed text')
+
+            const cancelButton = screen.getByRole('button', { name: /cancel/i })
+            await userEvent.click(cancelButton)
+
+            expect(mockActions.onSaveDescription).not.toHaveBeenCalled()
+            expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+            expect(screen.getByText('Original')).toBeInTheDocument()
+        })
+
+        it('hides edit description pencil while editing', async () => {
+            render(<Recording {...mockProps} />)
+
+            const editButton = screen.getByRole('button', { name: /click to edit description/i })
+            await userEvent.click(editButton)
+
+            expect(screen.queryByRole('button', { name: /click to edit description/i })).not.toBeInTheDocument()
+        })
     })
 })
