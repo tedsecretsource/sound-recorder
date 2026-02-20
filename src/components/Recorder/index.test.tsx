@@ -230,4 +230,59 @@ describe('RecorderControls component', () => {
       expect(button).not.toHaveClass('recording-audio')
     })
   })
+
+  describe('Time counter', () => {
+    it('displays 00:00:00 when not recording', () => {
+      const mockMediaRecorder = createMockMediaRecorder()
+      render(
+        <RenderRouteWithOutletContext context={createMockMediaRecorderState(mockMediaRecorder)}>
+          <RecorderControls />
+        </RenderRouteWithOutletContext>
+      )
+
+      expect(screen.getByText('00:00:00')).toBeInTheDocument()
+    })
+
+    it('displays formatted elapsed time when recording', () => {
+      mockedUseRecordingSession.mockReturnValue({
+        state: {
+          isRecording: true,
+          currentRecordingId: 1,
+          elapsedTime: 125
+        },
+        startRecording: mockStartRecording,
+        stopRecording: mockStopRecording
+      })
+
+      const mockMediaRecorder = createMockMediaRecorder()
+      render(
+        <RenderRouteWithOutletContext context={createMockMediaRecorderState(mockMediaRecorder)}>
+          <RecorderControls />
+        </RenderRouteWithOutletContext>
+      )
+
+      expect(screen.getByText('00:02:05')).toBeInTheDocument()
+    })
+
+    it('displays time with hours when elapsed time exceeds an hour', () => {
+      mockedUseRecordingSession.mockReturnValue({
+        state: {
+          isRecording: true,
+          currentRecordingId: 1,
+          elapsedTime: 3661
+        },
+        startRecording: mockStartRecording,
+        stopRecording: mockStopRecording
+      })
+
+      const mockMediaRecorder = createMockMediaRecorder()
+      render(
+        <RenderRouteWithOutletContext context={createMockMediaRecorderState(mockMediaRecorder)}>
+          <RecorderControls />
+        </RenderRouteWithOutletContext>
+      )
+
+      expect(screen.getByText('01:01:01')).toBeInTheDocument()
+    })
+  })
 })

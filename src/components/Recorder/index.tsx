@@ -3,6 +3,7 @@ import { useMediaRecorder } from '../../App'
 import { useRecordingSession } from '../../contexts/RecordingSessionContext'
 import { useRecordings } from '../../contexts/RecordingsContext'
 import Visualizer from '../Visualizer'
+import { formatTime } from '../../utils/formatTime'
 import './style.css'
 
 const GAIN_STORAGE_KEY = 'sound-recorder-boost-gain'
@@ -63,6 +64,7 @@ const RecorderControls = () => {
         return (
             <>
                 <Visualizer stream={mediaRecorder!.stream} barColor={[18,124,85]} sensitivity={boostGain ? 28 : 4} />
+                <div className="time-counter">{formatTime(state.elapsedTime)}</div>
                 <button onClick={toggleRecording} className={recordButtonClassesText}>{state.isRecording ? 'Stop' : 'Record'}</button>
                 <div className="toggle-controls">
                     <div className="toggle-group">
