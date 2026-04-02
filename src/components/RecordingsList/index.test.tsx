@@ -235,6 +235,103 @@ describe('RecordingsList', () => {
     })
   })
 
+  describe('Sharing a recording', () => {
+    const mockShare = jest.fn()
+
+    beforeEach(() => {
+      mockShare.mockReset()
+      mockShare.mockResolvedValue(undefined)
+      Object.defineProperty(navigator, 'share', {
+        value: mockShare,
+        writable: true,
+        configurable: true,
+      })
+    })
+
+    it('calls navigator.share with a file using the recording name', async () => {
+      render(<RecordingsList />)
+      const shareButtons = screen.getAllByRole('button', { name: /share/i })
+
+      await user.click(shareButtons[0])
+      await act(async () => { await Promise.resolve() })
+
+      expect(mockShare).toHaveBeenCalledWith({
+        files: [expect.objectContaining({
+          name: 'test3.webm',
+          type: 'audio/webm',
+        })],
+      })
+    })
+
+    it('uses .m4a extension for audio/mp4 mimeType', async () => {
+      mockMediaRecorder.mimeType = 'audio/mp4'
+      mockMediaRecorderState.mediaRecorder = mockMediaRecorder
+
+      render(<RecordingsList />)
+      const shareButtons = screen.getAllByRole('button', { name: /share/i })
+
+      await user.click(shareButtons[0])
+      await act(async () => { await Promise.resolve() })
+
+      expect(mockShare).toHaveBeenCalledWith({
+        files: [expect.objectContaining({
+          name: 'test3.m4a',
+          type: 'audio/mp4',
+        })],
+      })
+    })
+
+    it('shows alert when Web Share API is unavailable', async () => {
+      Object.defineProperty(navigator, 'share', {
+        value: undefined,
+        writable: true,
+        configurable: true,
+      })
+      const mockAlert = jest.spyOn(window, 'alert').mockImplementation(() => {})
+
+      render(<RecordingsList />)
+      const shareButtons = screen.getAllByRole('button', { name: /share/i })
+
+      // eslint-disable-next-line testing-library/no-unnecessary-act
+      await act(async () => {
+        await user.click(shareButtons[0])
+      })
+
+      expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('not supported'))
+      mockAlert.mockRestore()
+    })
+
+    it('shows alert when share throws NotAllowedError', async () => {
+      const notAllowedError = new DOMException('Permission denied', 'NotAllowedError')
+      mockShare.mockRejectedValue(notAllowedError)
+      const mockAlert = jest.spyOn(window, 'alert').mockImplementation(() => {})
+
+      render(<RecordingsList />)
+      const shareButtons = screen.getAllByRole('button', { name: /share/i })
+
+      await user.click(shareButtons[0])
+      await act(async () => { await Promise.resolve() })
+
+      expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('not supported'))
+      mockAlert.mockRestore()
+    })
+
+    it('silently ignores AbortError when user dismisses share sheet', async () => {
+      const abortError = new DOMException('Share canceled', 'AbortError')
+      mockShare.mockRejectedValue(abortError)
+      const mockAlert = jest.spyOn(window, 'alert').mockImplementation(() => {})
+
+      render(<RecordingsList />)
+      const shareButtons = screen.getAllByRole('button', { name: /share/i })
+
+      await user.click(shareButtons[0])
+      await act(async () => { await Promise.resolve() })
+
+      expect(mockAlert).not.toHaveBeenCalled()
+      mockAlert.mockRestore()
+    })
+  })
+
   describe('Loading state', () => {
     it('shows loading message when isInitializing is true', () => {
       mockMediaRecorderState = {

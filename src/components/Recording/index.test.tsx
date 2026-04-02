@@ -7,6 +7,7 @@ const mockActions = {
     onEditName: jest.fn(),
     onSaveDescription: jest.fn(),
     onBstCategoryChange: jest.fn(),
+    onShare: jest.fn(),
 }
 
 const mockRecording = {
@@ -130,6 +131,22 @@ describe('Recording component', () => {
 
         expect(screen.getByRole('button', { name: /click to edit name/i })).toBeInTheDocument()
         expect(screen.getByRole('button', { name: /click to edit description/i })).toBeInTheDocument()
+    })
+
+    it('renders share button', () => {
+        render(<Recording {...mockProps} />)
+        const shareButton = screen.getByRole('button', { name: /share/i })
+        expect(shareButton).toBeInTheDocument()
+    })
+
+    it('share button calls onShare with id', async () => {
+        render(<Recording {...mockProps} />)
+
+        const shareButton = screen.getByRole('button', { name: /share/i })
+        await userEvent.click(shareButton)
+
+        expect(mockActions.onShare).toHaveBeenCalledTimes(1)
+        expect(mockActions.onShare).toHaveBeenCalledWith(1)
     })
 
     describe('Inline description editing', () => {

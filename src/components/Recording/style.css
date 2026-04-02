@@ -17,7 +17,8 @@ article audio {
     width: 100%;
 }
 
-article button.delete {
+article button.delete,
+article button.share {
     height: 1.5rem;
     vertical-align: middle;
 }

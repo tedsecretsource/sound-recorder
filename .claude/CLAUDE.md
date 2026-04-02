@@ -28,7 +28,7 @@
 
 ## Non-trivial Change Policy
 
-If a request matches the triggers defined in the `non-trivial-change-protocol` skill:
+If a request matches the triggers defined in the `non-trivial-change` skill:
 
 - Schema or data model changes  
 - API/contract modifications  
@@ -40,7 +40,7 @@ If a request matches the triggers defined in the `non-trivial-change-protocol` s
 
 Then:
 
-- Automatically apply the `non-trivial-change-protocol` skill.
+- Automatically apply the `non-trivial-change` skill.
 - Follow its Plan-first Output Contract strictly.
 - Do **not** write implementation code until the  
   **“Proceed with implementation?”** checkpoint is reached.

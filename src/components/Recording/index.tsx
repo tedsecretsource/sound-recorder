@@ -10,6 +10,7 @@ export interface RecordingActions {
     onEditName: (id: number) => void
     onSaveDescription: (id: number, description: string) => void
     onBstCategoryChange: (id: number, category: BstCategory) => void
+    onShare: (id: number) => void
     onRetryModeration?: (id: number) => void
 }
 
@@ -35,7 +36,7 @@ const DESCRIPTION_MAX_LENGTH = 500
 
 const Recording = ({ recording, mimeType, actions }: RecordingProps) => {
     const { id, streamURL, name, description, bstCategory, quality, freesoundId, moderationStatus } = recording
-    const { onDelete, onEditName, onSaveDescription, onBstCategoryChange, onRetryModeration } = actions
+    const { onDelete, onEditName, onSaveDescription, onBstCategoryChange, onShare, onRetryModeration } = actions
     const articleRef = useRef<HTMLElement>(null)
     const audioRef = useRef<HTMLAudioElement>(null)
     const [isEditingDescription, setIsEditingDescription] = useState(false)
@@ -179,6 +180,7 @@ const Recording = ({ recording, mimeType, actions }: RecordingProps) => {
                         {!hasDescription && 'Add description to sync'}
                     </span>
                 )}
+                <button onClick={() => onShare(id)} className="share">Share</button>
                 <button onClick={deleteRecording} className="delete">Delete</button>
             </div>
         </article>

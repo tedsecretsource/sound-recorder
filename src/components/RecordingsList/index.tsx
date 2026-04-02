@@ -82,11 +82,43 @@ const RecordingsList = () => {
         }
     }
 
+    const getFileExtension = (mimeType: string): string => {
+        if (mimeType.startsWith('audio/mp4')) return '.m4a'
+        return '.webm'
+    }
+
+    const handleShareRecording = async (id: number) => {
+        if (!navigator.share) {
+            alert('Sharing is not supported on this device.')
+            return
+        }
+
+        const targetItem = recordings.find((item) => item.id === id)
+        if (!targetItem?.data) return
+
+        const extension = getFileExtension(mediaRecorder!.mimeType)
+        const mimeType = mediaRecorder!.mimeType
+        const file = new File([targetItem.data], `${targetItem.name}${extension}`, { type: mimeType })
+
+        try {
+            await navigator.share({ files: [file] })
+        } catch (error) {
+            const domError = error as DOMException
+            if (domError.name === 'AbortError') return
+            if (domError.name === 'NotAllowedError') {
+                alert('Sharing audio files is not supported in this browser.')
+            } else {
+                logger.error('Failed to share recording:', error)
+            }
+        }
+    }
+
     const actions: RecordingActions = {
         onDelete: handleDeleteRecording,
         onEditName: editRecordingName,
         onSaveDescription: saveRecordingDescription,
         onBstCategoryChange: handleBstCategoryChange,
+        onShare: handleShareRecording,
         onRetryModeration: retryModeration,
     }
 
