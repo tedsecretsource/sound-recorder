@@ -287,6 +287,41 @@ describe('RecordingsList', () => {
       })
     })
 
+    it('shows alert when canShare returns false', async () => {
+      Object.defineProperty(navigator, 'canShare', {
+        value: () => false,
+        writable: true,
+        configurable: true,
+      })
+      const mockAlert = jest.spyOn(window, 'alert').mockImplementation(() => {})
+
+      render(<RecordingsList />)
+      const shareButtons = screen.getAllByRole('button', { name: /share/i })
+
+      await user.click(shareButtons[0])
+      await act(async () => { await Promise.resolve() })
+
+      expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('not supported'))
+      expect(mockShare).not.toHaveBeenCalled()
+      mockAlert.mockRestore()
+    })
+
+    it('proceeds with share when canShare is unavailable', async () => {
+      Object.defineProperty(navigator, 'canShare', {
+        value: undefined,
+        writable: true,
+        configurable: true,
+      })
+
+      render(<RecordingsList />)
+      const shareButtons = screen.getAllByRole('button', { name: /share/i })
+
+      await user.click(shareButtons[0])
+      await act(async () => { await Promise.resolve() })
+
+      expect(mockShare).toHaveBeenCalled()
+    })
+
     it('shows alert when Web Share API is unavailable', async () => {
       Object.defineProperty(navigator, 'share', {
         value: undefined,

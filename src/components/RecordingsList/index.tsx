@@ -95,6 +95,11 @@ const RecordingsList = () => {
         const extension = getFileExtension(baseMimeType)
         const file = new File([targetItem.data], `${targetItem.name}${extension}`, { type: baseMimeType })
 
+        if (navigator.canShare && !navigator.canShare({ files: [file] })) {
+            alert('Sharing this file type is not supported on this device.')
+            return
+        }
+
         try {
             await navigator.share({ files: [file] })
         } catch (error) {
