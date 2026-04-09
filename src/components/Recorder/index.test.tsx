@@ -4,12 +4,12 @@ import userEvent from '@testing-library/user-event'
 import RecorderControls from './index'
 import { RenderRouteWithOutletContext } from '../RenderRouteWithOutletContext'
 
-const mockStartRecording = jest.fn(() => Promise.resolve())
-const mockStopRecording = jest.fn(() => Promise.resolve())
+const mockStartRecording = vi.fn(() => Promise.resolve())
+const mockStopRecording = vi.fn(() => Promise.resolve())
 
 // Mock useRecordingSession context
-jest.mock('../../contexts/RecordingSessionContext', () => ({
-  useRecordingSession: jest.fn(() => ({
+vi.mock('../../contexts/RecordingSessionContext', () => ({
+  useRecordingSession: vi.fn(() => ({
     state: {
       isRecording: false,
       currentRecordingId: null,
@@ -21,23 +21,23 @@ jest.mock('../../contexts/RecordingSessionContext', () => ({
 }))
 
 // Mock useRecordings context
-jest.mock('../../contexts/RecordingsContext', () => ({
-  useRecordings: jest.fn(() => ({
+vi.mock('../../contexts/RecordingsContext', () => ({
+  useRecordings: vi.fn(() => ({
     recordings: [],
     isLoading: false,
     connectionIsOpen: true,
-    addRecording: jest.fn(),
-    updateRecording: jest.fn(),
-    deleteRecording: jest.fn(),
-    refreshRecordings: jest.fn()
+    addRecording: vi.fn(),
+    updateRecording: vi.fn(),
+    deleteRecording: vi.fn(),
+    refreshRecordings: vi.fn()
   }))
 }))
 
 import { useRecordingSession } from '../../contexts/RecordingSessionContext'
 import { useRecordings } from '../../contexts/RecordingsContext'
 
-const mockedUseRecordingSession = useRecordingSession as jest.Mock
-const mockedUseRecordings = useRecordings as jest.Mock
+const mockedUseRecordingSession = useRecordingSession as vi.Mock
+const mockedUseRecordings = useRecordings as vi.Mock
 
 const createMockMediaRecorder = (initialState = 'inactive'): any => {
   const mr: any = {
@@ -47,11 +47,11 @@ const createMockMediaRecorder = (initialState = 'inactive'): any => {
     ondataavailable: null,
     onstop: null,
     onstart: null,
-    onerror: jest.fn(),
-    onpause: jest.fn(),
-    onresume: jest.fn(),
-    start: jest.fn(),
-    stop: jest.fn(),
+    onerror: vi.fn(),
+    onpause: vi.fn(),
+    onresume: vi.fn(),
+    start: vi.fn(),
+    stop: vi.fn(),
   }
   return mr
 }
@@ -65,7 +65,7 @@ const createMockMediaRecorderState = (mediaRecorder: any, options?: { isInitiali
 
 describe('RecorderControls component', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     mockedUseRecordingSession.mockReturnValue({
       state: {
         isRecording: false,
@@ -79,10 +79,10 @@ describe('RecorderControls component', () => {
       recordings: [],
       isLoading: false,
       connectionIsOpen: true,
-      addRecording: jest.fn(),
-      updateRecording: jest.fn(),
-      deleteRecording: jest.fn(),
-      refreshRecordings: jest.fn()
+      addRecording: vi.fn(),
+      updateRecording: vi.fn(),
+      deleteRecording: vi.fn(),
+      refreshRecordings: vi.fn()
     })
   })
 
@@ -160,10 +160,10 @@ describe('RecorderControls component', () => {
         recordings: [],
         isLoading: false,
         connectionIsOpen: false,
-        addRecording: jest.fn(),
-        updateRecording: jest.fn(),
-        deleteRecording: jest.fn(),
-        refreshRecordings: jest.fn()
+        addRecording: vi.fn(),
+        updateRecording: vi.fn(),
+        deleteRecording: vi.fn(),
+        refreshRecordings: vi.fn()
       })
 
       const mockMediaRecorder = createMockMediaRecorder()

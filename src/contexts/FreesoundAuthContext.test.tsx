@@ -2,13 +2,13 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 // Mock dependencies - use shared object for named and default exports
-jest.mock('../services/freesoundApi', () => {
+vi.mock('../services/freesoundApi', () => {
   const mockApi = {
-    exchangeCodeForTokens: jest.fn(),
-    logout: jest.fn(),
-    checkAuthStatus: jest.fn(),
-    getMe: jest.fn(),
-    setUsername: jest.fn(),
+    exchangeCodeForTokens: vi.fn(),
+    logout: vi.fn(),
+    checkAuthStatus: vi.fn(),
+    getMe: vi.fn(),
+    setUsername: vi.fn(),
   }
   return {
     __esModule: true,
@@ -17,29 +17,27 @@ jest.mock('../services/freesoundApi', () => {
   }
 })
 
-jest.mock('../config/freesound', () => ({
+vi.mock('../config/freesound', () => ({
   FREESOUND_CONFIG: {
     AUTHORIZE_URL: 'https://freesound.org/authorize',
   },
 }))
 
-jest.mock('../utils/logger', () => ({
-  debug: jest.fn(),
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-}))
+vi.mock('../utils/logger', () => {
+  const mockLogger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() }
+  return { default: mockLogger, logger: mockLogger }
+})
 
 // Import after mocks
 import { FreesoundAuthProvider, useFreesoundAuth } from './FreesoundAuthContext'
 import freesoundApi from '../services/freesoundApi'
 
 // Get typed references to mocks
-const mockExchangeCodeForTokens = freesoundApi.exchangeCodeForTokens as jest.Mock
-const mockLogout = freesoundApi.logout as jest.Mock
-const mockCheckAuthStatus = freesoundApi.checkAuthStatus as jest.Mock
-const mockGetMe = freesoundApi.getMe as jest.Mock
-const mockSetUsername = freesoundApi.setUsername as jest.Mock
+const mockExchangeCodeForTokens = freesoundApi.exchangeCodeForTokens as vi.Mock
+const mockLogout = freesoundApi.logout as vi.Mock
+const mockCheckAuthStatus = freesoundApi.checkAuthStatus as vi.Mock
+const mockGetMe = freesoundApi.getMe as vi.Mock
+const mockSetUsername = freesoundApi.setUsername as vi.Mock
 
 // Test component to access context
 const TestConsumer = () => {
@@ -63,7 +61,7 @@ describe('FreesoundAuthProvider', () => {
   const originalLocation = window.location
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     mockCheckAuthStatus.mockResolvedValue(false)
     mockGetMe.mockResolvedValue({ username: 'testuser' })
 
@@ -77,7 +75,7 @@ describe('FreesoundAuthProvider', () => {
       pathname: '/',
       hash: '',
     } as any
-    window.history.replaceState = jest.fn()
+    window.history.replaceState = vi.fn()
   })
 
   afterEach(() => {
@@ -309,7 +307,7 @@ describe('FreesoundAuthProvider', () => {
 
 describe('useFreesoundAuth', () => {
   it('throws error when used outside provider', () => {
-    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     expect(() => render(<TestConsumer />)).toThrow(
       'useFreesoundAuth must be used within its Provider'

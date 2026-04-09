@@ -17,12 +17,12 @@ describe('audioConverter', () => {
 
 describe('convertToWav integration', () => {
   // Mock AudioContext for testing
-  let mockClose: jest.Mock
-  let mockDecodeAudioData: jest.Mock
+  let mockClose: vi.Mock
+  let mockDecodeAudioData: vi.Mock
 
   beforeEach(() => {
-    jest.clearAllMocks()
-    jest.resetModules()
+    vi.clearAllMocks()
+    vi.resetModules()
 
     // Polyfill Blob.prototype.arrayBuffer for JSDOM
     if (!Blob.prototype.arrayBuffer) {
@@ -35,11 +35,11 @@ describe('convertToWav integration', () => {
       }
     }
 
-    mockClose = jest.fn().mockResolvedValue(undefined)
-    mockDecodeAudioData = jest.fn()
+    mockClose = vi.fn().mockResolvedValue(undefined)
+    mockDecodeAudioData = vi.fn()
 
     // Mock AudioContext
-    const MockAudioContext = jest.fn().mockImplementation(() => ({
+    const MockAudioContext = vi.fn().mockImplementation(() => ({
       close: mockClose,
       decodeAudioData: mockDecodeAudioData,
     }))
@@ -53,7 +53,7 @@ describe('convertToWav integration', () => {
       numberOfChannels: 1,
       sampleRate: 44100,
       length: 1000,
-      getChannelData: jest.fn(() => new Float32Array(1000)),
+      getChannelData: vi.fn(() => new Float32Array(1000)),
     }
 
     mockDecodeAudioData.mockResolvedValue(mockAudioBuffer)
@@ -90,7 +90,7 @@ describe('convertToWav integration', () => {
       numberOfChannels: 2,
       sampleRate: 48000,
       length: 100,
-      getChannelData: jest.fn((channel: number) =>
+      getChannelData: vi.fn((channel: number) =>
         channel === 0 ? leftChannel : rightChannel
       ),
     }
@@ -113,7 +113,7 @@ describe('convertToWav integration', () => {
       numberOfChannels: 1,
       sampleRate: 44100,
       length: 100,
-      getChannelData: jest.fn(() => new Float32Array(100)),
+      getChannelData: vi.fn(() => new Float32Array(100)),
     }
 
     mockDecodeAudioData.mockResolvedValue(mockAudioBuffer)
@@ -171,7 +171,7 @@ describe('convertToWav integration', () => {
       numberOfChannels: 1,
       sampleRate: 44100,
       length: 6,
-      getChannelData: jest.fn(() => samplesWithClipping),
+      getChannelData: vi.fn(() => samplesWithClipping),
     }
 
     mockDecodeAudioData.mockResolvedValue(mockAudioBuffer)

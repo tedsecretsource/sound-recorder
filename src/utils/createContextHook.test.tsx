@@ -88,8 +88,8 @@ describe('createContextHook', () => {
     const FnContext = createContext<FunctionContext | null>(null)
     const useFnContext = createContextHook(FnContext, 'useFnContext')
 
-    const mockGetValue = jest.fn(() => 42)
-    const mockSetValue = jest.fn()
+    const mockGetValue = vi.fn(() => 42)
+    const mockSetValue = vi.fn()
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <FnContext.Provider value={{ getValue: mockGetValue, setValue: mockSetValue }}>

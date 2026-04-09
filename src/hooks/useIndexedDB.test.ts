@@ -2,28 +2,28 @@ import { renderHook, waitFor } from '@testing-library/react'
 
 // Create mock db object
 const mockDb = {
-    get: jest.fn(),
-    getAll: jest.fn(),
-    add: jest.fn(),
-    put: jest.fn(),
-    delete: jest.fn(),
-    close: jest.fn(),
+    get: vi.fn(),
+    getAll: vi.fn(),
+    add: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
+    close: vi.fn(),
 }
 
 // Mock the idb module
-jest.mock('idb/with-async-ittr', () => ({
-    openDB: jest.fn(() => Promise.resolve(mockDb))
+vi.mock('idb/with-async-ittr', () => ({
+    openDB: vi.fn(() => Promise.resolve(mockDb))
 }))
 
 // Import after mocking
 import { openDB } from 'idb/with-async-ittr'
 import useIndexedDB from './useIndexedDB'
 
-const mockedOpenDB = openDB as jest.Mock
+const mockedOpenDB = openDB as vi.Mock
 
 describe('useIndexedDB', () => {
     beforeEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
         // Reset all mock implementations
         mockedOpenDB.mockImplementation(() => Promise.resolve(mockDb))
         mockDb.get.mockImplementation(() => Promise.resolve(undefined))

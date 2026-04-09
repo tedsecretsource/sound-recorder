@@ -5,18 +5,18 @@ import { RecordingSessionProvider, useRecordingSession } from './RecordingSessio
 import { AudioSettingsProvider } from './AudioSettingsContext'
 
 // Mock useRecordings from context
-const mockAddRecording = jest.fn(() => Promise.resolve(1))
-const mockUpdateRecording = jest.fn(() => Promise.resolve())
+const mockAddRecording = vi.fn(() => Promise.resolve(1))
+const mockUpdateRecording = vi.fn(() => Promise.resolve())
 
-jest.mock('./RecordingsContext', () => ({
+vi.mock('./RecordingsContext', () => ({
     useRecordings: () => ({
         recordings: [],
         isLoading: false,
         connectionIsOpen: true,
         addRecording: mockAddRecording,
         updateRecording: mockUpdateRecording,
-        deleteRecording: jest.fn(() => Promise.resolve()),
-        refreshRecordings: jest.fn(() => Promise.resolve()),
+        deleteRecording: vi.fn(() => Promise.resolve()),
+        refreshRecordings: vi.fn(() => Promise.resolve()),
     })
 }))
 
@@ -28,17 +28,17 @@ const createMockMediaRecorder = (initialState = 'inactive'): any => {
         ondataavailable: null,
         onstop: null,
         onstart: null,
-        onerror: jest.fn(),
-        onpause: jest.fn(),
-        onresume: jest.fn(),
-        start: jest.fn(),
-        stop: jest.fn(),
+        onerror: vi.fn(),
+        onpause: vi.fn(),
+        onresume: vi.fn(),
+        start: vi.fn(),
+        stop: vi.fn(),
     }
-    mr.start = jest.fn(() => {
+    mr.start = vi.fn(() => {
         mr.state = 'recording'
         if (mr.onstart) mr.onstart()
     })
-    mr.stop = jest.fn(() => {
+    mr.stop = vi.fn(() => {
         mr.state = 'inactive'
         if (mr.ondataavailable) {
             mr.ondataavailable({ data: new Blob(['test audio'], { type: 'audio/webm' }) })
@@ -85,12 +85,12 @@ const renderWithProviders = (ui: React.ReactElement, mediaRecorder: any) => {
 
 describe('RecordingSessionProvider', () => {
     beforeEach(() => {
-        jest.clearAllMocks()
-        jest.useFakeTimers()
+        vi.clearAllMocks()
+        vi.useFakeTimers()
     })
 
     afterEach(() => {
-        jest.useRealTimers()
+        vi.useRealTimers()
     })
 
     it('renders children', () => {
@@ -120,11 +120,11 @@ describe('RecordingSessionProvider', () => {
 
 describe('useRecordingSession', () => {
     beforeEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
     })
 
     it('throws error when not used within RecordingSessionProvider', () => {
-        const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
+        const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
         expect(() => render(<TestConsumer />)).toThrow('useRecordingSession must be used within its Provider')
 
@@ -134,13 +134,13 @@ describe('useRecordingSession', () => {
 
 describe('RecordingSession functions', () => {
     beforeEach(() => {
-        jest.clearAllMocks()
-        jest.useFakeTimers()
+        vi.clearAllMocks()
+        vi.useFakeTimers()
         mockAddRecording.mockImplementation(() => Promise.resolve(42))
     })
 
     afterEach(() => {
-        jest.useRealTimers()
+        vi.useRealTimers()
     })
 
     it('startRecording creates DB entry and starts MediaRecorder', async () => {
@@ -188,7 +188,7 @@ describe('RecordingSession functions', () => {
         await act(async () => {
             await userEvent.click(screen.getByTestId('stopBtn'))
             // Advance timers to allow the setTimeout in stopRecording to complete
-            jest.advanceTimersByTime(200)
+            vi.advanceTimersByTime(200)
         })
 
         await waitFor(() => {
@@ -225,7 +225,7 @@ describe('RecordingSession functions', () => {
         // Stop and verify the recording is saved with combined chunks
         await act(async () => {
             await userEvent.click(screen.getByTestId('stopBtn'))
-            jest.advanceTimersByTime(200)
+            vi.advanceTimersByTime(200)
         })
 
         await waitFor(() => {
@@ -257,7 +257,7 @@ describe('RecordingSession functions', () => {
 
         // Advance time
         act(() => {
-            jest.advanceTimersByTime(3000)
+            vi.advanceTimersByTime(3000)
         })
 
         expect(screen.getByTestId('elapsedTime')).toHaveTextContent('3')
@@ -266,13 +266,13 @@ describe('RecordingSession functions', () => {
 
 describe('beforeunload handling', () => {
     beforeEach(() => {
-        jest.clearAllMocks()
-        jest.useFakeTimers()
+        vi.clearAllMocks()
+        vi.useFakeTimers()
         mockAddRecording.mockImplementation(() => Promise.resolve(42))
     })
 
     afterEach(() => {
-        jest.useRealTimers()
+        vi.useRealTimers()
     })
 
     it('shows confirmation when recording and user tries to close browser', async () => {
@@ -290,7 +290,7 @@ describe('beforeunload handling', () => {
 
         // Simulate beforeunload event
         const event = new Event('beforeunload', { cancelable: true })
-        const preventDefaultSpy = jest.spyOn(event, 'preventDefault')
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault')
 
         window.dispatchEvent(event)
 
@@ -306,7 +306,7 @@ describe('beforeunload handling', () => {
 
         // Simulate beforeunload event
         const event = new Event('beforeunload', { cancelable: true })
-        const preventDefaultSpy = jest.spyOn(event, 'preventDefault')
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault')
 
         window.dispatchEvent(event)
 
@@ -316,11 +316,11 @@ describe('beforeunload handling', () => {
 
 describe('MediaRecorder event handlers', () => {
     beforeEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
     })
 
     it('onstart logs message', async () => {
-        const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
+        const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
         const mockMediaRecorder = createMockMediaRecorder()
 
         renderWithProviders(<TestConsumer />, mockMediaRecorder)
@@ -340,7 +340,7 @@ describe('MediaRecorder event handlers', () => {
     })
 
     it('onstop logs message', async () => {
-        const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {})
+        const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
         const mockMediaRecorder = createMockMediaRecorder()
 
         renderWithProviders(<TestConsumer />, mockMediaRecorder)
@@ -362,17 +362,17 @@ describe('MediaRecorder event handlers', () => {
 
 describe('Error handling', () => {
     beforeEach(() => {
-        jest.clearAllMocks()
-        jest.useFakeTimers()
+        vi.clearAllMocks()
+        vi.useFakeTimers()
         mockAddRecording.mockImplementation(() => Promise.resolve(42))
     })
 
     afterEach(() => {
-        jest.useRealTimers()
+        vi.useRealTimers()
     })
 
     it('handles error when save fails', async () => {
-        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+        const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
         mockUpdateRecording.mockRejectedValueOnce(new Error('Save failed'))
 
         const mockMediaRecorder = createMockMediaRecorder()
@@ -398,7 +398,7 @@ describe('Error handling', () => {
         // Stop recording
         await act(async () => {
             await userEvent.click(screen.getByTestId('stopBtn'))
-            jest.advanceTimersByTime(200)
+            vi.advanceTimersByTime(200)
         })
 
         await waitFor(() => {

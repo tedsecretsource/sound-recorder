@@ -6,7 +6,7 @@ describe('ensureDb', () => {
   })
 
   it('returns the input when not null', () => {
-    const mockDb = { query: jest.fn() }
+    const mockDb = { query: vi.fn() }
     const result = ensureDb(mockDb)
 
     expect(result).toBe(mockDb)
@@ -23,8 +23,8 @@ describe('ensureDb', () => {
     }
 
     const mockDb: MockDatabase = {
-      get: jest.fn(),
-      set: jest.fn(),
+      get: vi.fn(),
+      set: vi.fn(),
     }
 
     const result = ensureDb(mockDb)

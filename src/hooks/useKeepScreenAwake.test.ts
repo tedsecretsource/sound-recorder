@@ -4,12 +4,12 @@ import useKeepScreenAwake from './useKeepScreenAwake'
 const flushPromises = () => act(() => Promise.resolve())
 
 describe('useKeepScreenAwake', () => {
-    let mockSentinel: { release: jest.Mock; released: boolean }
-    let mockRequest: jest.Mock
+    let mockSentinel: { release: vi.Mock; released: boolean }
+    let mockRequest: vi.Mock
 
     beforeEach(() => {
-        mockSentinel = { release: jest.fn(), released: false }
-        mockRequest = jest.fn().mockResolvedValue(mockSentinel)
+        mockSentinel = { release: vi.fn(), released: false }
+        mockRequest = vi.fn().mockResolvedValue(mockSentinel)
 
         Object.defineProperty(navigator, 'wakeLock', {
             value: { request: mockRequest },

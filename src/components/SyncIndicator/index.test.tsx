@@ -1,14 +1,14 @@
 import { render, screen } from '@testing-library/react'
 
 // Mock the context hooks
-const mockUseFreesoundAuth = jest.fn()
-const mockUseSync = jest.fn()
+const mockUseFreesoundAuth = vi.fn()
+const mockUseSync = vi.fn()
 
-jest.mock('../../contexts/FreesoundAuthContext', () => ({
+vi.mock('../../contexts/FreesoundAuthContext', () => ({
   useFreesoundAuth: () => mockUseFreesoundAuth(),
 }))
 
-jest.mock('../../contexts/SyncContext', () => ({
+vi.mock('../../contexts/SyncContext', () => ({
   useSync: () => mockUseSync(),
 }))
 
@@ -17,7 +17,7 @@ import SyncIndicator from './index'
 
 describe('SyncIndicator component', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     // Default to authenticated and online
     mockUseFreesoundAuth.mockReturnValue({ isAuthenticated: true })
     mockUseSync.mockReturnValue({

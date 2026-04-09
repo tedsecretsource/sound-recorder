@@ -1,44 +1,44 @@
 import { render, screen, waitFor, act } from '@testing-library/react'
 
-// Mock dependencies - use inline jest.fn() for hoisting
-jest.mock('../services/syncService', () => ({
+// Mock dependencies - use inline vi.fn() for hoisting
+vi.mock('../services/syncService', () => ({
   syncService: {
-    performSync: jest.fn(),
-    setCallbacks: jest.fn(),
-    queueUpload: jest.fn(),
-    isQueueEmpty: jest.fn(() => true),
-    getQueueLength: jest.fn(() => 0),
-    isCurrentlySyncing: jest.fn(() => false),
+    performSync: vi.fn(),
+    setCallbacks: vi.fn(),
+    queueUpload: vi.fn(),
+    isQueueEmpty: vi.fn(() => true),
+    getQueueLength: vi.fn(() => 0),
+    isCurrentlySyncing: vi.fn(() => false),
     isRateLimited: false,
   },
   default: {
-    performSync: jest.fn(),
-    setCallbacks: jest.fn(),
-    queueUpload: jest.fn(),
-    isQueueEmpty: jest.fn(() => true),
-    getQueueLength: jest.fn(() => 0),
-    isCurrentlySyncing: jest.fn(() => false),
+    performSync: vi.fn(),
+    setCallbacks: vi.fn(),
+    queueUpload: vi.fn(),
+    isQueueEmpty: vi.fn(() => true),
+    getQueueLength: vi.fn(() => 0),
+    isCurrentlySyncing: vi.fn(() => false),
     isRateLimited: false,
   },
   __esModule: true,
 }))
 
-jest.mock('./FreesoundAuthContext', () => ({
-  useFreesoundAuth: jest.fn(() => ({
+vi.mock('./FreesoundAuthContext', () => ({
+  useFreesoundAuth: vi.fn(() => ({
     isAuthenticated: true,
   })),
 }))
 
-jest.mock('./RecordingsContext', () => ({
-  useRecordings: jest.fn(() => ({
+vi.mock('./RecordingsContext', () => ({
+  useRecordings: vi.fn(() => ({
     recordings: [],
-    updateRecording: jest.fn(),
-    addRecording: jest.fn(),
-    deleteRecording: jest.fn(),
+    updateRecording: vi.fn(),
+    addRecording: vi.fn(),
+    deleteRecording: vi.fn(),
   })),
 }))
 
-jest.mock('../constants/config', () => ({
+vi.mock('../constants/config', () => ({
   SYNC: {
     DEBOUNCE_MS: 10,
     MIN_INTERVAL_MS: 10,
@@ -47,12 +47,10 @@ jest.mock('../constants/config', () => ({
   INITIAL_SYNC_DELAY_MS: 10,
 }))
 
-jest.mock('../utils/logger', () => ({
-  debug: jest.fn(),
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-}))
+vi.mock('../utils/logger', () => {
+  const mockLogger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() }
+  return { default: mockLogger, logger: mockLogger }
+})
 
 // Import after mocks
 import { SyncProvider, useSync } from './SyncContext'
@@ -61,11 +59,11 @@ import { useRecordings } from './RecordingsContext'
 import syncService from '../services/syncService'
 
 // Get typed references to mocks
-const mockPerformSync = syncService.performSync as jest.Mock
-const mockSetCallbacks = syncService.setCallbacks as jest.Mock
-const mockQueueUpload = syncService.queueUpload as jest.Mock
-const mockIsQueueEmpty = syncService.isQueueEmpty as jest.Mock
-const mockGetQueueLength = syncService.getQueueLength as jest.Mock
+const mockPerformSync = syncService.performSync as vi.Mock
+const mockSetCallbacks = syncService.setCallbacks as vi.Mock
+const mockQueueUpload = syncService.queueUpload as vi.Mock
+const mockIsQueueEmpty = syncService.isQueueEmpty as vi.Mock
+const mockGetQueueLength = syncService.getQueueLength as vi.Mock
 
 // Test component to access context
 const TestConsumer = () => {
@@ -88,19 +86,19 @@ const TestConsumer = () => {
 
 describe('SyncProvider', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
-    jest.useFakeTimers()
+    vi.clearAllMocks()
+    vi.useFakeTimers()
     mockPerformSync.mockResolvedValue({ uploaded: 0, downloaded: 0, errors: [] })
     mockIsQueueEmpty.mockReturnValue(true)
     mockGetQueueLength.mockReturnValue(0)
 
     // Reset mocked hooks
-    ;(useFreesoundAuth as jest.Mock).mockReturnValue({ isAuthenticated: true })
-    ;(useRecordings as jest.Mock).mockReturnValue({
+    ;(useFreesoundAuth as vi.Mock).mockReturnValue({ isAuthenticated: true })
+    ;(useRecordings as vi.Mock).mockReturnValue({
       recordings: [],
-      updateRecording: jest.fn(),
-      addRecording: jest.fn(),
-      deleteRecording: jest.fn(),
+      updateRecording: vi.fn(),
+      addRecording: vi.fn(),
+      deleteRecording: vi.fn(),
     })
 
     // Reset navigator.onLine
@@ -111,7 +109,7 @@ describe('SyncProvider', () => {
   })
 
   afterEach(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   it('renders children', async () => {
@@ -166,7 +164,7 @@ describe('SyncProvider', () => {
 
       // Wait for initial sync delay
       await act(async () => {
-        jest.advanceTimersByTime(100)
+        vi.advanceTimersByTime(100)
       })
 
       await act(async () => {
@@ -179,7 +177,7 @@ describe('SyncProvider', () => {
     })
 
     it('does not sync when not authenticated', async () => {
-      (useFreesoundAuth as jest.Mock).mockReturnValue({ isAuthenticated: false })
+      (useFreesoundAuth as vi.Mock).mockReturnValue({ isAuthenticated: false })
 
       render(
         <SyncProvider>
@@ -225,7 +223,7 @@ describe('SyncProvider', () => {
       )
 
       await act(async () => {
-        jest.advanceTimersByTime(100)
+        vi.advanceTimersByTime(100)
       })
 
       await act(async () => {
@@ -266,12 +264,12 @@ describe('SyncProvider', () => {
 
   describe('retryModeration', () => {
     it('clears freesound state and queues for re-upload', async () => {
-      const mockUpdateRecording = jest.fn()
-      ;(useRecordings as jest.Mock).mockReturnValue({
+      const mockUpdateRecording = vi.fn()
+      ;(useRecordings as vi.Mock).mockReturnValue({
         recordings: [{ id: 1, name: 'Test', freesoundId: 123, moderationStatus: 'moderation_failed' }],
         updateRecording: mockUpdateRecording,
-        addRecording: jest.fn(),
-        deleteRecording: jest.fn(),
+        addRecording: vi.fn(),
+        deleteRecording: vi.fn(),
       })
 
       render(
@@ -299,12 +297,12 @@ describe('SyncProvider', () => {
     })
 
     it('does nothing if recording not found', async () => {
-      const mockUpdateRecording = jest.fn()
-      ;(useRecordings as jest.Mock).mockReturnValue({
+      const mockUpdateRecording = vi.fn()
+      ;(useRecordings as vi.Mock).mockReturnValue({
         recordings: [],
         updateRecording: mockUpdateRecording,
-        addRecording: jest.fn(),
-        deleteRecording: jest.fn(),
+        addRecording: vi.fn(),
+        deleteRecording: vi.fn(),
       })
 
       render(
@@ -325,7 +323,7 @@ describe('SyncProvider', () => {
 
 describe('useSync', () => {
   it('throws error when used outside provider', () => {
-    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     expect(() => render(<TestConsumer />)).toThrow(
       'useSync must be used within its Provider'

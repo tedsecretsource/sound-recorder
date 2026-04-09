@@ -9,16 +9,16 @@ const mockMediaRecorder = {
   stop: function() { this.state = 'inactive' },
   state: 'inactive',
   mimeType: 'audio/webm',
-  ondataavailable: jest.fn(),
-  onstop: jest.fn(),
-  onstart: jest.fn(),
-  onerror: jest.fn(),
-  onpause: jest.fn(),
-  onresume: jest.fn(),
+  ondataavailable: vi.fn(),
+  onstop: vi.fn(),
+  onstart: vi.fn(),
+  onerror: vi.fn(),
+  onpause: vi.fn(),
+  onresume: vi.fn(),
   stream: {
     id: 'stream-id',
     active: true,
-    getTracks: jest.fn(() => [{ getSettings: jest.fn(() => ({ deviceId: 'device-id' })) }])
+    getTracks: vi.fn(() => [{ getSettings: vi.fn(() => ({ deviceId: 'device-id' })) }])
   },
 }
 
@@ -28,19 +28,19 @@ const mockMediaRecorderState = {
   error: null
 }
 
-jest.mock('./hooks/useGetMediaRecorder', () => () => mockMediaRecorderState)
+vi.mock('./hooks/useGetMediaRecorder', () => ({ default: () => mockMediaRecorderState }))
 
 // Mock RecordingsContext to avoid IndexedDB issues in App test
-jest.mock('./contexts/RecordingsContext', () => ({
+vi.mock('./contexts/RecordingsContext', () => ({
   RecordingsProvider: ({ children }: { children: React.ReactNode }) => <div data-testid="recordings-provider">{children}</div>,
   useRecordings: () => ({
     recordings: [],
     isLoading: false,
     connectionIsOpen: true,
-    addRecording: jest.fn(() => Promise.resolve(1)),
-    updateRecording: jest.fn(() => Promise.resolve()),
-    deleteRecording: jest.fn(() => Promise.resolve()),
-    refreshRecordings: jest.fn(() => Promise.resolve()),
+    addRecording: vi.fn(() => Promise.resolve(1)),
+    updateRecording: vi.fn(() => Promise.resolve()),
+    deleteRecording: vi.fn(() => Promise.resolve()),
+    refreshRecordings: vi.fn(() => Promise.resolve()),
   })
 }))
 

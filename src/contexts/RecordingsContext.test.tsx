@@ -3,20 +3,20 @@ import { render, screen, waitFor, act } from '@testing-library/react'
 // Mock URL.createObjectURL and URL.revokeObjectURL
 Object.defineProperty(global.URL, 'createObjectURL', {
     writable: true,
-    value: jest.fn(() => 'blob:https://localhost:3000/mock-url')
+    value: vi.fn(() => 'blob:https://localhost:3000/mock-url')
 })
 Object.defineProperty(global.URL, 'revokeObjectURL', {
     writable: true,
-    value: jest.fn()
+    value: vi.fn()
 })
 
 // Create mock db functions first
-const mockGet = jest.fn()
-const mockGetAll = jest.fn(() => Promise.resolve([]))
-const mockAdd = jest.fn(() => Promise.resolve(1))
-const mockPut = jest.fn(() => Promise.resolve(1))
-const mockDelete = jest.fn(() => Promise.resolve(undefined))
-const mockClose = jest.fn()
+const mockGet = vi.fn()
+const mockGetAll = vi.fn(() => Promise.resolve([]))
+const mockAdd = vi.fn(() => Promise.resolve(1))
+const mockPut = vi.fn(() => Promise.resolve(1))
+const mockDelete = vi.fn(() => Promise.resolve(undefined))
+const mockClose = vi.fn()
 
 const mockDb = {
     get: mockGet,
@@ -28,15 +28,15 @@ const mockDb = {
 }
 
 // Mock the idb module before importing anything that uses it
-jest.mock('idb/with-async-ittr', () => ({
-    openDB: jest.fn(() => Promise.resolve(mockDb))
+vi.mock('idb/with-async-ittr', () => ({
+    openDB: vi.fn(() => Promise.resolve(mockDb))
 }))
 
 // Import after mocking
 import { openDB } from 'idb/with-async-ittr'
 import { RecordingsProvider, useRecordings } from './RecordingsContext'
 
-const mockedOpenDB = openDB as jest.Mock
+const mockedOpenDB = openDB as vi.Mock
 
 // Test component to access context
 const TestConsumer = () => {
@@ -56,7 +56,7 @@ const TestConsumer = () => {
 
 describe('RecordingsProvider', () => {
     beforeEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
         mockedOpenDB.mockImplementation(() => Promise.resolve(mockDb))
         mockGetAll.mockImplementation(() => Promise.resolve([]))
         mockAdd.mockImplementation(() => Promise.resolve(42))
@@ -96,13 +96,13 @@ describe('RecordingsProvider', () => {
 
 describe('useRecordings', () => {
     beforeEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
         mockedOpenDB.mockImplementation(() => Promise.resolve(mockDb))
         mockGetAll.mockImplementation(() => Promise.resolve([]))
     })
 
     it('throws error when not used within RecordingsProvider', () => {
-        const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
+        const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
         expect(() => render(<TestConsumer />)).toThrow('useRecordings must be used within its Provider')
 
@@ -132,7 +132,7 @@ describe('useRecordings', () => {
 
 describe('RecordingsContext functions', () => {
     beforeEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
         mockedOpenDB.mockImplementation(() => Promise.resolve(mockDb))
         mockGetAll.mockImplementation(() => Promise.resolve([]))
         mockAdd.mockImplementation(() => Promise.resolve(42))
@@ -242,7 +242,7 @@ describe('RecordingsContext functions', () => {
     })
 
     it('handles error when db operations fail', async () => {
-        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+        const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
         mockGetAll.mockImplementation(() => Promise.reject(new Error('DB Error')))
 
         render(
@@ -259,7 +259,7 @@ describe('RecordingsContext functions', () => {
     })
 
     it('handles openDB failure', async () => {
-        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+        const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
         mockedOpenDB.mockImplementation(() => Promise.reject(new Error('Failed to open DB')))
 
         render(

@@ -43,7 +43,7 @@
     "start": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "react-scripts test",
+    "test": "vitest",
     "makehtml": "./node_modules/.bin/showdown makehtml -i src/components/TermsOfUse/terms_of_use.md -o public/terms_of_use.html"
   },
   "eslintConfig": {
@@ -68,19 +68,14 @@
     "@vitejs/plugin-react": "^6.0.1",
     "canvas": "3",
     "jest-canvas-mock": "^2.5.2",
+    "jsdom": "^29.0.2",
     "react-test-renderer": "^18.2.0",
     "ts-jest": "^29.0.5",
     "vite": "^8.0.8",
     "vite-plugin-pwa": "^1.2.0",
-    "vite-tsconfig-paths": "^6.1.1"
-  },
-  "jest": {
-    "transformIgnorePatterns": [
-      "<rootDir>/node_modules/(?!idb)"
-    ],
-    "moduleNameMapper": {
-      "^canvas$": "jest-canvas-mock"
-    }
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.4",
+    "vitest-canvas-mock": "^1.1.4"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

@@ -6,14 +6,14 @@ import { DEFAULT_AUDIO_SETTINGS, AUDIO_PRESETS } from '../types/AudioSettings'
 const localStorageMock = (() => {
     let store: Record<string, string> = {}
     return {
-        getItem: jest.fn((key: string) => store[key] ?? null),
-        setItem: jest.fn((key: string, value: string) => {
+        getItem: vi.fn((key: string) => store[key] ?? null),
+        setItem: vi.fn((key: string, value: string) => {
             store[key] = value
         }),
-        clear: jest.fn(() => {
+        clear: vi.fn(() => {
             store = {}
         }),
-        removeItem: jest.fn((key: string) => {
+        removeItem: vi.fn((key: string) => {
             delete store[key]
         })
     }
@@ -56,7 +56,7 @@ const TestConsumer = () => {
 
 describe('AudioSettingsProvider', () => {
     beforeEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
         localStorageMock.clear()
     })
 
@@ -118,12 +118,12 @@ describe('AudioSettingsProvider', () => {
 
 describe('useAudioSettings', () => {
     beforeEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
         localStorageMock.clear()
     })
 
     it('throws error when not used within AudioSettingsProvider', () => {
-        const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
+        const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
         expect(() => render(<TestConsumer />)).toThrow('useAudioSettings must be used within its Provider')
 

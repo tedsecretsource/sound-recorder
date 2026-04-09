@@ -4,15 +4,15 @@ import Settings from './index'
 import { AudioSettingsProvider } from '../../contexts/AudioSettingsContext'
 
 // Mock useRecordingSession from context
-jest.mock('../../contexts/RecordingSessionContext', () => ({
+vi.mock('../../contexts/RecordingSessionContext', () => ({
   useRecordingSession: () => ({
     state: {
       isRecording: false,
       currentRecordingId: null,
       elapsedTime: 0
     },
-    startRecording: jest.fn(),
-    stopRecording: jest.fn()
+    startRecording: vi.fn(),
+    stopRecording: vi.fn()
   })
 }))
 

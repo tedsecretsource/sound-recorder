@@ -25,36 +25,36 @@ describe('Visualizer component', () => {
     mockAnalyser = {
       fftSize: 256,
       frequencyBinCount: 128,
-      getByteTimeDomainData: jest.fn((dataArray) => {
+      getByteTimeDomainData: vi.fn((dataArray) => {
         // Fill with some test data
         for (let i = 0; i < dataArray.length; i++) {
           dataArray[i] = Math.floor(Math.random() * 256)
         }
       }),
-      connect: jest.fn(),
+      connect: vi.fn(),
     }
 
     // Create mock source
     mockSource = {
-      connect: jest.fn(),
+      connect: vi.fn(),
     }
 
     // Create mock AudioContext
-    mockAudioContext = jest.fn().mockImplementation(() => ({
-      createMediaStreamSource: jest.fn(() => mockSource),
-      createAnalyser: jest.fn(() => mockAnalyser),
+    mockAudioContext = vi.fn().mockImplementation(() => ({
+      createMediaStreamSource: vi.fn(() => mockSource),
+      createAnalyser: vi.fn(() => mockAnalyser),
     }))
 
     global.AudioContext = mockAudioContext
 
     // Mock requestAnimationFrame
     animationFrameCallback = null
-    global.requestAnimationFrame = jest.fn((callback) => {
+    global.requestAnimationFrame = vi.fn((callback) => {
       animationFrameCallback = callback
       return 123 // return a mock ID
     })
 
-    global.cancelAnimationFrame = jest.fn()
+    global.cancelAnimationFrame = vi.fn()
   })
 
   afterEach(() => {

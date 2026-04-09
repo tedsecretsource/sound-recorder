@@ -4,8 +4,8 @@ import useInstallPrompt from './useInstallPrompt'
 const DISMISSED_KEY = 'pwa-install-dismissed'
 
 describe('useInstallPrompt', () => {
-    let addEventListenerSpy: jest.SpyInstance
-    let removeEventListenerSpy: jest.SpyInstance
+    let addEventListenerSpy: vi.SpyInstance
+    let removeEventListenerSpy: vi.SpyInstance
     let capturedHandler: ((e: Event) => void) | null = null
 
     const createBeforeInstallPromptEvent = (
@@ -13,7 +13,7 @@ describe('useInstallPrompt', () => {
     ) => {
         const event = new Event('beforeinstallprompt', { cancelable: true })
         Object.defineProperty(event, 'prompt', {
-            value: jest.fn().mockResolvedValue(undefined),
+            value: vi.fn().mockResolvedValue(undefined),
         })
         Object.defineProperty(event, 'userChoice', {
             value: Promise.resolve({ outcome, platform: '' }),
@@ -22,11 +22,11 @@ describe('useInstallPrompt', () => {
     }
 
     beforeEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
         localStorage.clear()
         capturedHandler = null
 
-        addEventListenerSpy = jest.spyOn(window, 'addEventListener').mockImplementation(
+        addEventListenerSpy = vi.spyOn(window, 'addEventListener').mockImplementation(
             (type: string, handler: any) => {
                 if (type === 'beforeinstallprompt') {
                     capturedHandler = handler
@@ -36,7 +36,7 @@ describe('useInstallPrompt', () => {
                 }
             }
         )
-        removeEventListenerSpy = jest.spyOn(window, 'removeEventListener').mockImplementation(() => {})
+        removeEventListenerSpy = vi.spyOn(window, 'removeEventListener').mockImplementation(() => {})
     })
 
     afterEach(() => {
@@ -64,7 +64,7 @@ describe('useInstallPrompt', () => {
         renderHook(() => useInstallPrompt())
 
         const event = createBeforeInstallPromptEvent()
-        const preventDefaultSpy = jest.spyOn(event, 'preventDefault')
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault')
         act(() => {
             capturedHandler!(event)
         })

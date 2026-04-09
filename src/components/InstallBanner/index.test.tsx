@@ -1,8 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 
-const mockUseInstallPrompt = jest.fn()
+const mockUseInstallPrompt = vi.fn()
 
-jest.mock('../../hooks/useInstallPrompt', () => ({
+vi.mock('../../hooks/useInstallPrompt', () => ({
     __esModule: true,
     default: () => mockUseInstallPrompt(),
 }))
@@ -12,12 +12,12 @@ import InstallBanner from './index'
 describe('InstallBanner', () => {
     const defaultHookValue = {
         showBanner: true,
-        install: jest.fn(),
-        dismiss: jest.fn(),
+        install: vi.fn(),
+        dismiss: vi.fn(),
     }
 
     beforeEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
         mockUseInstallPrompt.mockReturnValue(defaultHookValue)
     })
 
@@ -39,7 +39,7 @@ describe('InstallBanner', () => {
     })
 
     it('calls install when install button is clicked', () => {
-        const install = jest.fn()
+        const install = vi.fn()
         mockUseInstallPrompt.mockReturnValue({
             ...defaultHookValue,
             install,
@@ -52,7 +52,7 @@ describe('InstallBanner', () => {
     })
 
     it('calls dismiss when dismiss button is clicked', () => {
-        const dismiss = jest.fn()
+        const dismiss = vi.fn()
         mockUseInstallPrompt.mockReturnValue({
             ...defaultHookValue,
             dismiss,

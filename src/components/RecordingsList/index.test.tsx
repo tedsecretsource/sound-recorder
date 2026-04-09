@@ -27,19 +27,19 @@ const mockThreeRecordings = [
   }
 ]
 
-const mockUpdateRecording = jest.fn(() => Promise.resolve())
-const mockDeleteRecording = jest.fn(() => Promise.resolve())
+const mockUpdateRecording = vi.fn(() => Promise.resolve())
+const mockDeleteRecording = vi.fn(() => Promise.resolve())
 
-// Variables prefixed with 'mock' are allowed in jest.mock
+// Variables prefixed with 'mock' are allowed in vi.mock
 let mockRecordingsData = [...mockThreeRecordings]
 let mockMediaRecorder: any = {
-  start: jest.fn(),
-  stop: jest.fn(),
+  start: vi.fn(),
+  stop: vi.fn(),
   state: 'inactive',
   mimeType: 'audio/webm',
-  ondataavailable: jest.fn(),
-  onstop: jest.fn(),
-  onstart: jest.fn(),
+  ondataavailable: vi.fn(),
+  onstop: vi.fn(),
+  onstart: vi.fn(),
 }
 let mockMediaRecorderState: any = {
   mediaRecorder: mockMediaRecorder,
@@ -47,42 +47,42 @@ let mockMediaRecorderState: any = {
   error: null
 }
 
-jest.mock('../../App', () => ({
+vi.mock('../../App', () => ({
   useMediaRecorder: () => mockMediaRecorderState
 }))
 
-const mockConvertToWav = jest.fn<Promise<Blob>, [Blob]>(() => Promise.resolve(new Blob(['wav-data'], { type: 'audio/wav' })))
-jest.mock('../../utils/audioConverter', () => ({
+const mockConvertToWav = vi.fn<Promise<Blob>, [Blob]>(() => Promise.resolve(new Blob(['wav-data'], { type: 'audio/wav' })))
+vi.mock('../../utils/audioConverter', () => ({
   convertToWav: (blob: Blob) => mockConvertToWav(blob),
 }))
 
-jest.mock('../../contexts/RecordingsContext', () => ({
+vi.mock('../../contexts/RecordingsContext', () => ({
   useRecordings: () => ({
     recordings: mockRecordingsData,
     isLoading: false,
     connectionIsOpen: true,
-    addRecording: jest.fn(() => Promise.resolve(1)),
+    addRecording: vi.fn(() => Promise.resolve(1)),
     updateRecording: mockUpdateRecording,
     deleteRecording: mockDeleteRecording,
-    refreshRecordings: jest.fn(() => Promise.resolve()),
+    refreshRecordings: vi.fn(() => Promise.resolve()),
   })
 }))
 
-jest.mock('../../contexts/FreesoundAuthContext', () => ({
+vi.mock('../../contexts/FreesoundAuthContext', () => ({
   useFreesoundAuth: () => ({
     isAuthenticated: false,
   })
 }))
 
-jest.mock('../../contexts/SyncContext', () => ({
+vi.mock('../../contexts/SyncContext', () => ({
   useSync: () => ({
     isSyncing: false,
     isOnline: true,
     lastSyncTime: null,
     lastSyncResult: null,
     pendingCount: 0,
-    triggerSync: jest.fn(),
-    retryModeration: jest.fn(),
+    triggerSync: vi.fn(),
+    retryModeration: vi.fn(),
   })
 }))
 
@@ -91,8 +91,8 @@ const user = userEvent
 describe('RecordingsList', () => {
   const originalPrompt = global.prompt
   const originalConfirm = global.confirm
-  const mockPrompt = jest.fn()
-  const mockConfirm = jest.fn()
+  const mockPrompt = vi.fn()
+  const mockConfirm = vi.fn()
 
   beforeAll(() => {
     global.prompt = mockPrompt
@@ -104,13 +104,13 @@ describe('RecordingsList', () => {
     mockPrompt.mockReturnValue('new recording name')
     mockConfirm.mockReturnValue(true)
     mockMediaRecorder = {
-      start: jest.fn(),
-      stop: jest.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
       state: 'inactive',
       mimeType: 'audio/webm',
-      ondataavailable: jest.fn(),
-      onstop: jest.fn(),
-      onstart: jest.fn(),
+      ondataavailable: vi.fn(),
+      onstop: vi.fn(),
+      onstart: vi.fn(),
     }
     mockMediaRecorderState = {
       mediaRecorder: mockMediaRecorder,
@@ -120,7 +120,7 @@ describe('RecordingsList', () => {
   })
 
   afterEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   afterAll(() => {
@@ -182,7 +182,7 @@ describe('RecordingsList', () => {
 
     it('user enters invalid name (blank)', async () => {
       mockPrompt.mockReturnValue('   ')
-      const consoleSpy = jest.spyOn(console, 'info').mockImplementation(() => {})
+      const consoleSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
 
       render(<RecordingsList />)
       const editButtons = screen.getAllByRole('button', { name: /click to edit name/i })
@@ -199,7 +199,7 @@ describe('RecordingsList', () => {
 
     it('user enters invalid name (>500 chars)', async () => {
       mockPrompt.mockReturnValue('a'.repeat(501))
-      const consoleSpy = jest.spyOn(console, 'info').mockImplementation(() => {})
+      const consoleSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
 
       render(<RecordingsList />)
       const editButtons = screen.getAllByRole('button', { name: /click to edit name/i })
@@ -241,7 +241,7 @@ describe('RecordingsList', () => {
   })
 
   describe('Sharing a recording', () => {
-    const mockShare = jest.fn()
+    const mockShare = vi.fn()
 
     beforeEach(() => {
       mockShare.mockReset()
@@ -276,7 +276,7 @@ describe('RecordingsList', () => {
         writable: true,
         configurable: true,
       })
-      const mockAlert = jest.spyOn(window, 'alert').mockImplementation(() => {})
+      const mockAlert = vi.spyOn(window, 'alert').mockImplementation(() => {})
 
       render(<RecordingsList />)
       const shareButtons = screen.getAllByRole('button', { name: /share/i })
@@ -313,7 +313,7 @@ describe('RecordingsList', () => {
         length: 0,
         audioURL: 'test'
       }]
-      const mockAlert = jest.spyOn(window, 'alert').mockImplementation(() => {})
+      const mockAlert = vi.spyOn(window, 'alert').mockImplementation(() => {})
 
       render(<RecordingsList />)
       const shareButtons = screen.getAllByRole('button', { name: /share/i })
@@ -328,7 +328,7 @@ describe('RecordingsList', () => {
 
     it('shows alert for unexpected share errors', async () => {
       mockShare.mockRejectedValue(new TypeError('Failed to share'))
-      const mockAlert = jest.spyOn(window, 'alert').mockImplementation(() => {})
+      const mockAlert = vi.spyOn(window, 'alert').mockImplementation(() => {})
 
       render(<RecordingsList />)
       const shareButtons = screen.getAllByRole('button', { name: /share/i })
@@ -346,7 +346,7 @@ describe('RecordingsList', () => {
         writable: true,
         configurable: true,
       })
-      const mockAlert = jest.spyOn(window, 'alert').mockImplementation(() => {})
+      const mockAlert = vi.spyOn(window, 'alert').mockImplementation(() => {})
 
       render(<RecordingsList />)
       const shareButtons = screen.getAllByRole('button', { name: /share/i })
@@ -363,7 +363,7 @@ describe('RecordingsList', () => {
     it('shows alert when share throws NotAllowedError', async () => {
       const notAllowedError = new DOMException('Permission denied', 'NotAllowedError')
       mockShare.mockRejectedValue(notAllowedError)
-      const mockAlert = jest.spyOn(window, 'alert').mockImplementation(() => {})
+      const mockAlert = vi.spyOn(window, 'alert').mockImplementation(() => {})
 
       render(<RecordingsList />)
       const shareButtons = screen.getAllByRole('button', { name: /share/i })
@@ -378,7 +378,7 @@ describe('RecordingsList', () => {
     it('silently ignores AbortError when user dismisses share sheet', async () => {
       const abortError = new DOMException('Share canceled', 'AbortError')
       mockShare.mockRejectedValue(abortError)
-      const mockAlert = jest.spyOn(window, 'alert').mockImplementation(() => {})
+      const mockAlert = vi.spyOn(window, 'alert').mockImplementation(() => {})
 
       render(<RecordingsList />)
       const shareButtons = screen.getAllByRole('button', { name: /share/i })

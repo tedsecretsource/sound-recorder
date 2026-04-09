@@ -1,7 +1,7 @@
 import { any } from "prop-types"
 
 const mockMediaDevices = {
-  getUserMedia: jest.fn().mockImplementation(() => {
+  getUserMedia: vi.fn().mockImplementation(() => {
     return new Promise((resolve, reject) => {
       process.nextTick(() => {
         // reject(new Error('Error: getUserMedia failed!')),
@@ -18,17 +18,17 @@ Object.defineProperty(window.navigator, 'mediaDevices', {
 
 Object.defineProperty(global, 'MediaStream', {
   writable: true,
-  value: jest.fn().mockImplementation(() => {
+  value: vi.fn().mockImplementation(() => {
     return {
       active: true,
       id: `id${window.performance.now().toString()}`,
-      onactive: jest.fn(),
-      onaddtrack: jest.fn(),
-      oninactive: jest.fn(),
-      onremovetrack: jest.fn(),
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      dispatchEvent: jest.fn(),
+      onactive: vi.fn(),
+      onaddtrack: vi.fn(),
+      oninactive: vi.fn(),
+      onremovetrack: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
     }
   })
   .mockName('MediaStream')
@@ -45,26 +45,26 @@ Object.defineProperty(global.MediaStream.prototype, 'id', {
 })
 
 class AudioContextMock {
-  createMediaStreamSource = jest.fn().mockReturnValue({
-    connect: jest.fn(),
-    disconnect: jest.fn(),
-    onended: jest.fn(),
-    onmute: jest.fn(),
-    onunmute: jest.fn(),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
+  createMediaStreamSource = vi.fn().mockReturnValue({
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+    onended: vi.fn(),
+    onmute: vi.fn(),
+    onunmute: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
   });
-  createAnalyser = jest.fn().mockReturnValue({
+  createAnalyser = vi.fn().mockReturnValue({
     fftSize: 2048,
     frequencyBinCount: 1024,
-    getFloatFrequencyData: jest.fn(),
-    getByteFrequencyData: jest.fn(),
-    getFloatTimeDomainData: jest.fn(),
-    getByteTimeDomainData: jest.fn(),
+    getFloatFrequencyData: vi.fn(),
+    getByteFrequencyData: vi.fn(),
+    getFloatTimeDomainData: vi.fn(),
+    getByteTimeDomainData: vi.fn(),
   });
-  resume = jest.fn();
-  suspend = jest.fn();
+  resume = vi.fn();
+  suspend = vi.fn();
 }
 
 (global as any).AudioContext = AudioContextMock;
@@ -72,27 +72,27 @@ class AudioContextMock {
 
 Object.defineProperty(global, 'MediaRecorder', {
   writable: true,
-  value: jest.fn().mockImplementation(() => {
+  value: vi.fn().mockImplementation(() => {
     return {
-      ondataavailable: jest.fn(),
+      ondataavailable: vi.fn(),
       audioBitrateMode: "variable",
       audioBitsPerSecond: 0,
-      onerror: jest.fn(),
-      onpause: jest.fn(),
-      onresume: jest.fn(),
+      onerror: vi.fn(),
+      onpause: vi.fn(),
+      onresume: vi.fn(),
       mimeType: 'audio/webm',
       stream: global.MediaStream,
       state: "inactive",
-      start: jest.fn((state) => {
+      start: vi.fn((state) => {
       }),
-      stop: jest.fn((state) => {
+      stop: vi.fn((state) => {
       }),
-      pause: jest.fn(),
-      resume: jest.fn(),
-      requestData: jest.fn(),
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      dispatchEvent: jest.fn(),
+      pause: vi.fn(),
+      resume: vi.fn(),
+      requestData: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
     }
   })
   .mockName('MediaRecorder')
@@ -110,7 +110,7 @@ Object.defineProperty(global.MediaRecorder, 'isTypeSupported', {
 
 Object.defineProperty(global.URL, 'createObjectURL', {
   writable: true,
-  value: jest.fn().mockImplementation(() => {
+  value: vi.fn().mockImplementation(() => {
     return 'blob:https://localhost:3000/12345678-1234-1234-1234-123456789012'
   })
 })

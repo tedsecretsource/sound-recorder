@@ -4,8 +4,8 @@ describe('logger', () => {
   const originalEnv = process.env
 
   beforeEach(() => {
-    jest.clearAllMocks()
-    jest.resetModules()
+    vi.clearAllMocks()
+    vi.resetModules()
   })
 
   afterEach(() => {
@@ -27,7 +27,7 @@ describe('logger', () => {
     })
 
     it('debug logs in development', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation()
       const { logger } = require('./logger')
 
       logger.debug('debug message', { data: 'test' })
@@ -37,7 +37,7 @@ describe('logger', () => {
     })
 
     it('info logs in development', () => {
-      const consoleSpy = jest.spyOn(console, 'info').mockImplementation()
+      const consoleSpy = vi.spyOn(console, 'info').mockImplementation()
       const { logger } = require('./logger')
 
       logger.info('info message')
@@ -47,7 +47,7 @@ describe('logger', () => {
     })
 
     it('warn logs in development', () => {
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation()
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation()
       const { logger } = require('./logger')
 
       logger.warn('warning message', 123)
@@ -57,7 +57,7 @@ describe('logger', () => {
     })
 
     it('error always logs', () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation()
       const { logger } = require('./logger')
 
       logger.error('error message', new Error('test'))
@@ -67,7 +67,7 @@ describe('logger', () => {
     })
 
     it('handles multiple arguments', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation()
       const { logger } = require('./logger')
 
       logger.debug('arg1', 'arg2', 'arg3', { obj: true }, [1, 2, 3])
@@ -90,7 +90,7 @@ describe('logger', () => {
     })
 
     it('does not log debug in production', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation()
       const { logger } = require('./logger')
 
       logger.debug('debug message')
@@ -100,7 +100,7 @@ describe('logger', () => {
     })
 
     it('does not log info in production', () => {
-      const consoleSpy = jest.spyOn(console, 'info').mockImplementation()
+      const consoleSpy = vi.spyOn(console, 'info').mockImplementation()
       const { logger } = require('./logger')
 
       logger.info('info message')
@@ -110,7 +110,7 @@ describe('logger', () => {
     })
 
     it('logs warn in production', () => {
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation()
+      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation()
       const { logger } = require('./logger')
 
       logger.warn('warning message')
@@ -120,7 +120,7 @@ describe('logger', () => {
     })
 
     it('logs error in production', () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation()
       const { logger } = require('./logger')
 
       logger.error('error message')

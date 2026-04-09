@@ -3,11 +3,11 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 const mockActions = {
-    onDelete: jest.fn(),
-    onEditName: jest.fn(),
-    onSaveDescription: jest.fn(),
-    onBstCategoryChange: jest.fn(),
-    onShare: jest.fn(),
+    onDelete: vi.fn(),
+    onEditName: vi.fn(),
+    onSaveDescription: vi.fn(),
+    onBstCategoryChange: vi.fn(),
+    onShare: vi.fn(),
 }
 
 const mockRecording = {
@@ -24,7 +24,7 @@ const mockProps = {
 
 describe('Recording component', () => {
     beforeEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
     })
 
     it('renders without crashing', () => {

@@ -1,13 +1,13 @@
 import { Recording } from '../SoundRecorderTypes'
 
 // Create shared mock object for both named and default exports
-jest.mock('./freesoundApi', () => {
+vi.mock('./freesoundApi', () => {
   const mockApi = {
-    uploadSound: jest.fn(),
-    getSoundsByTag: jest.fn(),
-    getPendingUploads: jest.fn(),
-    downloadSound: jest.fn(),
-    editSound: jest.fn(),
+    uploadSound: vi.fn(),
+    getSoundsByTag: vi.fn(),
+    getPendingUploads: vi.fn(),
+    downloadSound: vi.fn(),
+    editSound: vi.fn(),
   }
   return {
     __esModule: true,
@@ -16,28 +16,26 @@ jest.mock('./freesoundApi', () => {
   }
 })
 
-jest.mock('../utils/audioConverter', () => ({
-  convertToWav: jest.fn(() => Promise.resolve(new Blob(['wav data'], { type: 'audio/wav' }))),
+vi.mock('../utils/audioConverter', () => ({
+  convertToWav: vi.fn(() => Promise.resolve(new Blob(['wav data'], { type: 'audio/wav' }))),
 }))
 
-jest.mock('../config/freesound', () => ({
+vi.mock('../config/freesound', () => ({
   FREESOUND_CONFIG: {
     TAG: 'sound-recorder-sync',
   },
 }))
 
-jest.mock('../constants/config', () => ({
+vi.mock('../constants/config', () => ({
   SYNC: {
     RATE_LIMIT_BACKOFF_MS: 100, // Short for testing
   },
 }))
 
-jest.mock('../utils/logger', () => ({
-  debug: jest.fn(),
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-}))
+vi.mock('../utils/logger', () => {
+  const mockLogger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() }
+  return { default: mockLogger, logger: mockLogger }
+})
 
 // Import types only - actual modules will be re-imported fresh in each test
 import type { SyncCallbacks } from './syncService'
@@ -47,11 +45,11 @@ describe('SyncService', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let syncService: any
   // Mock references that get refreshed with each test
-  let mockUploadSound: jest.Mock
-  let mockGetSoundsByTag: jest.Mock
-  let mockGetPendingUploads: jest.Mock
-  let mockDownloadSound: jest.Mock
-  let mockEditSound: jest.Mock
+  let mockUploadSound: vi.Mock
+  let mockGetSoundsByTag: vi.Mock
+  let mockGetPendingUploads: vi.Mock
+  let mockDownloadSound: vi.Mock
+  let mockEditSound: vi.Mock
 
   const createMockRecording = (overrides: Partial<Recording> = {}): Recording => ({
     id: 1,
@@ -64,24 +62,24 @@ describe('SyncService', () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     // Reset modules to get fresh syncService instance (clears rate limit state)
-    jest.resetModules()
+    vi.resetModules()
     // Re-import syncService fresh
     syncService = require('./syncService').syncService
     // Re-import freesoundApi mock and get fresh references
     const freesoundApi = require('./freesoundApi').default
-    mockUploadSound = freesoundApi.uploadSound as jest.Mock
-    mockGetSoundsByTag = freesoundApi.getSoundsByTag as jest.Mock
-    mockGetPendingUploads = freesoundApi.getPendingUploads as jest.Mock
-    mockDownloadSound = freesoundApi.downloadSound as jest.Mock
-    mockEditSound = freesoundApi.editSound as jest.Mock
+    mockUploadSound = freesoundApi.uploadSound as vi.Mock
+    mockGetSoundsByTag = freesoundApi.getSoundsByTag as vi.Mock
+    mockGetPendingUploads = freesoundApi.getPendingUploads as vi.Mock
+    mockDownloadSound = freesoundApi.downloadSound as vi.Mock
+    mockEditSound = freesoundApi.editSound as vi.Mock
 
     callbacks = {
-      onRecordingUpdate: jest.fn(() => Promise.resolve()),
-      onRecordingAdd: jest.fn(() => Promise.resolve(100)),
-      onRecordingDelete: jest.fn(() => Promise.resolve()),
-      getRecordings: jest.fn(() => Promise.resolve([])),
+      onRecordingUpdate: vi.fn(() => Promise.resolve()),
+      onRecordingAdd: vi.fn(() => Promise.resolve(100)),
+      onRecordingDelete: vi.fn(() => Promise.resolve()),
+      getRecordings: vi.fn(() => Promise.resolve([])),
     }
 
     syncService.setCallbacks(callbacks)
@@ -151,7 +149,7 @@ describe('SyncService', () => {
         syncStatus: 'pending',
       })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([recording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([recording])
       mockUploadSound.mockResolvedValue({ id: 12345 })
 
       const result = await syncService.performSync()
@@ -174,7 +172,7 @@ describe('SyncService', () => {
         freesoundId: 12345,
       })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([recording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([recording])
 
       const result = await syncService.performSync()
 
@@ -188,7 +186,7 @@ describe('SyncService', () => {
         moderationStatus: 'moderation_failed',
       })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([recording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([recording])
 
       const result = await syncService.performSync()
 
@@ -202,7 +200,7 @@ describe('SyncService', () => {
         data: undefined,
       })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([recording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([recording])
 
       const result = await syncService.performSync()
 
@@ -216,7 +214,7 @@ describe('SyncService', () => {
         description: 'Has description',
       })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([recording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([recording])
 
       const result = await syncService.performSync()
 
@@ -230,7 +228,7 @@ describe('SyncService', () => {
         description: undefined,
       })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([recording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([recording])
 
       const result = await syncService.performSync()
 
@@ -240,7 +238,7 @@ describe('SyncService', () => {
     it('handles upload errors gracefully', async () => {
       const recording = createMockRecording({ id: 1 })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([recording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([recording])
       mockUploadSound.mockRejectedValue(new Error('Upload failed'))
 
       const result = await syncService.performSync()
@@ -261,7 +259,7 @@ describe('SyncService', () => {
     it('handles rate limiting during upload', async () => {
       const recording = createMockRecording({ id: 1 })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([recording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([recording])
       mockUploadSound.mockRejectedValue(new Error('429 Too Many Requests'))
 
       const result = await syncService.performSync()
@@ -289,7 +287,7 @@ describe('SyncService', () => {
         duration: 5.5,
       }
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([])
       mockGetSoundsByTag.mockResolvedValue({ results: [remoteSound] })
       mockDownloadSound.mockResolvedValue(new Blob(['audio'], { type: 'audio/wav' }))
 
@@ -314,7 +312,7 @@ describe('SyncService', () => {
       })
       const remoteSound = { id: 12345, name: 'Test', duration: 5 }
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([localRecording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([localRecording])
       mockGetSoundsByTag.mockResolvedValue({ results: [remoteSound] })
 
       const result = await syncService.performSync()
@@ -326,7 +324,7 @@ describe('SyncService', () => {
     it('handles download errors gracefully', async () => {
       const remoteSound = { id: 99999, name: 'Remote Sound', duration: 5 }
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([])
       mockGetSoundsByTag.mockResolvedValue({ results: [remoteSound] })
       mockDownloadSound.mockRejectedValue(new Error('Network error'))
 
@@ -348,7 +346,7 @@ describe('SyncService', () => {
       })
       const remoteSound = { id: 12345, name: 'Test', duration: 5 }
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([localRecording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([localRecording])
       mockGetSoundsByTag.mockResolvedValue({ results: [remoteSound] })
 
       await syncService.performSync()
@@ -366,7 +364,7 @@ describe('SyncService', () => {
         moderationStatus: undefined,
       })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([localRecording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([localRecording])
       mockGetSoundsByTag.mockResolvedValue({ results: [] })
       mockGetPendingUploads.mockResolvedValue({
         pending_description: [],
@@ -389,7 +387,7 @@ describe('SyncService', () => {
         moderationStatus: 'processing',
       })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([localRecording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([localRecording])
       mockGetSoundsByTag.mockResolvedValue({ results: [] })
       mockGetPendingUploads.mockResolvedValue({
         pending_description: [],
@@ -412,7 +410,7 @@ describe('SyncService', () => {
         moderationStatus: 'in_moderation', // Was in moderation, now gone
       })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([localRecording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([localRecording])
       mockGetSoundsByTag.mockResolvedValue({ results: [] })
       mockGetPendingUploads.mockResolvedValue({
         pending_description: [],
@@ -437,7 +435,7 @@ describe('SyncService', () => {
         moderationStatus: 'approved',
       })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([localRecording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([localRecording])
       mockGetSoundsByTag.mockResolvedValue({ results: [] })
       mockGetPendingUploads.mockResolvedValue({
         pending_description: [],
@@ -457,7 +455,7 @@ describe('SyncService', () => {
         moderationStatus: 'approved',
       })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([localRecording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([localRecording])
       mockGetSoundsByTag.mockResolvedValue({ results: [] })
       mockGetPendingUploads.mockResolvedValue({
         pending_description: [],
@@ -477,7 +475,7 @@ describe('SyncService', () => {
         moderationStatus: 'moderation_failed',
       })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([localRecording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([localRecording])
       mockGetSoundsByTag.mockResolvedValue({ results: [] })
 
       await syncService.performSync()
@@ -490,7 +488,7 @@ describe('SyncService', () => {
     it('processes queued recordings', async () => {
       const recording = createMockRecording({ id: 42 })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([recording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([recording])
       mockUploadSound.mockResolvedValue({ id: 99999 })
 
       syncService.queueUpload(42)
@@ -503,7 +501,7 @@ describe('SyncService', () => {
     it('removes processed recordings from queue', async () => {
       const recording = createMockRecording({ id: 42 })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([recording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([recording])
       mockUploadSound.mockResolvedValue({ id: 99999 })
 
       syncService.queueUpload(42)
@@ -527,7 +525,7 @@ describe('SyncService', () => {
         description: 'Updated Description',
       })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([recording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([recording])
       mockGetSoundsByTag.mockResolvedValue({ results: [{ id: 12345, name: 'Old Name', duration: 5 }] })
       mockEditSound.mockResolvedValue(undefined)
 
@@ -554,7 +552,7 @@ describe('SyncService', () => {
         moderationStatus: 'approved',
       })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([recording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([recording])
       mockGetSoundsByTag.mockResolvedValue({ results: [{ id: 12345, name: 'Test', duration: 5 }] })
 
       await syncService.performSync()
@@ -571,7 +569,7 @@ describe('SyncService', () => {
         pendingEdit: true,
       })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([recording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([recording])
       mockGetSoundsByTag.mockResolvedValue({ results: [] })
 
       await syncService.performSync()
@@ -588,7 +586,7 @@ describe('SyncService', () => {
         pendingEdit: true,
       })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([recording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([recording])
       mockGetSoundsByTag.mockResolvedValue({ results: [{ id: 12345, name: 'Test', duration: 5 }] })
       mockEditSound.mockRejectedValue(new Error('Edit failed: 400 - Bad Request'))
 
@@ -604,7 +602,7 @@ describe('SyncService', () => {
     it('tracks rate limit state', async () => {
       const recording = createMockRecording({ id: 1 })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([recording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([recording])
       mockUploadSound.mockRejectedValue(new Error('429 Too Many Requests'))
 
       await syncService.performSync()
@@ -616,7 +614,7 @@ describe('SyncService', () => {
     it('returns early when rate limited', async () => {
       const recording = createMockRecording({ id: 1 })
 
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([recording])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([recording])
       mockUploadSound.mockRejectedValue(new Error('429'))
 
       // First sync triggers rate limit
@@ -624,7 +622,7 @@ describe('SyncService', () => {
 
       // Reset mock to track second call
       mockUploadSound.mockClear()
-      ;(callbacks.getRecordings as jest.Mock).mockClear()
+      ;(callbacks.getRecordings as vi.Mock).mockClear()
 
       // Second sync should return early
       const result = await syncService.performSync()
@@ -636,7 +634,7 @@ describe('SyncService', () => {
 
   describe('error handling', () => {
     it('handles getSoundsByTag failure gracefully', async () => {
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([])
       mockGetSoundsByTag.mockRejectedValue(new Error('Network error'))
 
       const result = await syncService.performSync()
@@ -649,7 +647,7 @@ describe('SyncService', () => {
     })
 
     it('handles getPendingUploads failure gracefully', async () => {
-      ;(callbacks.getRecordings as jest.Mock).mockResolvedValue([])
+      ;(callbacks.getRecordings as vi.Mock).mockResolvedValue([])
       mockGetPendingUploads.mockRejectedValue(new Error('Network error'))
 
       const result = await syncService.performSync()
@@ -659,7 +657,7 @@ describe('SyncService', () => {
     })
 
     it('clears isRunning flag on error', async () => {
-      ;(callbacks.getRecordings as jest.Mock).mockRejectedValue(new Error('DB Error'))
+      ;(callbacks.getRecordings as vi.Mock).mockRejectedValue(new Error('DB Error'))
 
       try {
         await syncService.performSync()

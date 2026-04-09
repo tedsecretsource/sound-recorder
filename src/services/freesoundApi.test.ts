@@ -1,11 +1,11 @@
 import { RateLimitError } from './freesoundApi'
 
 // Mock fetch globally
-const mockFetch = jest.fn()
+const mockFetch = vi.fn()
 global.fetch = mockFetch
 
 // Mock the config
-jest.mock('../config/freesound', () => ({
+vi.mock('../config/freesound', () => ({
   FREESOUND_CONFIG: {
     API_BASE: 'https://proxy.example.com/api',
     OAUTH_PROXY_URL: 'https://proxy.example.com',
@@ -14,15 +14,13 @@ jest.mock('../config/freesound', () => ({
 }))
 
 // Mock logger
-jest.mock('../utils/logger', () => ({
-  debug: jest.fn(),
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-}))
+vi.mock('../utils/logger', () => {
+  const mockLogger = { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() }
+  return { default: mockLogger, logger: mockLogger }
+})
 
 // Mock constants
-jest.mock('../constants/config', () => ({
+vi.mock('../constants/config', () => ({
   API: {
     MAX_RETRIES: 3,
     INITIAL_BACKOFF_SECONDS: 0.001, // Fast for testing
@@ -34,7 +32,7 @@ import { freesoundApi } from './freesoundApi'
 
 describe('FreesoundApiService', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     freesoundApi.setUsername(null)
   })
 

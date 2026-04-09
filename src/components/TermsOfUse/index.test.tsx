@@ -4,7 +4,7 @@ import TermsOfUse from './index'
 describe('TermsOfUse component', () => {
   beforeEach(() => {
     // Mock global fetch to prevent network requests
-    global.fetch = jest.fn(() =>
+    global.fetch = vi.fn(() =>
       Promise.resolve({
         text: () => Promise.resolve('')
       } as Response)
@@ -12,7 +12,7 @@ describe('TermsOfUse component', () => {
   })
 
   afterEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   it('renders the main heading', async () => {
