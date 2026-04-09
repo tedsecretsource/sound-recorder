@@ -89,7 +89,10 @@ const RecordingsList = () => {
         }
 
         const targetItem = recordings.find((item) => item.id === id)
-        if (!targetItem?.data) return
+        if (!targetItem?.data) {
+            alert('Recording data is unavailable.')
+            return
+        }
 
         const baseMimeType = getBaseMimeType(targetItem.data.type)
         const extension = getFileExtension(baseMimeType)
@@ -109,6 +112,7 @@ const RecordingsList = () => {
                 alert('Sharing audio files is not supported in this browser.')
             } else {
                 logger.error('Failed to share recording:', error)
+                alert('Sharing failed. Please try again.')
             }
         }
     }

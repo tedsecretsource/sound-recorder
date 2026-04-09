@@ -322,6 +322,41 @@ describe('RecordingsList', () => {
       expect(mockShare).toHaveBeenCalled()
     })
 
+    it('shows alert when recording data is missing', async () => {
+      mockRecordingsData = [{
+        id: 1,
+        name: 'no-data',
+        data: undefined,
+        length: 0,
+        audioURL: 'test'
+      }]
+      const mockAlert = jest.spyOn(window, 'alert').mockImplementation(() => {})
+
+      render(<RecordingsList />)
+      const shareButtons = screen.getAllByRole('button', { name: /share/i })
+
+      await user.click(shareButtons[0])
+      await act(async () => { await Promise.resolve() })
+
+      expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('unavailable'))
+      expect(mockShare).not.toHaveBeenCalled()
+      mockAlert.mockRestore()
+    })
+
+    it('shows alert for unexpected share errors', async () => {
+      mockShare.mockRejectedValue(new TypeError('Failed to share'))
+      const mockAlert = jest.spyOn(window, 'alert').mockImplementation(() => {})
+
+      render(<RecordingsList />)
+      const shareButtons = screen.getAllByRole('button', { name: /share/i })
+
+      await user.click(shareButtons[0])
+      await act(async () => { await Promise.resolve() })
+
+      expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('failed'))
+      mockAlert.mockRestore()
+    })
+
     it('shows alert when Web Share API is unavailable', async () => {
       Object.defineProperty(navigator, 'share', {
         value: undefined,
