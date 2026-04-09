@@ -1,10 +1,10 @@
 # Sound Recorder
 
-This is a sound recording application created in ReactJS. It is a learning exercise. Buyer beware.
+This is a sound recording application built with React 19 and TypeScript. It is a learning exercise. Buyer beware.
 
 This is, in many ways, a recreation of this [dictaphone web application](https://github.com/mdn/web-dictaphone/). 
-However, with this version, I plan on making it a [PWA](https://create-react-app.dev/docs/making-a-progressive-web-app/) 
-so you can install it on your device and use it without an Internet connection.
+It is a [PWA](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps) 
+that you can install on your device and use without an Internet connection.
 
 ## Product Vision
 
@@ -27,6 +27,11 @@ The main feature of this application will be reliability. Once installed, you ta
 - Play, rename, and delete recordings
 - Add descriptions and categories (Broad Sound Taxonomy)
 - Recordings listed in reverse chronological order with quality badges and sync status indicators
+
+### Sharing
+- Share recordings via the Web Share API (converts to WAV for broad app compatibility)
+- Includes recording name and app link in share text
+- `canShare()` pre-flight check with clear feedback on unsupported browsers
 
 ### Freesound.org Sync
 - OAuth2 authentication with Freesound
@@ -96,18 +101,27 @@ Freesound sync uses OAuth 2.0. Because Freesound's OAuth flow requires a server-
 
 | Variable | Description |
 |----------|-------------|
-| `REACT_APP_FREESOUND_CLIENT_ID` | Your Freesound API client ID |
-| `REACT_APP_FREESOUND_OAUTH_PROXY_URL` | URL of the OAuth proxy worker |
+| `VITE_FREESOUND_CLIENT_ID` | Your Freesound API client ID |
+| `VITE_FREESOUND_OAUTH_PROXY_URL` | URL of the OAuth proxy worker |
 
 See `.env.example` for reference.
+
+## Tech Stack
+
+- **React 19** with TypeScript
+- **Vite** — build tool and dev server
+- **Vitest** — test runner (340 tests)
+- **Workbox** — service worker and offline caching (via vite-plugin-pwa)
+- **IndexedDB** — local storage via `idb` library
+- **Web Share API** — native sharing to other apps
 
 ## Resources
 
 - [MediaRecorder API](https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder)
 - [MediaStream Recording](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API)
 - [MediaDevices.getUserMedia()](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
-- [Mocking methods which are not implemented in JSDOM](https://jestjs.io/docs/manual-mocks#mocking-methods-which-are-not-implemented-in-jsdom)
-- [Mocking browser APIs in Jest (localStorage, fetch and more!)](https://bholmes.dev/blog/mocking-browser-apis-fetch-localstorage-dates-the-easy-way-with-jest/)
+- [Vitest Documentation](https://vitest.dev/)
+- [Vite Documentation](https://vite.dev/)
 
 ### Other Related Repos
 - [MediaRecorder Pollyfill](https://github.com/ai/audio-recorder-polyfill)
@@ -116,8 +130,8 @@ See `.env.example` for reference.
 
 ### Reported Issues
 
-These are issues I reported / uncovered / contributed to while working on this project.
+Issues reported / uncovered / contributed to while working on this project.
 
-- [How to mock MediaRecorder API in Jest](https://github.com/facebook/jest/issues/10789)
-- [How to mock a read-only property of a native browser object in Jest](https://stackoverflow.com/questions/74133026/how-to-mock-a-read-only-property-of-a-native-browser-object-in-jest)
+- [How to mock MediaRecorder API in Jest](https://github.com/facebook/jest/issues/10789) (project has since migrated to Vitest)
+- [How to mock a read-only property of a native browser object](https://stackoverflow.com/questions/74133026/how-to-mock-a-read-only-property-of-a-native-browser-object-in-jest)
 - [Bug 245056 Audio element displays Error when using Blob URL as src](https://bugs.webkit.org/show_bug.cgi?id=245056)
