@@ -257,15 +257,21 @@ describe('RecordingsList', () => {
 
       expect(mockShare).toHaveBeenCalledWith({
         files: [expect.objectContaining({
-          name: 'test3.webm',
-          type: 'audio/webm',
+          name: 'test3.m4a',
+          type: 'audio/mp4',
         })],
       })
     })
 
-    it('uses .m4a extension for audio/mp4 mimeType', async () => {
-      mockMediaRecorder.mimeType = 'audio/mp4'
-      mockMediaRecorderState.mediaRecorder = mockMediaRecorder
+    it('uses MIME type from the recording blob, not the mediaRecorder', async () => {
+      mockRecordingsData = [{
+        id: 1,
+        name: 'safari-recording',
+        data: new Blob(['audio'], { type: 'audio/mp4' }),
+        length: 0,
+        audioURL: 'test'
+      }]
+      mockMediaRecorder.mimeType = 'audio/webm'
 
       render(<RecordingsList />)
       const shareButtons = screen.getAllByRole('button', { name: /share/i })
@@ -275,7 +281,7 @@ describe('RecordingsList', () => {
 
       expect(mockShare).toHaveBeenCalledWith({
         files: [expect.objectContaining({
-          name: 'test3.m4a',
+          name: 'safari-recording.m4a',
           type: 'audio/mp4',
         })],
       })

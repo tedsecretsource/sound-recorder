@@ -96,9 +96,8 @@ const RecordingsList = () => {
         const targetItem = recordings.find((item) => item.id === id)
         if (!targetItem?.data) return
 
-        const extension = getFileExtension(mediaRecorder!.mimeType)
-        const mimeType = mediaRecorder!.mimeType
-        const file = new File([targetItem.data], `${targetItem.name}${extension}`, { type: mimeType })
+        const extension = getFileExtension(targetItem.data.type)
+        const file = new File([targetItem.data], `${targetItem.name}${extension}`, { type: targetItem.data.type })
 
         try {
             await navigator.share({ files: [file] })

@@ -24,6 +24,7 @@
      - Keep business logic separate from presentation.
    - Avoid unnecessary dependencies.
    - Keep changes minimal and localized.
+   - Don't introduce variables that just alias a property access. Only create a variable when the original name is unclear or the variable is used across different blocks.
 
 ---
 
