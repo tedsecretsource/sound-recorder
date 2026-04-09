@@ -1,8 +1,49 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import tsconfigPaths from 'vite-tsconfig-paths'
+import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
   base: '/sound-recorder/',
-  plugins: [react(), tsconfigPaths()],
+  plugins: [
+    react(),
+    VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'service-worker.ts',
+      injectRegister: false,
+      manifest: {
+        short_name: 'Sound Recorder',
+        name: 'Sound Recorder by Secret Source Technology SL',
+        icons: [
+          {
+            src: 'favicon.ico',
+            sizes: '64x64 32x32 24x24 16x16',
+            type: 'image/x-icon',
+          },
+          {
+            src: 'logo192.png',
+            type: 'image/png',
+            sizes: '192x192',
+            purpose: 'any maskable',
+          },
+          {
+            src: 'logo512.png',
+            type: 'image/png',
+            sizes: '512x512',
+            purpose: 'any maskable',
+          },
+        ],
+        start_url: '.',
+        scope: '.',
+        id: 'com.secretsource.soundrecorder',
+        display: 'standalone',
+        theme_color: '#2BACA1',
+        background_color: '#0E1011',
+        description: 'Sound Recorder is a free, simple and easy to use audio recording app. It is a perfect app for recording meetings, personal notes, classes, songs, and much more.',
+      },
+      devOptions: {
+        enabled: false,
+      },
+    }),
+  ],
 })
