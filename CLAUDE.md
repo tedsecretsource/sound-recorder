@@ -29,9 +29,11 @@
 
 ---
 
-## Non-trivial Change Policy
+## STOP — Check Skills Before Writing Code
 
-If a request matches the triggers defined in the `non-trivial-change` skill:
+**Before writing ANY implementation code, evaluate whether an installed skill applies.** This is a mandatory checkpoint, not a suggestion. Review the available skills list and match against the current task. If a skill applies, invoke it BEFORE editing files.
+
+In particular, the `non-trivial-change` skill MUST be invoked when a request involves ANY of:
 
 - Schema or data model changes  
 - API/contract modifications  
@@ -41,11 +43,12 @@ If a request matches the triggers defined in the `non-trivial-change` skill:
 - Rollout, migration, or feature-flagged work  
 - Ambiguous requirements or multiple viable designs  
 
-Then:
+When `non-trivial-change` applies:
 
-- Automatically apply the `non-trivial-change` skill.
 - Follow its Plan-first Output Contract strictly.
 - Do **not** write implementation code until the  
-  **“Proceed with implementation?”** checkpoint is reached.
+  **”Proceed with implementation?”** checkpoint is reached.
+
+**Re-evaluate at every task transition.** When the user shifts to a new task mid-session, check skills again — don't carry forward the previous task's approach.
 
 For trivial changes (e.g., small refactors, renames, minor fixes), implement directly while still adhering to TDD and project standards.
