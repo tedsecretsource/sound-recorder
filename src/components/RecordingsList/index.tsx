@@ -4,7 +4,7 @@ import { useMediaRecorder } from '../../App'
 import { useRecordings } from '../../contexts/RecordingsContext'
 import { useFreesoundAuth } from '../../contexts/FreesoundAuthContext'
 import { useSync } from '../../contexts/SyncContext'
-import { validateRecordingName } from '../../utils/recordingUtils'
+import { getBaseMimeType, getFileExtension, validateRecordingName } from '../../utils/recordingUtils'
 import { BstCategory } from '../../types/Freesound'
 import logger from '../../utils/logger'
 import { ANIMATION } from '../../constants/config'
@@ -82,11 +82,6 @@ const RecordingsList = () => {
         }
     }
 
-    const getFileExtension = (mimeType: string): string => {
-        if (mimeType.startsWith('audio/mp4')) return '.m4a'
-        return '.webm'
-    }
-
     const handleShareRecording = async (id: number) => {
         if (!navigator.share) {
             alert('Sharing is not supported on this device.')
@@ -96,8 +91,9 @@ const RecordingsList = () => {
         const targetItem = recordings.find((item) => item.id === id)
         if (!targetItem?.data) return
 
-        const extension = getFileExtension(targetItem.data.type)
-        const file = new File([targetItem.data], `${targetItem.name}${extension}`, { type: targetItem.data.type })
+        const baseMimeType = getBaseMimeType(targetItem.data.type)
+        const extension = getFileExtension(baseMimeType)
+        const file = new File([targetItem.data], `${targetItem.name}${extension}`, { type: baseMimeType })
 
         try {
             await navigator.share({ files: [file] })

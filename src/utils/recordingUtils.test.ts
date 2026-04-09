@@ -2,6 +2,8 @@ import {
     createAudioURL,
     createRecordingObject,
     formatRecordingName,
+    getBaseMimeType,
+    getFileExtension,
     validateRecordingName
 } from './recordingUtils'
 
@@ -69,6 +71,34 @@ describe('formatRecordingName', () => {
         const date = new Date('2024-02-29T12:00:00.000Z')
         const name = formatRecordingName(date)
         expect(name).toBe('2024-02-29 12:00:00')
+    })
+})
+
+describe('getBaseMimeType', () => {
+    it('strips codec parameters', () => {
+        expect(getBaseMimeType('audio/webm;codecs="opus"')).toBe('audio/webm')
+    })
+
+    it('returns type unchanged when no parameters', () => {
+        expect(getBaseMimeType('audio/mp4')).toBe('audio/mp4')
+    })
+
+    it('handles multiple parameters', () => {
+        expect(getBaseMimeType('audio/webm;codecs="opus";bitrate=128000')).toBe('audio/webm')
+    })
+})
+
+describe('getFileExtension', () => {
+    it('returns .m4a for audio/mp4', () => {
+        expect(getFileExtension('audio/mp4')).toBe('.m4a')
+    })
+
+    it('returns .webm for audio/webm', () => {
+        expect(getFileExtension('audio/webm')).toBe('.webm')
+    })
+
+    it('returns .webm as default for unknown types', () => {
+        expect(getFileExtension('audio/ogg')).toBe('.webm')
     })
 })
 
