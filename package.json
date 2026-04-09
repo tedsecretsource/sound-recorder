@@ -36,7 +36,7 @@
     "workbox-streams": "^6.5.4"
   },
   "scripts": {
-    "predeploy": "react-scripts build",
+    "predeploy": "REACT_APP_COMMIT_HASH=$(git rev-parse --short HEAD) react-scripts build",
     "deploy": "gh-pages -d build",
     "https_start": "HTTPS=true SSL_CRT_FILE=./.cert/cert.pem SSL_KEY_FILE=./.cert/key.pem react-scripts start",
     "prod_start": "rm -Rf build; yarn build; serve -s build",

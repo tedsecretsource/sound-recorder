@@ -119,6 +119,7 @@ const Settings = () => {
 
             <hr />
             <p>Copyright © 2026 Ted Stresen-Reuter</p>
+            {process.env.REACT_APP_COMMIT_HASH && <p className="commit-hash">{process.env.REACT_APP_COMMIT_HASH}</p>}
         </div>
     )
 }

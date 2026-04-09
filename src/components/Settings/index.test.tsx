@@ -44,6 +44,13 @@ describe('Settings component', () => {
     expect(screen.getByText(/Copyright © 2026 Ted Stresen-Reuter/)).toBeInTheDocument()
   })
 
+  it('renders commit hash when available', () => {
+    process.env.REACT_APP_COMMIT_HASH = 'abc1234'
+    renderSettings()
+    expect(screen.getByText('abc1234')).toBeInTheDocument()
+    delete process.env.REACT_APP_COMMIT_HASH
+  })
+
   describe('Audio Quality Settings', () => {
     it('renders preset selector', () => {
       renderSettings()
