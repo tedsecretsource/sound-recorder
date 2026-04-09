@@ -3,6 +3,7 @@
 ## Development Standards
 
 1. **Always follow Test-Driven Development (TDD).**
+   - Use Red/Green TDD.
    - Write failing tests first.
    - Implement the minimal code required to pass.
    - Refactor only after tests pass.
