@@ -1,5 +1,3 @@
-import { any } from "prop-types"
-
 const mockMediaDevices = {
   getUserMedia: vi.fn().mockImplementation(() => {
     return new Promise((resolve, reject) => {

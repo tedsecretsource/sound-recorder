@@ -151,10 +151,7 @@ describe('RecordingsList', () => {
       const recordings = screen.getAllByRole('button', { name: /delete/i })
       expect(recordings).toHaveLength(3)
 
-      // eslint-disable-next-line testing-library/no-unnecessary-act
-      await act(async () => {
-        user.click(recordings[0])
-      })
+      await user.click(recordings[0])
       const updatedRecordingsWrapper = screen.queryAllByRole('article')
       expect(mockConfirm).toHaveBeenCalledTimes(1)
       expect(mockConfirm).toHaveBeenCalledWith('Are you sure you want to delete this recording?')

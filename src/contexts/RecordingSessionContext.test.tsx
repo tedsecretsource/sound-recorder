@@ -87,7 +87,7 @@ const renderWithProviders = (ui: React.ReactElement, mediaRecorder: any) => {
 describe('RecordingSessionProvider', () => {
     beforeEach(() => {
         vi.clearAllMocks()
-        vi.useFakeTimers()
+        vi.useFakeTimers({ shouldAdvanceTime: true })
     })
 
     afterEach(() => {
@@ -136,7 +136,7 @@ describe('useRecordingSession', () => {
 describe('RecordingSession functions', () => {
     beforeEach(() => {
         vi.clearAllMocks()
-        vi.useFakeTimers()
+        vi.useFakeTimers({ shouldAdvanceTime: true })
         mockAddRecording.mockImplementation(() => Promise.resolve(42))
     })
 
@@ -268,7 +268,7 @@ describe('RecordingSession functions', () => {
 describe('beforeunload handling', () => {
     beforeEach(() => {
         vi.clearAllMocks()
-        vi.useFakeTimers()
+        vi.useFakeTimers({ shouldAdvanceTime: true })
         mockAddRecording.mockImplementation(() => Promise.resolve(42))
     })
 
@@ -364,7 +364,7 @@ describe('MediaRecorder event handlers', () => {
 describe('Error handling', () => {
     beforeEach(() => {
         vi.clearAllMocks()
-        vi.useFakeTimers()
+        vi.useFakeTimers({ shouldAdvanceTime: true })
         mockAddRecording.mockImplementation(() => Promise.resolve(42))
     })
 

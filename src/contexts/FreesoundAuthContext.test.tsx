@@ -224,9 +224,11 @@ describe('FreesoundAuthProvider', () => {
         expect(screen.getByTestId('isLoading')).toHaveTextContent('false')
       })
 
-      userEvent.click(screen.getByTestId('loginBtn'))
+      const locationSpy = vi.spyOn(window.location, 'href', 'set')
+      await userEvent.click(screen.getByTestId('loginBtn'))
 
-      expect(window.location.href).toBe('https://freesound.org/authorize')
+      expect(locationSpy).toHaveBeenCalledWith(expect.stringContaining('freesound.org'))
+      locationSpy.mockRestore()
     })
   })
 

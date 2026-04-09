@@ -87,7 +87,7 @@ const TestConsumer = () => {
 describe('SyncProvider', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.useFakeTimers()
+    vi.useFakeTimers({ shouldAdvanceTime: true })
     mockPerformSync.mockResolvedValue({ uploaded: 0, downloaded: 0, errors: [] })
     mockIsQueueEmpty.mockReturnValue(true)
     mockGetQueueLength.mockReturnValue(0)
