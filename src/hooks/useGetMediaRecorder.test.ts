@@ -10,8 +10,8 @@
 export {}
 
 describe('useGetMediaRecorder', () => {
-    it('hook module exports a default function', () => {
-        const useGetMediaRecorder = require('./useGetMediaRecorder').default
+    it('hook module exports a default function', async () => {
+        const useGetMediaRecorder = (await import('./useGetMediaRecorder')).default
         expect(typeof useGetMediaRecorder).toBe('function')
     })
 })

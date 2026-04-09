@@ -16,33 +16,19 @@ Object.defineProperty(window.navigator, 'mediaDevices', {
   value: mockMediaDevices,
 })
 
-Object.defineProperty(global, 'MediaStream', {
-  writable: true,
-  value: vi.fn().mockImplementation(() => {
-    return {
-      active: true,
-      id: `id${window.performance.now().toString()}`,
-      onactive: vi.fn(),
-      onaddtrack: vi.fn(),
-      oninactive: vi.fn(),
-      onremovetrack: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    }
-  })
-  .mockName('MediaStream')
-})
+class MediaStreamMock {
+  active = true
+  id = `id${window.performance.now().toString()}`
+  onactive = vi.fn()
+  onaddtrack = vi.fn()
+  oninactive = vi.fn()
+  onremovetrack = vi.fn()
+  addEventListener = vi.fn()
+  removeEventListener = vi.fn()
+  dispatchEvent = vi.fn()
+}
 
-Object.defineProperty(global.MediaStream.prototype, 'active', {
-  writable: true,
-  value: true
-})
-
-Object.defineProperty(global.MediaStream.prototype, 'id', {
-  writable: true,
-  value: `id${window.performance.now().toString()}`
-})
+;(global as any).MediaStream = MediaStreamMock
 
 class AudioContextMock {
   createMediaStreamSource = vi.fn().mockReturnValue({

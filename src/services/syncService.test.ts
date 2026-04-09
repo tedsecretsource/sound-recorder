@@ -61,14 +61,14 @@ describe('SyncService', () => {
     ...overrides,
   })
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
     // Reset modules to get fresh syncService instance (clears rate limit state)
     vi.resetModules()
     // Re-import syncService fresh
-    syncService = require('./syncService').syncService
+    syncService = (await import('./syncService')).syncService
     // Re-import freesoundApi mock and get fresh references
-    const freesoundApi = require('./freesoundApi').default
+    const freesoundApi = (await import('./freesoundApi')).default
     mockUploadSound = freesoundApi.uploadSound as vi.Mock
     mockGetSoundsByTag = freesoundApi.getSoundsByTag as vi.Mock
     mockGetPendingUploads = freesoundApi.getPendingUploads as vi.Mock

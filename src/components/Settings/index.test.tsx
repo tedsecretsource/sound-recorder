@@ -45,10 +45,10 @@ describe('Settings component', () => {
   })
 
   it('renders commit hash when available', () => {
-    process.env.REACT_APP_COMMIT_HASH = 'abc1234'
+    vi.stubEnv('VITE_COMMIT_HASH', 'abc1234')
     renderSettings()
     expect(screen.getByText('abc1234')).toBeInTheDocument()
-    delete process.env.REACT_APP_COMMIT_HASH
+    vi.unstubAllEnvs()
   })
 
   describe('Audio Quality Settings', () => {

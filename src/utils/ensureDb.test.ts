@@ -66,8 +66,8 @@ describe('ensureDb', () => {
 })
 
 describe('default export', () => {
-  it('exports ensureDb as default', () => {
-    const defaultExport = require('./ensureDb').default
+  it('exports ensureDb as default', async () => {
+    const defaultExport = (await import('./ensureDb')).default
     expect(defaultExport).toBe(ensureDb)
   })
 })

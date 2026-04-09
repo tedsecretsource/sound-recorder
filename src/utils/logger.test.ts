@@ -1,24 +1,22 @@
 export {}
 
 describe('logger', () => {
-  const originalEnv = process.env
-
   beforeEach(() => {
     vi.clearAllMocks()
     vi.resetModules()
   })
 
   afterEach(() => {
-    process.env = originalEnv
+    vi.unstubAllEnvs()
   })
 
   describe('in development mode', () => {
     beforeEach(() => {
-      process.env = { ...originalEnv, NODE_ENV: 'development' }
+      vi.stubEnv('PROD', false)
     })
 
-    it('exports logger object with all methods', () => {
-      const { logger } = require('./logger')
+    it('exports logger object with all methods', async () => {
+      const { logger } = await import('./logger')
 
       expect(typeof logger.debug).toBe('function')
       expect(typeof logger.info).toBe('function')
@@ -26,9 +24,9 @@ describe('logger', () => {
       expect(typeof logger.error).toBe('function')
     })
 
-    it('debug logs in development', () => {
+    it('debug logs in development', async () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation()
-      const { logger } = require('./logger')
+      const { logger } = await import('./logger')
 
       logger.debug('debug message', { data: 'test' })
 
@@ -36,9 +34,9 @@ describe('logger', () => {
       consoleSpy.mockRestore()
     })
 
-    it('info logs in development', () => {
+    it('info logs in development', async () => {
       const consoleSpy = vi.spyOn(console, 'info').mockImplementation()
-      const { logger } = require('./logger')
+      const { logger } = await import('./logger')
 
       logger.info('info message')
 
@@ -46,9 +44,9 @@ describe('logger', () => {
       consoleSpy.mockRestore()
     })
 
-    it('warn logs in development', () => {
+    it('warn logs in development', async () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation()
-      const { logger } = require('./logger')
+      const { logger } = await import('./logger')
 
       logger.warn('warning message', 123)
 
@@ -56,9 +54,9 @@ describe('logger', () => {
       consoleSpy.mockRestore()
     })
 
-    it('error always logs', () => {
+    it('error always logs', async () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation()
-      const { logger } = require('./logger')
+      const { logger } = await import('./logger')
 
       logger.error('error message', new Error('test'))
 
@@ -66,9 +64,9 @@ describe('logger', () => {
       consoleSpy.mockRestore()
     })
 
-    it('handles multiple arguments', () => {
+    it('handles multiple arguments', async () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation()
-      const { logger } = require('./logger')
+      const { logger } = await import('./logger')
 
       logger.debug('arg1', 'arg2', 'arg3', { obj: true }, [1, 2, 3])
 
@@ -86,12 +84,12 @@ describe('logger', () => {
 
   describe('in production mode', () => {
     beforeEach(() => {
-      process.env = { ...originalEnv, NODE_ENV: 'production' }
+      vi.stubEnv('PROD', true)
     })
 
-    it('does not log debug in production', () => {
+    it('does not log debug in production', async () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation()
-      const { logger } = require('./logger')
+      const { logger } = await import('./logger')
 
       logger.debug('debug message')
 
@@ -99,9 +97,9 @@ describe('logger', () => {
       consoleSpy.mockRestore()
     })
 
-    it('does not log info in production', () => {
+    it('does not log info in production', async () => {
       const consoleSpy = vi.spyOn(console, 'info').mockImplementation()
-      const { logger } = require('./logger')
+      const { logger } = await import('./logger')
 
       logger.info('info message')
 
@@ -109,9 +107,9 @@ describe('logger', () => {
       consoleSpy.mockRestore()
     })
 
-    it('logs warn in production', () => {
+    it('logs warn in production', async () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation()
-      const { logger } = require('./logger')
+      const { logger } = await import('./logger')
 
       logger.warn('warning message')
 
@@ -119,9 +117,9 @@ describe('logger', () => {
       consoleSpy.mockRestore()
     })
 
-    it('logs error in production', () => {
+    it('logs error in production', async () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation()
-      const { logger } = require('./logger')
+      const { logger } = await import('./logger')
 
       logger.error('error message')
 
@@ -131,9 +129,9 @@ describe('logger', () => {
   })
 
   describe('default export', () => {
-    it('exports logger as default', () => {
-      const defaultExport = require('./logger').default
-      const { logger } = require('./logger')
+    it('exports logger as default', async () => {
+      const defaultExport = (await import('./logger')).default
+      const { logger } = await import('./logger')
       expect(defaultExport).toBe(logger)
     })
   })

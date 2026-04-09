@@ -9,6 +9,7 @@ const mockAddRecording = vi.fn(() => Promise.resolve(1))
 const mockUpdateRecording = vi.fn(() => Promise.resolve())
 
 vi.mock('./RecordingsContext', () => ({
+    default: {},
     useRecordings: () => ({
         recordings: [],
         isLoading: false,

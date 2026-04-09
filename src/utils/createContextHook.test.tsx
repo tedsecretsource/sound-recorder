@@ -106,8 +106,8 @@ describe('createContextHook', () => {
 })
 
 describe('default export', () => {
-  it('exports createContextHook as default', () => {
-    const defaultExport = require('./createContextHook').default
+  it('exports createContextHook as default', async () => {
+    const defaultExport = (await import('./createContextHook')).default
     expect(defaultExport).toBe(createContextHook)
   })
 })

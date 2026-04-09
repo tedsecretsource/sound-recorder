@@ -2,16 +2,6 @@ import { render, screen } from '@testing-library/react'
 import Logo from './Logo'
 
 describe('Logo component', () => {
-  const originalEnv = process.env
-
-  beforeEach(() => {
-    process.env = { ...originalEnv, PUBLIC_URL: '/app' }
-  })
-
-  afterEach(() => {
-    process.env = originalEnv
-  })
-
   it('renders without crashing', () => {
     render(<Logo />)
 
@@ -40,15 +30,7 @@ describe('Logo component', () => {
     expect(logo).toHaveClass('logo-file')
   })
 
-  it('uses PUBLIC_URL in src path', () => {
-    render(<Logo />)
-
-    const logo = screen.getByRole('img')
-    expect(logo).toHaveAttribute('src', '/app/logo512.webp')
-  })
-
-  it('renders with empty PUBLIC_URL', () => {
-    process.env = { ...process.env, PUBLIC_URL: '' }
+  it('uses BASE_URL in src path', () => {
     render(<Logo />)
 
     const logo = screen.getByRole('img')

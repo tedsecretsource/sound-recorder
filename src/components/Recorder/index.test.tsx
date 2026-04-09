@@ -9,6 +9,7 @@ const mockStopRecording = vi.fn(() => Promise.resolve())
 
 // Mock useRecordingSession context
 vi.mock('../../contexts/RecordingSessionContext', () => ({
+  default: {},
   useRecordingSession: vi.fn(() => ({
     state: {
       isRecording: false,
@@ -22,6 +23,7 @@ vi.mock('../../contexts/RecordingSessionContext', () => ({
 
 // Mock useRecordings context
 vi.mock('../../contexts/RecordingsContext', () => ({
+  default: {},
   useRecordings: vi.fn(() => ({
     recordings: [],
     isLoading: false,

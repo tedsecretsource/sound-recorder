@@ -9,8 +9,8 @@
 export {}
 
 describe('audioConverter', () => {
-  it('exports convertToWav function', () => {
-    const { convertToWav } = require('./audioConverter')
+  it('exports convertToWav function', async () => {
+    const { convertToWav } = await import('./audioConverter')
     expect(typeof convertToWav).toBe('function')
   })
 })
@@ -38,14 +38,12 @@ describe('convertToWav integration', () => {
     mockClose = vi.fn().mockResolvedValue(undefined)
     mockDecodeAudioData = vi.fn()
 
-    // Mock AudioContext
-    const MockAudioContext = vi.fn().mockImplementation(() => ({
-      close: mockClose,
-      decodeAudioData: mockDecodeAudioData,
-    }))
-
+    // Mock AudioContext as a class (Vitest vi.fn() doesn't support `new`)
     // @ts-ignore - mocking global
-    global.AudioContext = MockAudioContext
+    global.AudioContext = class {
+      close = mockClose
+      decodeAudioData = mockDecodeAudioData
+    }
   })
 
   it('creates AudioContext and closes it after conversion', async () => {
@@ -58,7 +56,7 @@ describe('convertToWav integration', () => {
 
     mockDecodeAudioData.mockResolvedValue(mockAudioBuffer)
 
-    const { convertToWav } = require('./audioConverter')
+    const { convertToWav } = await import('./audioConverter')
 
     // Create a proper Blob with arrayBuffer method
     const audioData = new ArrayBuffer(100)
@@ -74,7 +72,7 @@ describe('convertToWav integration', () => {
   it('closes AudioContext even on error', async () => {
     mockDecodeAudioData.mockRejectedValue(new Error('Decode error'))
 
-    const { convertToWav } = require('./audioConverter')
+    const { convertToWav } = await import('./audioConverter')
     const audioData = new ArrayBuffer(100)
     const inputBlob = new Blob([audioData], { type: 'audio/webm' })
 
@@ -97,7 +95,7 @@ describe('convertToWav integration', () => {
 
     mockDecodeAudioData.mockResolvedValue(mockAudioBuffer)
 
-    const { convertToWav } = require('./audioConverter')
+    const { convertToWav } = await import('./audioConverter')
     const audioData = new ArrayBuffer(100)
     const inputBlob = new Blob([audioData], { type: 'audio/webm' })
 
@@ -118,7 +116,7 @@ describe('convertToWav integration', () => {
 
     mockDecodeAudioData.mockResolvedValue(mockAudioBuffer)
 
-    const { convertToWav } = require('./audioConverter')
+    const { convertToWav } = await import('./audioConverter')
     const audioData = new ArrayBuffer(100)
     const inputBlob = new Blob([audioData], { type: 'audio/webm' })
 
@@ -176,7 +174,7 @@ describe('convertToWav integration', () => {
 
     mockDecodeAudioData.mockResolvedValue(mockAudioBuffer)
 
-    const { convertToWav } = require('./audioConverter')
+    const { convertToWav } = await import('./audioConverter')
     const audioData = new ArrayBuffer(100)
     const inputBlob = new Blob([audioData], { type: 'audio/webm' })
 

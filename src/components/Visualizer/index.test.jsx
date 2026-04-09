@@ -5,6 +5,7 @@ import Visualizer from './index'
 describe('Visualizer component', () => {
   let mockStream
   let mockAudioContext
+  let mockAudioContextInstance
   let mockAnalyser
   let mockSource
   let originalAudioContext
@@ -39,11 +40,15 @@ describe('Visualizer component', () => {
       connect: vi.fn(),
     }
 
-    // Create mock AudioContext
-    mockAudioContext = vi.fn().mockImplementation(() => ({
-      createMediaStreamSource: vi.fn(() => mockSource),
-      createAnalyser: vi.fn(() => mockAnalyser),
-    }))
+    // Create mock AudioContext as a class so it's constructable
+    mockAudioContextInstance = null
+    mockAudioContext = class MockAudioContext {
+      constructor() {
+        this.createMediaStreamSource = vi.fn(() => mockSource)
+        this.createAnalyser = vi.fn(() => mockAnalyser)
+        mockAudioContextInstance = this
+      }
+    }
 
     global.AudioContext = mockAudioContext
 
@@ -76,19 +81,17 @@ describe('Visualizer component', () => {
 
   it('AudioContext created on mount', () => {
     render(<Visualizer stream={mockStream} barColor={[18, 124, 85]} />)
-    expect(global.AudioContext).toHaveBeenCalled()
+    expect(mockAudioContextInstance).not.toBeNull()
   })
 
   it('creates MediaStreamSource from stream', () => {
     render(<Visualizer stream={mockStream} barColor={[18, 124, 85]} />)
-    const audioCtx = mockAudioContext.mock.results[0].value
-    expect(audioCtx.createMediaStreamSource).toHaveBeenCalledWith(mockStream)
+    expect(mockAudioContextInstance.createMediaStreamSource).toHaveBeenCalledWith(mockStream)
   })
 
   it('AnalyserNode configured correctly', () => {
     render(<Visualizer stream={mockStream} barColor={[18, 124, 85]} />)
-    const audioCtx = mockAudioContext.mock.results[0].value
-    expect(audioCtx.createAnalyser).toHaveBeenCalled()
+    expect(mockAudioContextInstance.createAnalyser).toHaveBeenCalled()
     // The component sets fftSize to 256
     expect(mockAnalyser.fftSize).toBe(256)
   })
