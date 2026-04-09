@@ -25,5 +25,5 @@ yarn-error.log*
 launch.json
 settings.json
 terms_of_use.html
-.env.
+.env.production
 dist
