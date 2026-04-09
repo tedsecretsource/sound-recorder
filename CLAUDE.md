@@ -25,6 +25,7 @@
    - Avoid unnecessary dependencies.
    - Keep changes minimal and localized.
    - Don't introduce variables that just alias a property access. Only create a variable when the original name is unclear or the variable is used across different blocks.
+   - Tests should test as little of the application as possible. Prefer focused unit tests over integration-style tests unless explicitly testing integration. Extract pure functions to utilities so they can be unit tested and reused.
 
 ---
 
