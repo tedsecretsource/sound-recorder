@@ -266,6 +266,7 @@ describe('RecordingsList', () => {
           name: 'test3.wav',
           type: 'audio/wav',
         })],
+        text: 'test3\n\nRecorded on https://tedsecretsource.github.io/sound-recorder/',
       })
     })
 

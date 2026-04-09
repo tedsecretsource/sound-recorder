@@ -8,7 +8,7 @@ import { validateRecordingName } from '../../utils/recordingUtils'
 import { convertToWav } from '../../utils/audioConverter'
 import { BstCategory } from '../../types/Freesound'
 import logger from '../../utils/logger'
-import { ANIMATION } from '../../constants/config'
+import { ANIMATION, APP_URL } from '../../constants/config'
 import './style.css'
 
 const RecordingsList = () => {
@@ -104,7 +104,7 @@ const RecordingsList = () => {
         }
 
         try {
-            await navigator.share({ files: [file] })
+            await navigator.share({ files: [file], text: `${targetItem.name}\n\nRecorded on ${APP_URL}` })
         } catch (error) {
             const domError = error as DOMException
             if (domError.name === 'AbortError') return

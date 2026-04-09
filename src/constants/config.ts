@@ -18,3 +18,6 @@ export const ANIMATION = {
 
 // Initial sync delay
 export const INITIAL_SYNC_DELAY_MS = 1000
+
+// Application URL
+export const APP_URL = 'https://tedsecretsource.github.io/sound-recorder/'
