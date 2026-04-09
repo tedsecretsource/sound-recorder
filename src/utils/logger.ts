@@ -7,7 +7,7 @@ const LOG_LEVELS: Record<LogLevel, number> = {
   error: 3,
 }
 
-const currentLevel: LogLevel = process.env.NODE_ENV === 'production' ? 'warn' : 'debug'
+const currentLevel: LogLevel = import.meta.env.PROD ? 'warn' : 'debug'
 
 export const logger = {
   debug: (...args: unknown[]) => {

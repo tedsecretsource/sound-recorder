@@ -36,7 +36,7 @@
     "workbox-streams": "^6.5.4"
   },
   "scripts": {
-    "predeploy": "REACT_APP_COMMIT_HASH=$(git rev-parse --short HEAD) vite build",
+    "predeploy": "VITE_COMMIT_HASH=$(git rev-parse --short HEAD) vite build",
     "deploy": "gh-pages -d dist",
     "https_start": "vite --https",
     "prod_start": "rm -Rf dist; yarn build; serve -s dist",
