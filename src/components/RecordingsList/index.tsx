@@ -4,7 +4,8 @@ import { useMediaRecorder } from '../../App'
 import { useRecordings } from '../../contexts/RecordingsContext'
 import { useFreesoundAuth } from '../../contexts/FreesoundAuthContext'
 import { useSync } from '../../contexts/SyncContext'
-import { getBaseMimeType, getFileExtension, validateRecordingName } from '../../utils/recordingUtils'
+import { validateRecordingName } from '../../utils/recordingUtils'
+import { convertToWav } from '../../utils/audioConverter'
 import { BstCategory } from '../../types/Freesound'
 import logger from '../../utils/logger'
 import { ANIMATION } from '../../constants/config'
@@ -94,9 +95,8 @@ const RecordingsList = () => {
             return
         }
 
-        const baseMimeType = getBaseMimeType(targetItem.data.type)
-        const extension = getFileExtension(baseMimeType)
-        const file = new File([targetItem.data], `${targetItem.name}${extension}`, { type: baseMimeType })
+        const wavBlob = await convertToWav(targetItem.data)
+        const file = new File([wavBlob], `${targetItem.name}.wav`, { type: 'audio/wav' })
 
         if (navigator.canShare && !navigator.canShare({ files: [file] })) {
             alert('Sharing this file type is not supported on this device.')

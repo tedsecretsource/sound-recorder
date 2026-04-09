@@ -51,6 +51,11 @@ jest.mock('../../App', () => ({
   useMediaRecorder: () => mockMediaRecorderState
 }))
 
+const mockConvertToWav = jest.fn<Promise<Blob>, [Blob]>(() => Promise.resolve(new Blob(['wav-data'], { type: 'audio/wav' })))
+jest.mock('../../utils/audioConverter', () => ({
+  convertToWav: (blob: Blob) => mockConvertToWav(blob),
+}))
+
 jest.mock('../../contexts/RecordingsContext', () => ({
   useRecordings: () => ({
     recordings: mockRecordingsData,
@@ -248,41 +253,18 @@ describe('RecordingsList', () => {
       })
     })
 
-    it('calls navigator.share with a file using the recording name', async () => {
+    it('converts to WAV and shares with correct name', async () => {
       render(<RecordingsList />)
       const shareButtons = screen.getAllByRole('button', { name: /share/i })
 
       await user.click(shareButtons[0])
       await act(async () => { await Promise.resolve() })
 
+      expect(mockConvertToWav).toHaveBeenCalledWith(mockThreeRecordings[2].data)
       expect(mockShare).toHaveBeenCalledWith({
         files: [expect.objectContaining({
-          name: 'test3.m4a',
-          type: 'audio/mp4',
-        })],
-      })
-    })
-
-    it('uses MIME type from the recording blob, not the mediaRecorder', async () => {
-      mockRecordingsData = [{
-        id: 1,
-        name: 'safari-recording',
-        data: new Blob(['audio'], { type: 'audio/mp4' }),
-        length: 0,
-        audioURL: 'test'
-      }]
-      mockMediaRecorder.mimeType = 'audio/webm'
-
-      render(<RecordingsList />)
-      const shareButtons = screen.getAllByRole('button', { name: /share/i })
-
-      await user.click(shareButtons[0])
-      await act(async () => { await Promise.resolve() })
-
-      expect(mockShare).toHaveBeenCalledWith({
-        files: [expect.objectContaining({
-          name: 'safari-recording.m4a',
-          type: 'audio/mp4',
+          name: 'test3.wav',
+          type: 'audio/wav',
         })],
       })
     })
