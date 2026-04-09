@@ -104,7 +104,7 @@ const RecordingsList = () => {
         }
 
         try {
-            await navigator.share({ files: [file] })
+            await navigator.share({ files: [file], text: `${targetItem.name}\n\nRecorded on ${APP_URL}` })
         } catch (error) {
             const domError = error as DOMException
             if (domError.name === 'AbortError') return
